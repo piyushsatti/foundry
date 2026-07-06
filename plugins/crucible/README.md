@@ -18,17 +18,24 @@ re-described across skills.
 | `red-vs-blue` | attack + verify | "Will this break?" — adversarial attack/verify pair + adjudicated verdict, gated by a worthiness check |
 
 `consult`, `hats`, and `red-vs-blue` all `requires: [wardrobe]` in the skills
-manifest. The wardrobe's 10-hat v1 roster (`architect`, `senior-engineer`,
-`security`, `sre`, `frontend`, `product`, `coverage`, `simplifier`, `finance`,
-`coach`) and its authoring contract live in
+manifest. The wardrobe's 14-hat v1 roster — 10 general-software
+(`architect`, `senior-engineer`, `security`, `sre`, `frontend`, `product`,
+`coverage`, `simplifier`, `finance`, `coach`) plus 4 agentic-infra
+(`prompt-engineer`, `harness-engineer`, `skill-designer`, `eval-engineer`) — and
+its authoring contract live in
 [`skills/wardrobe/hats/HATS.md`](skills/wardrobe/hats/HATS.md).
 
 ## Agents
 
 Four stance agents carry pinned model/effort so skills dispatch a real
-subagent instead of a generic one. Model/effort pins are **provisional** —
-they're placeholders pending the phase-3 seeded-flaw benchmark described in
-the design doc, not tuned values.
+subagent instead of a generic one. Both `model:` and `effort:` in agent
+frontmatter are **honored** by Claude Code (documented supported fields —
+verified 2026-07-05 via [sub-agents docs](https://code.claude.com/docs/en/sub-agents.md);
+`effort:` takes `low`/`medium`/`high`/`xhigh`/`max`), so the pins do take
+effect when the agent type is dispatched. What stays **provisional** is the
+chosen *values* — placeholders pending the phase-3 seeded-flaw benchmark in
+the design doc, not tuned data. (Whether the pins take effect ≠ whether the
+values are optimal; the first is settled, the second is not.)
 
 | Agent | Stance | Dispatched by |
 |-------|--------|---------------|
@@ -67,12 +74,28 @@ consider running `red-vs-blue` before proceeding — at most once, and it
 always allows the tool call regardless. `hooks/hooks.json` wires it via
 `${CLAUDE_PLUGIN_ROOT}` for plugin-native autoloading.
 
-**This is the first hook shipped by any plugin in this repo, and plugin-hook
-autoloading has not been verified here.** Treat it as experimental until
-confirmed working post-install on a real marketplace install. If autoloading
-doesn't fire, `hooks/settings-fragment.example.json` is a manual fallback —
-paste it into `.claude/settings.json` under `hooks.PreToolUse` (with the
-install path filled in) to wire the same script by hand.
+**This is the first hook shipped by any plugin in this repo, and two things
+remain unverified without a live install** (checked 2026-07-05 against the
+[hooks](https://code.claude.com/docs/en/hooks.md) and
+[plugins](https://code.claude.com/docs/en/plugins.md) docs):
+
+1. **Plugin-hook autoload.** Skills and monitors are documented as autoloading
+   on install; hooks are *not explicitly* documented as autoloading, though
+   the pattern strongly implies it. Assume yes, confirm post-install.
+2. **`ExitPlanMode` as a `PreToolUse` matcher.** Tool-name matchers are
+   open-ended, but `ExitPlanMode` is **not in the documented matcher example
+   set**, and `ExitPlanMode` is elsewhere seen paired with `PostToolUse`, not
+   `PreToolUse` — so this exact matcher may not fire. If it doesn't, the
+   supported alternatives are a `PostToolUse` matcher on `ExitPlanMode`, or a
+   `Stop` hook that injects the same `additionalContext`. Either is a
+   drop-in swap in `hooks.json`.
+
+Treat the hook as experimental until confirmed working post-install. If
+autoload doesn't fire, `hooks/settings-fragment.example.json` is a manual
+fallback — paste it into `.claude/settings.json` under `hooks.PreToolUse`
+(with the install path filled in) to wire the same script by hand. The hook
+never blocks in any case, so a non-firing or mis-wired hook is inert, not
+harmful.
 
 ## Running skill evals
 

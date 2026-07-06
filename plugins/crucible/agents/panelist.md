@@ -3,7 +3,7 @@ name: panelist
 description: Neutral-stance reviewer for the hats skill. Dispatch one per hat — each panelist wears a single wardrobe lens on the same artifact, blind to the other panelists, and returns structured findings. Expects the wardrobe hat file body (frontmatter excluded) and the artifact in the dispatch prompt. Raises, never fixes; never sees another panelist's output.
 model: sonnet
 effort: medium
-# pins: sonnet/medium — directionally validated by the 2026-07-05 benchmark (panelist/architect: sonnet hit 6/6 recall, 0 FP, matching opus). medium not directly tested but the easy-corpus recall saturation makes a lighter tier safe here; panelist runs 3-4 concurrent so medium keeps panel cost sane. Agent definitions carry model AND effort; precedent: curator.md.
+# pins: sonnet/medium — RETAINED on the prior, NOT validated by the 2026-07-05 benchmark. Caveats from the eval-engineer self-review: (1) sonnet/medium was never one of the four configs run (sonnet/high, sonnet/max, opus/medium, opus/high); (2) the architect panel had no clean controls, so its "0 FP" is structural, not a precision result. So this pin rests on the easy-corpus recall saturation + cost (panelist runs 3-4 concurrent) as a reasonable prior, not on data. Agent definitions carry model AND effort; precedent: curator.md.
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

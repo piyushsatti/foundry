@@ -15,9 +15,9 @@
 | opus / medium | **7/7** | 7 | 24 |
 | opus / high | **7/7** | 7 | 22 |
 
-**Panel (architect lens)** — 6 seeded variants, no clean controls in this slice.
+**Panel (architect lens)** — 6 seeded variants, no clean controls in this slice. FP is **structural: no clean controls in the panel slice; not a precision measurement** — it cannot be anything but 0 with nothing clean to false-positive on.
 
-| Config | Recall | FP | Total findings |
+| Config | Recall | FP (structural: no clean controls in the panel slice; not a precision measurement) | Total findings |
 |---|---|---|---|
 | sonnet / high | **6/6** | 0 | 19 |
 | sonnet / max | **6/6** | 0 | 19 |
@@ -42,8 +42,8 @@ The provisional pins are **retained, not overturned** — the data neither refut
 |---|---|---|
 | red-attacker | opus / **high** | Retained on the D-evidence prior + slight precision edge (leanest at 7/7). **Not** max (max inflated FP). sonnet/high is a viable cost-saving alternative — it matched opus/high here. |
 | adjudicator | opus / high | **Un-benchmarked** — stays on prior [D6/D10: severity calls are the expensive failure]. Benchmark this next (needs pairs). |
-| blue-verifier | sonnet / high | Consistent with the panel result (sonnet matched opus at 0 FP). |
-| panelist | sonnet / medium | **Validated directionally** — the architect panel hit 6/6 / 0 FP at sonnet; medium not directly tested but the easy-corpus recall saturation makes a lighter tier safe here. |
+| blue-verifier | sonnet / high | Retained on the prior — the panel's 0 FP is structural (no clean controls in that slice, not a precision measurement) and does not support this pin either way. |
+| panelist | sonnet / medium | sonnet/medium was NOT tested (the four configs run were sonnet/high, sonnet/max, opus/medium, opus/high); the panelist pin is retained on the prior, not validated by this run. |
 
 **No pin changed.** Changing pins to chase a non-discriminating result would be over-fitting to an easy corpus.
 

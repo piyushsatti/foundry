@@ -14,6 +14,21 @@ relative to this file).
 A hat earns its place by the failure classes it is responsible for and the
 binary-checkable questions it always asks — not by who it claims to be.
 
+## Terminology (the word "hat" is overloaded — pin these)
+
+Three distinct things get called "hat" in casual speech. This repo disambiguates:
+
+| Term | Means | Not |
+|------|-------|-----|
+| **lens** (a **hat file**, `wardrobe/hats/<name>.md`) | one review perspective — the checklist-and-contract document this file governs | the skill, the collection |
+| **wardrobe** | the shared *collection* of lens files, drawn from by every consumer | any single lens |
+| **`hats`** (code font — the **skill**) | the consumer that wears **3–4 lenses at once** as a blind parallel panel | a single lens; the wardrobe |
+
+Rule of thumb: a *lens* is worn; the **`hats`** skill wears several; they all live in
+the **wardrobe**. `consult` wears **one** lens, `red-vs-blue` wears **one** shared lens
+across its pair — only **`hats`** wears many. When a sentence could mean more than one,
+say "lens" for the file and reserve bare **`hats`** (code font) for the skill.
+
 ## Frontmatter (registry metadata — NOT sent to the model)
 
 ```yaml

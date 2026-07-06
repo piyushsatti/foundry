@@ -43,7 +43,7 @@ fi
 
 [ -z "$high_stakes" ] && exit 0
 
-msg='This plan looks high-stakes (long, or touches migration/auth/security/launch/delete/production/payment/schema). Before finalizing, consider running the crucible red-vs-blue skill to stress-test it — or say no and proceed as-is.'
+msg='This plan looks high-stakes (matched: length and/or keywords — migration/auth/security/launch/delete/production/payment/schema). Before presenting it to the user, consider recommending they run crucible'"'"'s red-vs-blue skill to stress-test it — or hats (with a coverage lens) if the plan is completeness-shaped (a migration, checklist, or requirements inventory). Non-blocking: surface the suggestion, don'"'"'t act on it.'
 
 jq -n --arg ctx "$msg" \
   '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":$ctx}}' 2>/dev/null

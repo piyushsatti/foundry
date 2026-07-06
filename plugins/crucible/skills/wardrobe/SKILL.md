@@ -1,6 +1,6 @@
 ---
 name: wardrobe
-description: Reference library of professional-lens persona files (hats) consumed by the consult, hats, and red-vs-blue review skills — NOT an invocable workflow. Use when creating, editing, or choosing a hat/lens/persona for a review skill, or when checking whether a lens already exists before minting a new one.
+description: Reference library of professional-lens hat files consumed by the consult, hats, and red-vs-blue skills. Not an invocable workflow — consumers read hat bodies by path (../wardrobe/hats/<name>.md). See HATS.md to author or edit a hat.
 ---
 
 <!-- foundry:dependencies:start -->
@@ -62,6 +62,15 @@ agent reads the lens file into its prompt; no nested subagents.
 | `simplifier` | YAGNI, deletable scope, cheaper paths to the same outcome |
 | `finance` | cost/ROI, runway impact, build-vs-buy |
 | `coach` | personal/life decisions: sustainability, values alignment, motivation reality |
+
+**Agentic-infrastructure lenses** (added 2026-07-05 for reviewing skills/agents/prompts/harness — foundry's own domain):
+
+| Hat | Catches (one line) |
+|-----|--------------------|
+| `prompt-engineer` | weak triggers, workflow-in-description, missing rationalization counters, ambiguous instructions, context bloat |
+| `harness-engineer` | dispatch topology, hook-event mismatch, MCP/sandbox wiring, model/effort misroute, cross-host fragility, failure handling |
+| `skill-designer` | discoverability (SDO), wrong primitive (skill vs hook vs agent), progressive disclosure, handoff/routing, registry overlap |
+| `eval-engineer` | no ground truth, non-discriminating/saturated metrics, judge bias, untested claims, overfitting to one fixture |
 
 ## Authoring or extending a hat
 

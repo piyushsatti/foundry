@@ -36,6 +36,37 @@ class TestRender(unittest.TestCase):
         out = markdown.render("see [docs](https://example.com)")
         self.assertIn('<a href="https://example.com">docs</a>', out)
 
+    def test_link_relative_allowed(self):
+        out = markdown.render("see [home](/index.html) and [frag](#top)")
+        self.assertIn('<a href="/index.html">home</a>', out)
+        self.assertIn('<a href="#top">frag</a>', out)
+
+    def test_link_mailto_allowed(self):
+        out = markdown.render("[mail](mailto:a@b.com)")
+        self.assertIn('<a href="mailto:a@b.com">mail</a>', out)
+
+    def test_link_javascript_scheme_dropped(self):
+        out = markdown.render("[click](javascript:alert(1))")
+        self.assertNotIn("javascript:", out)
+        self.assertNotIn("<a", out)
+        self.assertIn("click", out)  # visible text retained, link stripped
+
+    def test_link_data_scheme_dropped(self):
+        out = markdown.render("[x](data:text/html,<script>alert(1)</script>)")
+        self.assertNotIn("data:", out)
+        self.assertNotIn("<a", out)
+
+    def test_link_vbscript_scheme_dropped(self):
+        out = markdown.render("[x](vbscript:msgbox(1))")
+        self.assertNotIn("vbscript:", out)
+        self.assertNotIn("<a", out)
+
+    def test_link_scheme_whitespace_obfuscation_dropped(self):
+        # Browsers strip tabs/newlines inside a scheme, so "java\tscript:" runs.
+        out = markdown.render("[x](java\tscript:alert(1))")
+        self.assertNotIn("<a", out)
+        self.assertNotIn("script:", out)
+
     def test_code_block(self):
         out = markdown.render("```python\nx = 1\n```")
         self.assertIn('<pre><code class="lang-python">x = 1</code></pre>', out)

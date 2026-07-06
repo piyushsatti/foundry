@@ -8,7 +8,7 @@ Stdlib only. Handles the subset that matters for spec node bodies:
 - Inline code (`text`)
 - Bold (**text**)
 - Italic (*text*)
-- Links ([text](url))
+- Links ([text](url)) — href restricted to a safe-scheme allowlist
 - Unordered lists (- item or * item)
 - Ordered lists (1. item)
 - Horizontal rules (---)
@@ -33,13 +33,48 @@ _BOLD_RE = re.compile(r"\*\*([^*\n]+)\*\*")
 _ITALIC_RE = re.compile(r"(?<!\*)\*([^*\n]+)\*(?!\*)")
 _LINK_RE = re.compile(r"\[([^\]\n]+)\]\(([^)\n]+)\)")
 
+# Link href safety: only these schemes may appear in an <a href>. A relative
+# URL (no scheme) is allowed. Anything else — javascript:, data:, vbscript: — is
+# dropped to plain text. HTML-escaping already blocks attribute breakout (" ->
+# &quot;); this allowlist blocks script-executing schemes, the other XSS vector.
+_ALLOWED_SCHEMES = frozenset({"http", "https", "mailto", "tel"})
+# A leading scheme is letters/digits/+-. up to the first colon. If the regex
+# matches, a real scheme is present (the char class excludes / ? #, so
+# "path:with:colon" style relative refs won't false-match here).
+_SCHEME_RE = re.compile(r"^([a-zA-Z][a-zA-Z0-9+.\-]*):")
+# Browsers strip ASCII whitespace/control chars from within a scheme before
+# dispatching it, so "java\tscript:" executes. Strip the same set before the
+# scheme check so those can't smuggle a blocked scheme past the allowlist.
+_URL_STRIP_RE = re.compile(r"[\x00-\x20]")
+
+
+def _safe_href(url: str) -> str | None:
+    """Return the href if its scheme is safe to emit, else None.
+
+    ``url`` is already HTML-escaped. Relative URLs (no scheme) pass; a URL whose
+    scheme is not in _ALLOWED_SCHEMES is rejected so the caller can drop the link.
+    """
+    probe = _URL_STRIP_RE.sub("", url)
+    m = _SCHEME_RE.match(probe)
+    if m and m.group(1).lower() not in _ALLOWED_SCHEMES:
+        return None
+    return url.strip()
+
+
+def _link_sub(m: "re.Match[str]") -> str:
+    text, url = m.group(1), m.group(2)
+    href = _safe_href(url)
+    if href is None:
+        return text  # unsafe scheme — keep the visible text, drop the link
+    return f'<a href="{href}">{text}</a>'
+
 
 def _inline(text: str) -> str:
     """Apply inline transforms to already-escaped text."""
     text = _INLINE_CODE_RE.sub(r"<code>\1</code>", text)
     text = _BOLD_RE.sub(r"<strong>\1</strong>", text)
     text = _ITALIC_RE.sub(r"<em>\1</em>", text)
-    text = _LINK_RE.sub(r'<a href="\2">\1</a>', text)
+    text = _LINK_RE.sub(_link_sub, text)
     return text
 
 

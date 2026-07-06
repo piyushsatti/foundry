@@ -1,5 +1,6 @@
 {
   "skill_name": "consult",
+  "_note": "Spec, not test: validated for structure only by run_skill_evals.py; expected_output blocks are NOT executed against a live agent in this repo.",
   "evals": [
     {
       "id": 1,

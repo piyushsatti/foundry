@@ -29,7 +29,7 @@ Two independent reviewers with opposite framings on the same artifact, plus a se
 Reserved for **high-stakes artifacts**. For routine review use **audit** or **hats**.
 
 <HARD-GATE>
-Neither side implements fixes. Neither side sees the other's output. Adjudication happens only in synthesis, by the main thread or a third agent — never by red or blue themselves.
+Neither side implements fixes. Neither side sees the other's output. Adjudication happens only in synthesis, by the main thread or a third agent — never by red or blue themselves. No exceptions for "it's a one-line fix" or "the user obviously wants it" — findings route to the user/synthesis, not to your own edits.
 </HARD-GATE>
 
 ## Why this shape
@@ -62,7 +62,10 @@ The user's call is final. The gate **informs, never blocks** — if they say go,
 1. Confirm the artifact — plan, design, spec, decision. Run the **worthiness gate** above.
 2. **Optional lens.** If the user names a lens ("red-team this as a security reviewer") or one clearly fits, load that hat from the wardrobe (`../wardrobe/hats/<name>.md`) and give **both** red and blue the **same** hat **body** — red attacks through it, blue verifies through it. Pass the body only (`## Role` through `## Severity anchors`); exclude the frontmatter — `overlaps` is registry metadata and irrelevant detail in the payload [D16, D13]. No lens → both run the general reviewer stance below. One shared lens for the pair, not one each, keeps them on the same surface.
 3. Dispatch red and blue as parallel subagents, blind to each other. **Prefer the `red-attacker` and `blue-verifier` agent types** (`subagent_type:`) when available — they carry the stance protocols and pinned models; pass each the artifact (+ the hat file, if a lens was chosen). When unavailable, dispatch **general-purpose** subagents and inline the Red / Blue instructions below. Default to the session model; user may override.
-4. Adjudicate in synthesis — **prefer the `adjudicator` agent type**; else the main thread (or a third general-purpose agent for maximum independence). Never red or blue [D10].
+
+**Run from the main thread only.** These skills fan out to parallel subagents; a subagent has no dispatch tool, so if you are yourself a dispatched subagent, do NOT try to fan out — review the artifact in-thread through the relevant lens(es) and say explicitly that you ran single-threaded.
+4. **Both-returned gate — an empty side is a failure, not a clean bill.** Before adjudicating, confirm **each** subagent returned a substantive, well-formed report (an `## Analysis` plus its required sections). A silent death, a timeout, an error, or an empty/truncated reply is **not** "found nothing" — a missing blue reads as *false "sound"* and a missing red as *false "no attacks."* If either side is missing or malformed, **re-dispatch that one side once**; if it fails again, **halt and tell the user which side failed** — never emit a `proceed` verdict on a half-run pair. Record which side(s) actually ran in the synthesis header.
+5. Adjudicate in synthesis — **prefer the `adjudicator` agent type**; else the main thread (or a third general-purpose agent for maximum independence). Never red or blue [D10].
 
 ## Red instructions
 
@@ -130,8 +133,9 @@ Adjudicate each red finding against blue's independent read: **valid / false-ala
 
 ```markdown
 # Red vs Blue synthesis: [subject]
+## Reviewers run           [red: ok/failed · blue: ok/failed — if either failed, verdict is halt-incomplete, not a clean bill]
 ## Analysis                [reconcile red vs blue, re-check evidence — before the verdict [D14]]
-## Verdict                 [proceed / proceed with fixes / halt and redesign]
+## Verdict                 [proceed / proceed with fixes / halt and redesign / halt — incomplete review (a side failed)]
 ## Must address            [red valid + blue's read supports]
 ## Acceptable as-is        [blue defended with evidence]
 ## Coverage gaps           [from blue — the completeness counterweight]
@@ -143,7 +147,7 @@ Adjudicate each red finding against blue's independent read: **valid / false-ala
 One round: do not loop red on blue's output or re-run the pair on the same artifact version [D5].
 
 ## After synthesis
-Present to user. Wait for direction. Do not implement.
+Present to user. Wait for direction. Do not implement. No exceptions for "it's a one-line fix" or "the user obviously wants it" — findings route to the user/synthesis, not to your own edits.
 
 ## Not this skill
 - **audit** — single neutral reviewer

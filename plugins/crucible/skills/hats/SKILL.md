@@ -23,7 +23,7 @@ Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `pytho
 Fan out **3–4 parallel reviewers**, each a genuinely distinct professional lens on the same artifact, each blind to the others. One review round, one synthesis pass. The output is diverse, structured, evidence-cited findings — not a consensus vote.
 
 <HARD-GATE>
-Reviewers raise, don't fix. No hat sees another hat's output before submitting its own. Synthesis surfaces agreement AND disagreement — it does not rewrite the artifact and does not manufacture consensus.
+Reviewers raise, don't fix. No hat sees another hat's output before submitting its own. Synthesis surfaces agreement AND disagreement — it does not rewrite the artifact and does not manufacture consensus. No exceptions for "it's a one-line fix" or "the user obviously wants it" — findings route to the user/synthesis, not to your own edits.
 </HARD-GATE>
 
 ## Why this shape
@@ -46,10 +46,14 @@ Hats are **chosen from the shared wardrobe** ([`../wardrobe/`](../wardrobe/SKILL
 
 A requested lens that isn't in the wardrobe: draft it inline for this run following the HATS.md contract, and flag it for wardrobe addition — don't silently improvise a vibe.
 
-Roster (full table in [`../wardrobe/SKILL.md`](../wardrobe/SKILL.md)): `architect`, `senior-engineer`, `security`, `sre`, `frontend`, `product`, `coverage`, `simplifier`, `finance`, `coach`. Example sets — API design: security, sre, senior-engineer, coverage. Life/personal decision: finance, coach, product. Product plan: senior-engineer, frontend, product.
+Roster (full table in [`../wardrobe/SKILL.md`](../wardrobe/SKILL.md)) — general software: `architect`, `senior-engineer`, `security`, `sre`, `frontend`, `product`, `coverage`, `simplifier`, `finance`, `coach`; agentic-infra (skills/agents/prompts/harness): `prompt-engineer`, `harness-engineer`, `skill-designer`, `eval-engineer`. Example sets — API design: security, sre, senior-engineer, coverage. Life/personal decision: finance, coach, product. Reviewing a skill/plugin: prompt-engineer, harness-engineer, skill-designer, eval-engineer.
 
 ### 3. Dispatch — parallel, blind
 Each hat runs as its own subagent, all in parallel, blind to each other.
+
+**Run from the main thread only.** These skills fan out to parallel subagents; a subagent has no dispatch tool, so if you are yourself a dispatched subagent, do NOT try to fan out — review the artifact in-thread through the relevant lens(es) and say explicitly that you ran single-threaded.
+
+**A dropped hat is a missing lens, not a clean one.** If a dispatched panelist dies, times out, errors, or returns empty, do not silently synthesize the survivors as if the panel were complete — a missing lens means its whole failure class went unreviewed. Re-dispatch that one hat once; if it fails again, name it in the synthesis as **not reviewed** and do not imply its classes are clean.
 
 **Prefer the `panelist` agent type** (`subagent_type: panelist`) when available — it carries the neutral-stance protocol and a pinned model. Pass it the composed prompt: the **hat file's body** (`../wardrobe/hats/<name>.md`, `## Role` through `## Severity anchors` — **exclude the frontmatter**; `overlaps` is registry metadata and irrelevant detail in the payload [D16, D13]) + the artifact (or paths to read). When `panelist` isn't available, dispatch a **general-purpose** subagent and inline the neutral-stance rules below alongside the hat body.
 
@@ -118,7 +122,7 @@ Disagreement is signal — present it, don't average it away.
 Rules: CRITICAL findings surface in the summary even if only one hat raised them [D8]. Treat a hat's stated confidence as calibration context, not severity — severity comes from evidence [D6]. One round: do not send synthesis back to the hats for another pass [D5].
 
 ## After synthesis
-Present to user. Wait for direction. Do not implement.
+Present to user. Wait for direction. Do not implement. No exceptions for "it's a one-line fix" or "the user obviously wants it" — findings route to the user/synthesis, not to your own edits.
 
 ## Not this skill
 - **audit** — one neutral reviewer, one findings report
