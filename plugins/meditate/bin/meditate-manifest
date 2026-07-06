@@ -1,0 +1,207 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["ruamel.yaml"]
+# ///
+"""meditate-manifest — deterministic manifest helpers for the meditate pipeline.
+
+The manifest is a markdown file: YAML frontmatter, prose, and exactly one fenced
+```yaml``` block holding a top-level `candidates:` list (interface-contract §3).
+
+Subcommands:
+  extract  <manifest.md>   Print the fenced candidates YAML block verbatim to stdout.
+  validate <manifest.md>   Check manifest-frontmatter schema + per-candidate schema +
+                           the statically-checkable half of the law-1 stratification
+                           check. Exit 0 if clean; exit 1 with diagnostics on stderr.
+
+What `validate` does NOT do (by design): apply-time path-collision checks for split
+children / combine results, whose final paths are only resolvable at apply time from
+(cell × slug × date). apply's split/combine pre-flight owns those (`fail(path collision)`).
+This tool covers what is knowable from the manifest alone.
+"""
+
+import argparse
+import io
+import re
+import sys
+from pathlib import Path
+
+from ruamel.yaml import YAML
+
+VALID_VERBS = {
+    # disposition (6)
+    "promote", "merge", "keep", "drop", "promote-to-rule", "demote-rule",
+    # curation (4) — codified as first-class manifest verbs (decisions log 2026-07-05)
+    "generalize", "specialize", "deprecate", "retire",
+    # horizontal (4)
+    "split", "combine", "link", "amend",
+}
+
+# Verbs whose source_path is destroyed (archived + tombstoned) by the candidate.
+DESTROYING_VERBS = {"drop", "retire", "combine", "split"}
+
+_FENCE = re.compile(r"^---\s*$", re.M)
+_YAML_BLOCK = re.compile(r"```yaml\s*\n(.*?)\n```", re.S)
+
+
+def _load_yaml(text: str):
+    return YAML(typ="safe").load(io.StringIO(text))
+
+
+def _split_frontmatter(text: str) -> tuple[str | None, str]:
+    """Return (frontmatter_text_or_None, rest). Line-anchored fence match (no substring bug)."""
+    parts = _FENCE.split(text, maxsplit=2)
+    # A leading frontmatter block yields ['', '<frontmatter>', '<rest>'].
+    if len(parts) >= 3 and parts[0].strip() == "":
+        return parts[1], parts[2]
+    return None, text
+
+
+def _extract_block(text: str) -> str | None:
+    m = _YAML_BLOCK.search(text)
+    return m.group(1) if m else None
+
+
+def cmd_extract(path: Path) -> int:
+    block = _extract_block(path.read_text(encoding="utf-8"))
+    if block is None:
+        print(f"meditate-manifest: no fenced ```yaml``` block in {path}", file=sys.stderr)
+        return 1
+    sys.stdout.write(block if block.endswith("\n") else block + "\n")
+    return 0
+
+
+def _candidate_paths(c: dict) -> dict:
+    """Classify a candidate's paths into subject / referenced / created / destroyed sets."""
+    proposed = c.get("proposed") or {}
+    verb = proposed.get("verb")
+    sp = c.get("source_path")
+    subject, referenced, created, destroyed = set(), set(), set(), set()
+
+    if verb == "combine":
+        for entry in c.get("combine_sources") or []:
+            p = entry.get("source_path")
+            if p:
+                subject.add(p); referenced.add(p); destroyed.add(p)
+        # result path is apply-time-resolved (id only) → not statically known
+    elif verb == "split":
+        if sp:
+            subject.add(sp); destroyed.add(sp)
+        # children paths are apply-time-resolved → not statically known
+    elif verb == "link":
+        if sp:
+            subject.add(sp)
+        tgt = c.get("link_target_path")
+        if tgt:
+            subject.add(tgt); referenced.add(tgt)
+    elif verb == "amend":
+        if sp:
+            subject.add(sp); referenced.add(sp)
+    elif verb == "merge":
+        # 2-way fold: source (this candidate) is destroyed; dest.path is edited in place.
+        if sp:
+            subject.add(sp); destroyed.add(sp)
+        dest_path = (proposed.get("dest") or {}).get("path")
+        if dest_path:
+            subject.add(dest_path); referenced.add(dest_path)
+    else:
+        if sp:
+            subject.add(sp)
+            if verb in DESTROYING_VERBS:
+                destroyed.add(sp)
+        # cross-key promote also destroys its source
+        dest = proposed.get("dest") or {}
+        dscope = dest.get("scope") or {}
+        if verb == "promote" and sp and isinstance(dscope.get("depth"), int):
+            src_depth = (c.get("scope") or {}).get("depth")
+            if isinstance(src_depth, int) and dscope["depth"] < src_depth:
+                destroyed.add(sp)
+    return {"subject": subject, "referenced": referenced, "created": created, "destroyed": destroyed}
+
+
+def cmd_validate(path: Path) -> int:
+    text = path.read_text(encoding="utf-8")
+    errors: list[str] = []
+
+    fm_text, _ = _split_frontmatter(text)
+    if fm_text is None:
+        errors.append("no manifest frontmatter (--- fenced block) found")
+    else:
+        fm = _load_yaml(fm_text) or {}
+        sv = fm.get("schema_version")
+        if sv != 2:
+            errors.append(f"manifest schema_version is {sv!r}, expected 2")
+
+    block = _extract_block(text)
+    if block is None:
+        errors.append("no fenced ```yaml``` candidates block found")
+        for e in errors:
+            print(f"meditate-manifest: {e}", file=sys.stderr)
+        return 1
+
+    doc = _load_yaml(block) or {}
+    if not isinstance(doc, dict) or "candidates" not in doc:
+        errors.append("fenced yaml has no top-level `candidates:` key (bare list is not accepted)")
+        for e in errors:
+            print(f"meditate-manifest: {e}", file=sys.stderr)
+        return 1
+
+    candidates = doc.get("candidates") or []
+    if not isinstance(candidates, list):
+        errors.append("`candidates:` is not a list")
+        candidates = []
+
+    # Per-candidate schema
+    for i, c in enumerate(candidates):
+        cid = (c or {}).get("id", f"#{i}")
+        if not isinstance(c, dict):
+            errors.append(f"candidate {cid}: not a mapping"); continue
+        if "id" not in c:
+            errors.append(f"candidate {cid}: missing `id`")
+        verb = (c.get("proposed") or {}).get("verb")
+        if verb is None:
+            errors.append(f"candidate {cid}: missing `proposed.verb`")
+        elif verb not in VALID_VERBS:
+            errors.append(f"candidate {cid}: unknown verb {verb!r}")
+
+    # Law 1 (statically-checkable half)
+    paths = [(c.get("id", f"#{i}"), _candidate_paths(c)) for i, c in enumerate(candidates) if isinstance(c, dict)]
+
+    # (a) one verb per item — no source path is the subject of two candidates
+    seen: dict[str, str] = {}
+    for cid, p in paths:
+        for sp in p["subject"]:
+            if sp in seen:
+                errors.append(f"law-1(a): path {sp} is the subject of both '{seen[sp]}' and '{cid}'")
+            else:
+                seen[sp] = cid
+
+    # (b) no candidate references a path another destroys (created-side is apply-time)
+    for cid, p in paths:
+        for rp in p["referenced"]:
+            for oid, q in paths:
+                if oid == cid:
+                    continue
+                if rp in q["destroyed"]:
+                    errors.append(f"law-1(b): '{cid}' references {rp}, which '{oid}' destroys")
+
+    if errors:
+        for e in errors:
+            print(f"meditate-manifest: {e}", file=sys.stderr)
+        return 1
+    print(f"meditate-manifest: OK — {len(candidates)} candidate(s), schema + law-1 clean")
+    return 0
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(prog="meditate-manifest", description=__doc__)
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    for name in ("extract", "validate"):
+        s = sub.add_parser(name)
+        s.add_argument("manifest", type=Path)
+    args = ap.parse_args()
+    return {"extract": cmd_extract, "validate": cmd_validate}[args.cmd](args.manifest)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
