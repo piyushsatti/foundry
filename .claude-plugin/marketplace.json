@@ -1,0 +1,29 @@
+{
+  "name": "foundry",
+  "owner": {
+    "name": "Piyush Satti"
+  },
+  "description": "Piyush's agentic infrastructure — memory curation, project-compass, and multi-agent orchestration plugins.",
+  "plugins": [
+    {
+      "name": "meditate",
+      "source": "./plugins/meditate",
+      "description": "Reflective memory curation: pause, review, consolidate, release."
+    },
+    {
+      "name": "manifold",
+      "source": "./plugins/manifold",
+      "description": "KAOS project compass — DB-canonical spec substrate + MCP tools over a project's goal graph."
+    },
+    {
+      "name": "plan-orchestrator",
+      "source": "./plugins/plan-orchestrator",
+      "description": "Multi-agent plan orchestration with live dispatch telemetry (bundles the progress-tracker MCP)."
+    },
+    {
+      "name": "crucible",
+      "source": "./plugins/crucible",
+      "description": "Lens x stance adversarial + panel review system: consult, hats, and red-vs-blue built on a shared hat wardrobe."
+    }
+  ]
+}
