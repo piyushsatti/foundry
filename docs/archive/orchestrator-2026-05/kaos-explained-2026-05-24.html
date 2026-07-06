@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KAOS, Explained — and Why Manifold Should Be Built On It</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #fafaf7;
+    --rule: #d8d4cc;
+    --muted: #6b6b6b;
+    --navy: #1f3a5f;
+    --navy-soft: #e8eef5;
+    --accent: #c44d2a;
+    --accent-soft: #fdf0eb;
+    --warn: #b8881a;
+    --warn-soft: #fdf8e8;
+    --ok: #2e6b3d;
+    --ok-soft: #eaf3ec;
+    --code-bg: #f0ece4;
+    --shadow: 0 1px 0 var(--rule);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    margin: 0;
+    padding: 0;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 48px 32px 96px; }
+  header.hero {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+  }
+  .eyebrow {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
+    font-size: 48px;
+    font-weight: 600;
+    margin: 12px 0 8px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  h1 .em { color: var(--accent); }
+  .lede {
+    font-size: 19px;
+    color: var(--muted);
+    margin: 0;
+    max-width: 620px;
+  }
+  h2 {
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 64px 0 4px;
+    letter-spacing: -0.01em;
+  }
+  h2 .num {
+    font-family: "SF Mono", Menlo, monospace;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 4px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 28px 0 8px;
+  }
+  p { margin: 0 0 12px; }
+  p + p { margin-top: 12px; }
+  a { color: var(--navy); }
+  code, .mono {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  pre {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    padding: 16px 20px;
+    border-radius: 4px;
+    overflow-x: auto;
+    line-height: 1.45;
+    margin: 16px 0;
+  }
+  blockquote {
+    border-left: 3px solid var(--navy);
+    margin: 16px 0;
+    padding: 8px 0 8px 20px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  blockquote .cite {
+    display: block;
+    font-style: normal;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .card {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    background: white;
+    box-shadow: var(--shadow);
+  }
+  .card.accent { border-left: 4px solid var(--accent); background: var(--accent-soft); }
+  .card.warn   { border-left: 4px solid var(--warn);   background: var(--warn-soft); }
+  .card.ok     { border-left: 4px solid var(--ok);     background: var(--ok-soft); }
+  .card.navy   { border-left: 4px solid var(--navy);   background: var(--navy-soft); }
+  .card h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    background: var(--code-bg);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  td.match { color: var(--ok); font-weight: 600; }
+  td.partial { color: var(--warn); }
+  td.miss { color: var(--accent); }
+  .diagram {
+    margin: 24px auto;
+    display: block;
+    max-width: 100%;
+  }
+  .caption {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: -8px;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+  .badge {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    border: 1px solid var(--rule);
+    background: white;
+    color: var(--muted);
+  }
+  .badge.strong { background: var(--ink); color: white; border-color: var(--ink); }
+  ul, ol { padding-left: 24px; margin: 12px 0; }
+  li { margin-bottom: 6px; }
+  footer {
+    margin-top: 96px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  footer h3 { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .toc {
+    border: 1px solid var(--rule);
+    background: white;
+    padding: 20px 24px;
+    border-radius: 6px;
+    margin: 32px 0 48px;
+    font-size: 14px;
+  }
+  .toc h4 { margin: 0 0 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+  .toc ol { margin: 0; padding-left: 22px; }
+  .toc li { margin-bottom: 4px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="eyebrow">Manifold framework · alignment artifact · 2026-05-24</span>
+  <h1>KAOS, <span class="em">explained</span></h1>
+  <p class="lede">What it is, who built it, what problem it solves — and why the manifold framework's structural primitive is, formally, a special case of it.</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ol>
+    <li><a href="#origin">Origin: who, when, where, why</a></li>
+    <li><a href="#core">The core idea: goals, refinement, satisfaction</a></li>
+    <li><a href="#formal">The formal object: an AND/OR DAG over LTL</a></li>
+    <li><a href="#alternatives">Why KAOS and not the other four traditions</a></li>
+    <li><a href="#toolkit">The full KAOS toolkit — and what manifold uses</a></li>
+    <li><a href="#silences">What KAOS does NOT specify (limits and silences)</a></li>
+    <li><a href="#domains">Does KAOS respect non-software domains?</a></li>
+    <li><a href="#inherit">What manifold inherits, what it leaves behind</a></li>
+    <li><a href="#open">Open questions you still have to answer</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="origin"><span class="num">§1</span> Origin: who, when, where, why</h2>
+
+<p><strong>KAOS</strong> stands for <em>Knowledge Acquisition in autOmated Specification</em>. It is a methodology for goal-oriented requirements engineering. It was founded in the early 1990s by Anne Dardenne, <strong>Axel van Lamsweerde</strong>, and Stephen Fickas. Van Lamsweerde is the central figure; nearly every major KAOS paper from 1993 onward carries his name. The work was done at the <strong>Université catholique de Louvain</strong> in Belgium.</p>
+
+<div class="badges">
+  <span class="badge">First formal paper: Dardenne, van Lamsweerde &amp; Fickas, 1993</span>
+  <span class="badge">"AND/OR DAG" definition: Darimont &amp; van Lamsweerde, FSE-4, 1996</span>
+  <span class="badge">Canonical textbook: van Lamsweerde, Wiley, 2009</span>
+</div>
+
+<h3>The problem KAOS was invented to solve</h3>
+
+<p>In the late 1980s, the dominant practice in industrial software requirements was the <em>shall list</em>: a flat enumeration of "the system shall do X." This produced documents that were long, hard to verify, hard to detect omissions in, and disconnected from <strong>why</strong> anything was being built. The famous failure modes of the era — the London Ambulance Service dispatch failure (1992), the Ariane 5 launch loss (1996), the Therac-25 radiation overdoses (1985–87) — were all post-mortem'd as <em>requirements</em> failures, not coding bugs.</p>
+
+<p>KAOS was an answer to four specific weaknesses of the shall-list:</p>
+
+<div class="card navy">
+  <ol style="margin: 0;">
+    <li><strong>Intent was lost.</strong> A shall-statement tells you <em>what</em> but not <em>why</em>. KAOS started with <em>goals</em> (intentions) at the top and refined them downward.</li>
+    <li><strong>Completeness was undetectable.</strong> If you missed a requirement, the document didn't visibly have a hole. KAOS's coverage rule (every non-leaf goal must have ≥1 child) makes omissions structurally visible.</li>
+    <li><strong>Conflicts were invisible.</strong> Two shall-statements could contradict each other across a 300-page document. KAOS formalized goal-conflict detection.</li>
+    <li><strong>Threats were undocumented.</strong> Things that <em>prevent</em> a goal from holding (KAOS calls them <strong>obstacles</strong>) were nowhere in the shall-list. KAOS made obstacle analysis a first-class step.</li>
+  </ol>
+</div>
+
+<p>It was invented for safety-critical software — air traffic control, medical devices, train control, banking — where flat shall-lists had measurably failed. But the formalism turned out to generalize.</p>
+
+<!-- ============================================================ -->
+<h2 id="core"><span class="num">§2</span> The core idea: goals, refinement, satisfaction</h2>
+
+<p>A KAOS spec is built from <strong>goals</strong>. A goal is something to be achieved, maintained, avoided, or ceased — a desired property of the system over time.</p>
+
+<p>The structural primitive is <strong>AND-refinement</strong> (with a sibling, OR-refinement):</p>
+
+<svg class="diagram" viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0,0 10,3 0,6" fill="#1f3a5f"/>
+    </marker>
+  </defs>
+
+  <!-- AND-refinement -->
+  <text x="100" y="20" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#6b6b6b">AND-REFINEMENT</text>
+  <rect x="60" y="40" width="80" height="36" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1.5"/>
+  <text x="100" y="63" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="14" fill="#1a1a1a">Parent G</text>
+  <line x1="100" y1="76" x2="40" y2="120" stroke="#1f3a5f" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="100" y1="76" x2="100" y2="120" stroke="#1f3a5f" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="100" y1="76" x2="160" y2="120" stroke="#1f3a5f" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="100" y="100" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="12" font-style="italic" fill="#c44d2a">∧</text>
+  <rect x="10" y="125" width="60" height="32" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1"/>
+  <text x="40" y="146" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="13">G₁</text>
+  <rect x="70" y="125" width="60" height="32" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1"/>
+  <text x="100" y="146" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="13">G₂</text>
+  <rect x="130" y="125" width="60" height="32" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1"/>
+  <text x="160" y="146" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="13">G₃</text>
+  <text x="100" y="190" text-anchor="middle" font-size="12" fill="#6b6b6b">G holds  ⟺  G₁ ∧ G₂ ∧ G₃ all hold</text>
+  <text x="100" y="208" text-anchor="middle" font-size="11" fill="#6b6b6b" font-style="italic">all children must satisfy</text>
+
+  <!-- OR-refinement -->
+  <text x="450" y="20" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#6b6b6b">OR-REFINEMENT</text>
+  <rect x="410" y="40" width="80" height="36" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1.5"/>
+  <text x="450" y="63" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="14" fill="#1a1a1a">Parent G</text>
+  <line x1="450" y1="76" x2="390" y2="120" stroke="#1f3a5f" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="450" y1="76" x2="450" y2="120" stroke="#1f3a5f" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="450" y1="76" x2="510" y2="120" stroke="#1f3a5f" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="450" y="100" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="12" font-style="italic" fill="#c44d2a">∨</text>
+  <rect x="360" y="125" width="60" height="32" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1"/>
+  <text x="390" y="146" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="13">G₁</text>
+  <rect x="420" y="125" width="60" height="32" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1"/>
+  <text x="450" y="146" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="13">G₂</text>
+  <rect x="480" y="125" width="60" height="32" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1"/>
+  <text x="510" y="146" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="13">G₃</text>
+  <text x="450" y="190" text-anchor="middle" font-size="12" fill="#6b6b6b">G holds  ⟺  any of G₁ ∨ G₂ ∨ G₃ holds</text>
+  <text x="450" y="208" text-anchor="middle" font-size="11" fill="#6b6b6b" font-style="italic">alternative strategies; one suffices</text>
+</svg>
+
+<p>Manifold currently uses ONLY AND-refinement. KAOS's OR-refinement is the formal home of "we can satisfy this goal in any of these alternative ways" — useful when you have multiple acceptable designs. (Manifold's current model has no first-class concept for this; it would just be a fork in the tree.)</p>
+
+<h3>The tree-vs-DAG fact, stated formally</h3>
+
+<p>This is the line of primary text that closes the question we were debating:</p>
+
+<blockquote>
+  "The goal refinement structure for a given system can be represented by an <strong>AND/OR directed acyclic graph</strong>."
+  <span class="cite">— Darimont &amp; van Lamsweerde, "Formal Refinement Patterns for Goal-Driven Requirements Elaboration," FSE-4 (ACM, 1996), §2</span>
+</blockquote>
+
+<p>Not a tree. Not a forest. A directed acyclic graph. A goal may have multiple parents (it contributes to multiple higher-level intentions). This isn't a workaround in KAOS — it's part of the formalism's definition.</p>
+
+<svg class="diagram" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg">
+  <text x="300" y="18" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#6b6b6b">MULTI-PARENT IS NATIVE: ONE EVIDENCE NODE SUPPORTS TWO CLAIMS</text>
+  <rect x="120" y="40" width="160" height="32" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1.5"/>
+  <text x="200" y="61" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="13">C₁: feature alignment</text>
+  <rect x="320" y="40" width="160" height="32" rx="4" fill="#fafaf7" stroke="#1f3a5f" stroke-width="1.5"/>
+  <text x="400" y="61" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="13">C₂: causal mediation</text>
+  <line x1="200" y1="72" x2="280" y2="120" stroke="#c44d2a" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="400" y1="72" x2="320" y2="120" stroke="#c44d2a" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="240" y="125" width="120" height="32" rx="4" fill="#fdf0eb" stroke="#c44d2a" stroke-width="1.5"/>
+  <text x="300" y="146" text-anchor="middle" font-family="Iowan Old Style, serif" font-size="13">E: patching result</text>
+</svg>
+<p class="caption">The exact pattern our research-paper stress test surfaced. In KAOS this is unremarkable; in a tree-only formalism it is a "structural lie."</p>
+
+<!-- ============================================================ -->
+<h2 id="formal"><span class="num">§3</span> The formal object: an AND/OR DAG over LTL</h2>
+
+<p>A KAOS specification is a 6-tuple, but for our purposes only the first two parts matter:</p>
+
+<div class="card">
+  <h4>The KAOS model, simplified</h4>
+  <ol>
+    <li><strong>Goals</strong> — a set of nodes G, each expressed in linear temporal logic (LTL) with one of four <em>patterns</em>: <code>Achieve</code> (eventually true), <code>Maintain</code> (always true), <code>Avoid</code> (never true), <code>Cease</code> (becomes false).</li>
+    <li><strong>Refinements</strong> — a set of edges R ⊆ G × P(G), where each edge connects a parent goal to a set of child goals AND-refining or OR-refining it. The structure (G, R) is an AND/OR DAG.</li>
+    <li><strong>Agents</strong> — humans or system components who are responsible for goals at the boundary.</li>
+    <li><strong>Operations</strong> — what an agent does to satisfy a leaf goal.</li>
+    <li><strong>Objects</strong> — domain entities the goals reason about.</li>
+    <li><strong>Obstacles</strong> — conditions that prevent a goal from holding; analyzed and refined the same way as goals.</li>
+  </ol>
+</div>
+
+<h3>Soundness — when is the AND-refinement formally correct?</h3>
+
+<blockquote>
+  AND-refinement is proven <em>sound</em> when ⋀ᵢ subgoalᵢ ⊨ parent.
+  <span class="cite">— van Lamsweerde, Requirements Engineering, Wiley 2009, Ch. 7 §7.1.2</span>
+</blockquote>
+
+<p>That is: if you can show that the conjunction of all children logically <em>entails</em> the parent, the refinement is sound. KAOS publishes a catalog of <strong>refinement patterns</strong> — proven-sound decomposition templates — so that you don't have to prove soundness from scratch for common cases (milestone-driven, case-driven, guard-introduction, etc.).</p>
+
+<p>Manifold doesn't currently require formal proof of soundness — its verdict mechanisms are operational (shell out, LLM judge, human signoff). But the <em>shape</em> of the requirement is the same: the children, taken together, must be sufficient for the parent.</p>
+
+<!-- ============================================================ -->
+<h2 id="alternatives"><span class="num">§4</span> Why KAOS and not the other four traditions</h2>
+
+<p>The deep research compared four formal traditions for the tree-vs-DAG decision. Here is the short version of why each alternative falls short of KAOS as the formal home for manifold.</p>
+
+<table>
+  <thead>
+    <tr><th>Tradition</th><th>What it formalizes</th><th>Where it falls short for manifold</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Chomsky / generative grammar</strong></td>
+      <td class="partial">Derivation of strings from a grammar; phrase structure.</td>
+      <td class="miss">Wrong domain. It models <em>language production</em>, not <em>intent decomposition</em>. The "tree" you get is a parse tree, which is about syntactic structure of utterances. Dependency grammar (an alternative within the tradition) explicitly forbids multi-parent — the opposite of what manifold needs.</td>
+    </tr>
+    <tr>
+      <td><strong>Refinement calculus</strong> (Back &amp; von Wright, Dijkstra)</td>
+      <td class="partial">A partial-order relation ⊑ between program specifications: "S₂ refines S₁" means S₂ is more concrete and still correct.</td>
+      <td class="miss">Wrong <em>shape</em>. It relates whole specs to whole specs via ⊑; it doesn't natively decompose ONE spec into sub-specs. The Hasse diagram of refinements IS a DAG, but the DAG is between candidate <em>implementations</em>, not between a goal and its parts. Closer to "version graph" than "decomposition graph."</td>
+    </tr>
+    <tr>
+      <td><strong>AND-OR graphs / HTN</strong> (Martelli &amp; Montanari; Erol, Hendler &amp; Nau)</td>
+      <td class="match">The algorithmic structure of problem-reduction: a parent problem reduces to a conjunction (AND) or disjunction (OR) of subproblems.</td>
+      <td class="partial">Right shape, but missing the <strong>layered intent</strong>. AND-OR graphs are flat in altitude; KAOS adds the notion of <em>strategic vs. operational</em> levels (you start with business intent, you end with operational specs). Manifold's layered abstraction is closer to KAOS.</td>
+    </tr>
+    <tr>
+      <td><strong>i* / iStar 2.0</strong> (Yu)</td>
+      <td class="match">Goal-oriented modeling with explicit modeling of <em>actors</em>, <em>dependencies between actors</em>, and <em>contributions</em>.</td>
+      <td class="partial">Too much machinery. iStar's primitives include actor boundaries, dependency links (one actor needs another's resource), and qualitative contribution labels (Make/Help/Hurt/Break). Manifold doesn't model "who depends on whom" at the spec level. Useful if/when manifold grows that, but premature.</td>
+    </tr>
+    <tr>
+      <td><strong>NFR / Softgoal Interdependency Graph</strong> (Chung, Nixon, Yu, Mylopoulos)</td>
+      <td class="match">Decomposition with qualitative aggregation (Satisficed / Denied / Weakly Satisficed / Conflict).</td>
+      <td class="partial">Wrong <em>semantics</em>. NFR is built for "softgoals" — quality attributes like security, performance, usability — where there is no Boolean satisfied/violated, only degrees. Manifold's verdict is Boolean. NFR's machinery is strictly more than we need today; we keep it in reserve.</td>
+    </tr>
+    <tr>
+      <td><strong>Proof theory</strong> (Prawitz, Gentzen)</td>
+      <td class="match">Natural deduction: proofs decompose into sub-proofs.</td>
+      <td class="miss">Wrong substrate. Proofs are about <em>truth</em> of mathematical propositions; manifold's nodes are <em>specs</em> of artifacts to be built. Also: while formal proofs are trees, real proof assistants (Coq, Lean, ACL2) use DAGs via hash-consing — making the tree a theoretical fiction in practice.</td>
+    </tr>
+    <tr>
+      <td class="match"><strong>KAOS</strong> (van Lamsweerde et al.)</td>
+      <td class="match">Goal-oriented requirements engineering: business intent → refinement DAG → operational specs with Boolean satisfaction.</td>
+      <td class="match">Matches manifold's primitive verbatim. AND/OR DAG, Boolean satisfaction, layered intent, cycles forbidden, multi-parent supported, coverage rule. The KAOS toolkit has extras we don't need yet (obstacles, agents, operations) — but they're additive, not blocking.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Bottom line:</strong> AND-OR graphs are the algorithmic relative; refinement calculus is a structural neighbor; KAOS is the actual home. The Boolean-satisfaction case with layered intent and AND/OR refinement is what KAOS was built to formalize.</p>
+
+<!-- ============================================================ -->
+<h2 id="toolkit"><span class="num">§5</span> The full KAOS toolkit — and what manifold uses</h2>
+
+<p>KAOS is not just the AND/OR DAG. It is a full methodology with multiple companion concepts. Here is what's in the toolkit and what manifold currently uses.</p>
+
+<div class="grid-2">
+  <div class="card ok">
+    <h4>Manifold uses today</h4>
+    <ul>
+      <li><strong>Goals</strong> (manifold calls them <em>nodes</em>)</li>
+      <li><strong>AND-refinement</strong> (the contract rule)</li>
+      <li><strong>Coverage rule</strong> (every non-leaf has ≥1 child)</li>
+      <li><strong>Cycle prohibition</strong> (DAG, acyclic)</li>
+      <li><strong>Layered abstraction</strong> (project-defined layers)</li>
+      <li><strong>Constraint goals</strong> (manifold's <code>kind: constraint</code> = KAOS "constraint goals")</li>
+    </ul>
+  </div>
+  <div class="card warn">
+    <h4>KAOS has it, manifold doesn't (yet)</h4>
+    <ul>
+      <li><strong>OR-refinement</strong> — "any of these alternatives"</li>
+      <li><strong>Obstacles</strong> — first-class "what could prevent this goal"</li>
+      <li><strong>Refinement patterns</strong> — catalog of proven-sound decomposition templates</li>
+      <li><strong>Conflict detection</strong> — formal check for "these two goals can't both hold"</li>
+      <li><strong>LTL semantics</strong> — temporal operators on system traces</li>
+      <li><strong>Agents</strong> — explicit assignment of responsibility</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card accent">
+  <h4>Why manifold deliberately leaves things behind</h4>
+  <p><strong>LTL semantics:</strong> KAOS's temporal logic is software-specific (it reasons about system execution traces). Manifold replaces it with <em>pluggable verdict mechanisms</em> (automated_check, python_assertion, human_signoff, llm_judge) so that non-software domains can have domain-appropriate verdicts.</p>
+  <p><strong>Agents and operations:</strong> KAOS models WHO does WHAT. Manifold's orchestrator handles that at a different layer — manifold itself stays purely about <em>what the spec says</em>, not <em>who realizes it how</em>.</p>
+  <p><strong>OR-refinement, obstacles, patterns, conflicts:</strong> Worth adding in future versions. Not blocking today. Each one is additive — adopting them doesn't require revisiting the substrate.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="silences"><span class="num">§6</span> What KAOS does NOT specify (limits and silences)</h2>
+
+<p>The question you asked specifically: <em>does KAOS limit the number of layers? what should a leaf say? what should the root be?</em> Here's the honest answer for each.</p>
+
+<div class="card">
+  <h4>How many layers?</h4>
+  <p>KAOS does <strong>not</strong> fix a layer count. The methodology says "refine until you reach operational goals" — goals an agent can satisfy without further decomposition. In published industrial KAOS specs, layer counts typically run from 3 to 7 depending on system complexity. Van Lamsweerde's textbook examples (medical patient monitoring, train signaling) tend to be 4–6 layers deep.</p>
+  <p><strong>For manifold:</strong> no formal limit. But the discipline question — "do you stop because you've truly reached operational granularity, or because you've run out of patience" — is real, and manifold currently has no answer. Worth codifying a recommendation.</p>
+</div>
+
+<div class="card">
+  <h4>What should a leaf node be?</h4>
+  <p>In KAOS: a leaf is an <strong>operational goal</strong> — one that can be assigned to an agent (human or software) who can satisfy it directly. The leaf is where intent meets execution. Operationally: a goal is a leaf when assigning it to an agent + an operation makes the goal hold.</p>
+  <p><strong>For manifold:</strong> the equivalent is "the verdict mechanism resolves it without further sub-decomposition." A node with <code>verdict.mechanism: automated_check</code> + a working <code>verdict.check</code> command is operational. A node with <code>verdict.mechanism: human_signoff</code> + a clear acceptance criterion is operational. The leaf is where the verdict can fire.</p>
+  <p>This is a <em>different</em> criterion from "no further structural decomposition possible." A node could be structurally further decomposable but operationally adequate. KAOS allows this.</p>
+</div>
+
+<div class="card">
+  <h4>What should a root node be?</h4>
+  <p>In KAOS: a <strong>strategic goal</strong> or <strong>business objective</strong> with no further parent — the highest-level intent driving the system. A spec may have multiple roots ("strategic objectives"); they are not required to be a single sentence. The root is the answer to "why does this system exist."</p>
+  <p><strong>For manifold:</strong> a layer-0 node with empty <code>parents:</code>. Multiple roots are allowed (a project can have multiple top-level intentions). The root is the answer to "why does this project exist."</p>
+</div>
+
+<div class="card warn">
+  <h4>What KAOS is silent on (and manifold has to decide)</h4>
+  <ul>
+    <li><strong>Render mode:</strong> KAOS doesn't say how to <em>display</em> the spec as a coherent narrative. Manifold's "book at different bolding levels" is a manifold invention.</li>
+    <li><strong>Verdict mechanism implementation:</strong> KAOS uses LTL formulas; manifold uses shell-outs and LLM judges. Manifold's choice.</li>
+    <li><strong>Multi-parent rendering convention:</strong> KAOS doesn't specify which parent is "primary." Manifold needs a rule (proposed: first entry in <code>parents:</code> is primary for narrative; others are cross-references).</li>
+    <li><strong>Spec-time vs artifact-time verdicts:</strong> KAOS assumes spec-time only (the system isn't built yet). Manifold has both phases. Manifold's call to make.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="domains"><span class="num">§7</span> Does KAOS respect non-software domains?</h2>
+
+<p>This is the question that matters most given your "manifold should be domain-agnostic" commitment. The answer is <strong>yes, structurally — but only if you replace LTL with domain-appropriate verdict semantics</strong>. Here's the analysis.</p>
+
+<h3>The structural skeleton is universal</h3>
+
+<p>Strip KAOS down to its load-bearing parts:</p>
+
+<ol>
+  <li>A set of <strong>goals</strong> (things to be true, achieved, maintained, or avoided).</li>
+  <li>A <strong>refinement relation</strong> that decomposes parents into children, forming an AND/OR DAG.</li>
+  <li>A <strong>satisfaction predicate</strong> for each leaf, returning Boolean (or — in NFR's extension — a qualitative label).</li>
+  <li>A <strong>propagation rule</strong>: parent's satisfaction is computed from children's via ∧ (AND) or ∨ (OR).</li>
+</ol>
+
+<p>None of these four parts is software-specific. They are formal-logical primitives. They apply unchanged to any domain where you have intentions, can decompose them, and can evaluate the leaves.</p>
+
+<h3>What IS software-specific in KAOS — and how to replace it</h3>
+
+<div class="grid-3">
+  <div class="card">
+    <h4>LTL operators</h4>
+    <p>KAOS expresses goals in linear temporal logic (Achieve, Maintain, Avoid, Cease). These reason about <em>system execution traces over time</em>.</p>
+    <p><strong>Replace with:</strong> manifold's pluggable verdict mechanism. Per-domain mechanisms: <code>automated_check</code> for software, <code>llm_judge</code> for prose, <code>statistical_threshold</code> for science, <code>human_signoff</code> universally.</p>
+  </div>
+  <div class="card">
+    <h4>Agent / operation model</h4>
+    <p>KAOS assigns leaf goals to agents (human / system) and pairs each leaf with an operation.</p>
+    <p><strong>Replace with:</strong> manifold's orchestrator owns "who realizes what." Manifold itself stays agent-agnostic. The spec describes the WHAT, not the WHO.</p>
+  </div>
+  <div class="card">
+    <h4>Industrial vocabulary</h4>
+    <p>KAOS papers use terms like "satisfaction," "obstacle," "agent," "operationalization" — all software-flavored.</p>
+    <p><strong>Replace with:</strong> manifold's vocabulary is project-defined per spec. Layer names (theme/act/scene, thesis/claim/evidence, intent/capabilities/contracts) live in <code>spec.yaml</code>, not in the framework.</p>
+  </div>
+</div>
+
+<h3>Worked sketch: the same structural skeleton, three different domains</h3>
+
+<div class="grid-3">
+  <div class="card ok">
+    <h4>Software</h4>
+    <p><strong>Root:</strong> "Users can buy concert tickets"</p>
+    <p><strong>Mid:</strong> "Search by date works" ∧ "Payment processes"</p>
+    <p><strong>Leaf:</strong> "POST /checkout returns 200 with valid card"</p>
+    <p><strong>Verdict:</strong> <code>automated_check</code> shell-out, exit 0 = satisfied</p>
+  </div>
+  <div class="card ok">
+    <h4>Novel</h4>
+    <p><strong>Root:</strong> "The map precedes the territory"</p>
+    <p><strong>Mid:</strong> "Leonor inherits the archive" ∧ "Journey inward"</p>
+    <p><strong>Leaf:</strong> "Scene: she finds her own handwriting on the impossible map"</p>
+    <p><strong>Verdict:</strong> <code>llm_judge</code> — does the scene contain a definitive threshold-crossing?</p>
+  </div>
+  <div class="card ok">
+    <h4>Research paper</h4>
+    <p><strong>Root:</strong> "SAEs learn human-interpretable features"</p>
+    <p><strong>Mid:</strong> "Latents align with concepts" ∧ "Ablation has predictable effect"</p>
+    <p><strong>Leaf:</strong> "Probing accuracy &gt; 85% on category labels"</p>
+    <p><strong>Verdict:</strong> <code>statistical_threshold</code> — script returns float; compare to threshold</p>
+  </div>
+</div>
+
+<p>The structural skeleton is identical across all three. Only the verdict mechanism changes. This is what "domain-agnostic" actually means: a framework with the same topological rules and a pluggable evaluation layer.</p>
+
+<!-- ============================================================ -->
+<h2 id="inherit"><span class="num">§8</span> What manifold inherits, what it leaves behind</h2>
+
+<table>
+  <thead>
+    <tr><th>KAOS feature</th><th>Manifold adopts?</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>AND-refinement (Boolean conjunction over children)</td>
+      <td class="match">Yes — already adopted as the "contract rule"</td>
+      <td>Manifold's <code>verdict_status</code> propagation is exactly KAOS AND-refinement.</td>
+    </tr>
+    <tr>
+      <td>AND/OR DAG structure across layers</td>
+      <td class="match">Adopt now — replaces strict tree</td>
+      <td>The current "strict tree across layers" is the divergence from KAOS that the stress tests surfaced.</td>
+    </tr>
+    <tr>
+      <td>Cycle prohibition</td>
+      <td class="match">Yes — already adopted</td>
+      <td>Acyclicity is a KAOS invariant too.</td>
+    </tr>
+    <tr>
+      <td>Coverage rule (every non-leaf has ≥1 child)</td>
+      <td class="match">Yes — already adopted</td>
+      <td>KAOS calls this "completeness of refinement."</td>
+    </tr>
+    <tr>
+      <td>Constraint goals (apply rather than decompose)</td>
+      <td class="match">Yes — already adopted as <code>kind: constraint</code></td>
+      <td>KAOS calls these "domain properties" and "expectations."</td>
+    </tr>
+    <tr>
+      <td>OR-refinement (any-of-N alternatives)</td>
+      <td class="partial">Maybe — future addition</td>
+      <td>Useful when a goal has multiple acceptable realizations. Not blocking today.</td>
+    </tr>
+    <tr>
+      <td>Obstacles (first-class "what could prevent this")</td>
+      <td class="partial">Maybe — future addition</td>
+      <td>Defensive design. Useful for safety-critical specs.</td>
+    </tr>
+    <tr>
+      <td>Refinement patterns (proven-sound templates)</td>
+      <td class="partial">Worth studying — could inform manifold "starter templates"</td>
+      <td>KAOS publishes catalogs (milestone-driven, case-driven, etc.).</td>
+    </tr>
+    <tr>
+      <td>LTL semantics</td>
+      <td class="miss">No — replaced with pluggable verdict mechanisms</td>
+      <td>Software-specific. Manifold's pluggable mechanism is what enables domain agnosticism.</td>
+    </tr>
+    <tr>
+      <td>Agent assignment</td>
+      <td class="miss">No — orchestrator's job</td>
+      <td>Spec describes WHAT; orchestrator describes WHO.</td>
+    </tr>
+    <tr>
+      <td>Operations (concrete actions agents perform)</td>
+      <td class="miss">No — orchestrator's job</td>
+      <td>Same as agents — implementation detail.</td>
+    </tr>
+    <tr>
+      <td>Conflict detection (two goals can't both hold)</td>
+      <td class="partial">Maybe — future addition</td>
+      <td>Currently not formalized in manifold. KAOS has formal machinery here.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="open"><span class="num">§9</span> Open questions you still have to answer</h2>
+
+<div class="card accent">
+  <h4>Q1 — Adopt OR-refinement now, or defer?</h4>
+  <p>KAOS has both. Manifold currently only has AND. OR is useful when a goal has multiple acceptable strategies (e.g. "authenticate user" = "password" OR "passkey" OR "OAuth"). Today manifold forces you to either pick one or make all three children (which then requires all three to be satisfied, which is wrong).</p>
+  <p><strong>Recommendation:</strong> defer. It's additive — the existing AND-only spec stays valid when OR is added later. But if you have a real use case in the next month, fold it in.</p>
+</div>
+
+<div class="card accent">
+  <h4>Q2 — Adopt obstacle analysis?</h4>
+  <p>KAOS treats "what could prevent this goal from being satisfied" as first-class structure with its own refinement DAG. Defensive design. Currently manifold has no analogue.</p>
+  <p><strong>Recommendation:</strong> defer. Not blocking today. Worth revisiting when manifold is used on safety-critical specs.</p>
+</div>
+
+<div class="card accent">
+  <h4>Q3 — Codify a "leaf-hood" recommendation?</h4>
+  <p>KAOS's answer is "agent + operation can satisfy it directly." Manifold's analogue is "verdict mechanism resolves it." But manifold doesn't currently SAY this in its design notes. A spec author can keep decomposing past the point where it's useful.</p>
+  <p><strong>Recommendation:</strong> document the heuristic — "a node is a leaf when its verdict mechanism, configured, can fire and return a result without further decomposition." Doesn't require code changes; just an authoring discipline note.</p>
+</div>
+
+<div class="card accent">
+  <h4>Q4 — Adopt refinement patterns as "starter templates"?</h4>
+  <p>KAOS has a catalog of proven-sound decomposition patterns (milestone-driven, case-driven, guard-introduction, divide-and-conquer). Manifold could ship these as templates that authors can apply when decomposing a goal.</p>
+  <p><strong>Recommendation:</strong> worth a longer think later. Templates are valuable but should be domain-flavored (software templates, novel templates, paper templates). Not a v0.4 priority.</p>
+</div>
+
+<div class="card accent">
+  <h4>Q5 — Rename anything?</h4>
+  <p>Manifold's current vocabulary (intent / capabilities / contracts / realizations) is project-defined per spec, but the framework also uses internal terms (node, layer, parent, verdict). KAOS's vocabulary (goal, refinement, satisfaction, agent) is more established. Should manifold align?</p>
+  <p><strong>Recommendation:</strong> probably no. Manifold's terms are clearer for non-RE audiences. The KAOS citation in docs is enough to establish lineage. Keep "node" and "verdict" — they're more domain-agnostic than "goal" and "satisfaction."</p>
+</div>
+
+<!-- ============================================================ -->
+<footer>
+  <h3>Primary sources</h3>
+  <p>Darimont, R. &amp; van Lamsweerde, A. (1996). "Formal Refinement Patterns for Goal-Driven Requirements Elaboration." <em>SIGSOFT FSE-4.</em> [Source of the "AND/OR DAG" definition.]</p>
+  <p>Dardenne, A., van Lamsweerde, A. &amp; Fickas, S. (1993). "Goal-Directed Requirements Acquisition." <em>Science of Computer Programming.</em> [The founding paper.]</p>
+  <p>van Lamsweerde, A. (2001). "Goal-Oriented Requirements Engineering: A Guided Tour." <em>RE'01.</em> [Best short introduction to KAOS.]</p>
+  <p>van Lamsweerde, A. (2009). <em>Requirements Engineering: From System Goals to UML Models to Software Specifications.</em> Wiley. [Canonical textbook.]</p>
+  <p>Dalpiaz, F., Franch, X. &amp; Horkoff, J. (2016). "iStar 2.0 Language Guide." arXiv:1605.07767. [Companion goal-oriented formalism — explicitly permits multi-parent refinement.]</p>
+  <p>Chung, L., Nixon, B., Yu, E. &amp; Mylopoulos, J. (2000). <em>Non-Functional Requirements in Software Engineering.</em> Kluwer. [The NFR / SIG framework — qualitative aggregation.]</p>
+  <p>Martelli, A. &amp; Montanari, U. (1973). "Additive AND/OR Graphs." <em>IJCAI.</em> [Algorithmic ancestor of KAOS refinement.]</p>
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>plan-orchestrator — alignment overview</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1a1a1a;
+  background: #fafafa;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background: linear-gradient(135deg, #2c5aa0 0%, #1a3868 100%);
+  color: white;
+  padding: 32px 48px;
+}
+header h1 { margin: 0 0 8px 0; font-size: 1.8rem; font-weight: 600; }
+header .subtitle { opacity: 0.85; font-size: 1rem; }
+main { max-width: 1080px; margin: 0 auto; padding: 32px 48px; }
+h2 {
+  font-size: 1.3rem;
+  margin: 40px 0 12px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #d0d0d0;
+}
+h3 { font-size: 1.05rem; margin: 24px 0 8px 0; color: #444; }
+.intent-box {
+  background: white;
+  border-left: 4px solid #2c5aa0;
+  padding: 20px 24px;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.intent-box .label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #888;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.intent-box .quote {
+  font-size: 1.05rem;
+  font-style: italic;
+  color: #2a2a2a;
+}
+.intent-box .source {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 8px;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.pill-green { background: #d4edd9; color: #1a7f37; }
+.pill-amber { background: #fff3cd; color: #856404; }
+.pill-red { background: #fadbd8; color: #c41e3a; }
+.pill-gray { background: #e8e8e8; color: #555; }
+
+/* Workflow diagram */
+.workflow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 16px 0 32px 0;
+  background: white;
+  padding: 20px;
+  border-radius: 6px;
+  border: 1px solid #d0d0d0;
+}
+.stage {
+  background: #f6f8fa;
+  padding: 14px 12px;
+  border-radius: 4px;
+  border: 1px solid #d8d8d8;
+  position: relative;
+  min-height: 130px;
+}
+.stage .stage-num {
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.stage .stage-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c5aa0;
+  margin: 4px 0 8px 0;
+}
+.stage .stage-output {
+  font-size: 0.82rem;
+  color: #555;
+}
+.stage:not(:last-child)::after {
+  content: "▶";
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #c0c0c0;
+  z-index: 1;
+  font-size: 1rem;
+}
+
+/* Two-column section */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.col {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 4px;
+  border: 1px solid #d0d0d0;
+}
+.col h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.95rem;
+  color: #444;
+}
+.col ul { margin: 0; padding-left: 18px; }
+.col li { margin-bottom: 6px; font-size: 0.92rem; }
+
+/* Reality table */
+table.reality {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+table.reality th {
+  background: #f6f8fa;
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-bottom: 1px solid #d0d0d0;
+}
+table.reality td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #ebebeb;
+  font-size: 0.92rem;
+  vertical-align: top;
+}
+table.reality tr:last-child td { border-bottom: none; }
+table.reality .claim { font-weight: 500; color: #2a2a2a; }
+table.reality .reality { color: #555; font-size: 0.88rem; }
+table.reality .status { white-space: nowrap; }
+
+/* Question box */
+.question-box {
+  background: white;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.question-box .num {
+  display: inline-block;
+  background: #2c5aa0;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  text-align: center;
+  line-height: 28px;
+  font-weight: 600;
+  margin-right: 10px;
+}
+.question-box .q {
+  display: inline-block;
+  font-size: 1.05rem;
+  font-weight: 500;
+  vertical-align: middle;
+}
+.question-box .body {
+  margin-top: 10px;
+  color: #555;
+  font-size: 0.92rem;
+}
+
+.mechanism-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+.mech-card {
+  background: white;
+  padding: 14px 16px;
+  border-radius: 4px;
+  border: 1px solid #d0d0d0;
+}
+.mech-card .name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+.mech-card .desc {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.45;
+}
+
+footer {
+  margin: 48px 0 24px 0;
+  padding-top: 24px;
+  border-top: 1px solid #d0d0d0;
+  color: #888;
+  font-size: 0.85rem;
+  text-align: center;
+}
+code {
+  background: #f0f0f0;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font: 0.88em "SF Mono", Menlo, monospace;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>plan-orchestrator</h1>
+  <div class="subtitle">Alignment overview · what the skill IS, what it CLAIMS, what's actually IMPLEMENTED</div>
+</header>
+
+<main>
+
+<h2>The intent (your words)</h2>
+
+<div class="intent-box">
+  <div class="label">Intent 1 — execution reliability at scale</div>
+  <div class="quote">"I could plan + interpret simple features reliably, but could not trust an end-to-end ship on a massive plan file — too much context, needed too much human validation."</div>
+  <div class="source">— user, 2026-05-24</div>
+</div>
+
+<div class="intent-box" style="border-left-color: #6f42c1;">
+  <div class="label">Intent 2 — resource management offloaded from human</div>
+  <div class="quote">"Claude should decide what each phase needs — what model and what verifier — not me."</div>
+  <div class="source">— user, 2026-05-24</div>
+</div>
+
+<p>
+These are two distinct but related frustrations. The first is about
+<strong>plan size exceeding reliable execution capacity</strong> — context
+overflows mid-run; human validation becomes too frequent to feel like
+assistance. The second is about <strong>cognitive load on the operator</strong>
+— having to decide "what model do I dispatch this with? what verifier should
+run?" per phase puts work back on the human that the skill should absorb.
+</p>
+
+<p>
+Both intents argue toward the same shape: <strong>decompose work into pieces
+that each fit in one reliable execution, and let the skill itself
+auto-allocate the resources (model, verifier, depth) for each piece based on
+its kind.</strong> The human's job is to define the work; the skill's job is
+to figure out how to execute it.
+</p>
+
+<p>
+Whether the current skill's specific design (DAG of phases, contracts as
+producer/consumer documents, cascade engine, 5-stage gating, 9-row model
+allocation table that the human must consult manually) is the right shape
+for these intents — or whether it's overshot in one direction and
+undershot in another — is what the rest of this document asks.
+</p>
+
+<h2>The 5-stage workflow <span class="pill pill-green">implemented in skill.md</span></h2>
+
+<div class="workflow">
+  <div class="stage">
+    <div class="stage-num">Stage 1</div>
+    <div class="stage-name">Framing</div>
+    <div class="stage-output">User spec →<br>glossary, dag.md, skill-catalog, contracts (sketch)</div>
+  </div>
+  <div class="stage">
+    <div class="stage-num">Stage 2</div>
+    <div class="stage-name">Planning</div>
+    <div class="stage-output">Per-phase plan.md (planner skill dispatched per phase)</div>
+  </div>
+  <div class="stage">
+    <div class="stage-num">Stage 3</div>
+    <div class="stage-name">Review</div>
+    <div class="stage-output">Edge / skeptic / sweep dispatches; adjudications + escalations</div>
+  </div>
+  <div class="stage">
+    <div class="stage-num">Stage 4</div>
+    <div class="stage-name">Execute</div>
+    <div class="stage-output">Phase execution via TDD / writing-plans; verify gates between phases</div>
+  </div>
+  <div class="stage">
+    <div class="stage-num">Stage 5</div>
+    <div class="stage-name">Close-out</div>
+    <div class="stage-output">learnings.md, run-quality.yaml</div>
+  </div>
+</div>
+
+<h2>The user-facing surface</h2>
+
+<div class="two-col">
+  <div class="col">
+    <h4>What you give it</h4>
+    <ul>
+      <li>A spec with: <code>what</code>, <code>why</code>, <code>metrics</code>, <code>scope/non-goals</code>, <code>constraints</code>, <code>existing context pointers</code></li>
+      <li>Project must touch ≥2 components AND be multi-hour+ work — else skill refuses and recommends <code>superpowers:writing-plans</code></li>
+      <li>You must be on Opus (Sonnet warns, Haiku refused)</li>
+    </ul>
+  </div>
+  <div class="col">
+    <h4>What you get back</h4>
+    <ul>
+      <li>A work-dir at <code>~/.claude/plan-orchestrator-runs/&lt;slug&gt;/&lt;ts&gt;/</code></li>
+      <li>A DAG manifest of phases (<code>dag.md</code>) with explicit contracts at phase boundaries</li>
+      <li>Per-phase <code>plan.md</code> files (Claude-readable, TDD-shaped)</li>
+      <li>An HTML review at gate boundaries (<code>make-review.py</code>)</li>
+      <li>Progress state in a sibling MCP server (<code>progress-tracker</code>)</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Cost</h3>
+<p style="margin-top: 4px;">
+The skill itself estimates <strong>$20–$100 per invocation</strong>: 30–60 Opus
+dispatches + 10–20 Sonnet + ~50 Haiku checks. Half a day to a day of wall-clock
+when actually run.
+</p>
+
+<h2>The mechanisms it claims to provide</h2>
+
+<div class="mechanism-grid">
+  <div class="mech-card">
+    <div class="name">ORIENT cycle <span class="pill pill-green">real</span></div>
+    <div class="desc">Architect rebuilds memory from disk every cycle — never trusts in-memory state. Read → lint → decide. Redirects script output to files.</div>
+  </div>
+  <div class="mech-card">
+    <div class="name">Work-dir layout <span class="pill pill-green">real</span></div>
+    <div class="desc">Disciplined on-disk state: per-phase folders, per-dispatch escalation files, learnings, run-quality. Tracked outside the context window.</div>
+  </div>
+  <div class="mech-card">
+    <div class="name">Structural verifiers <span class="pill pill-green">real</span></div>
+    <div class="desc">verify-refs, verify-dag, verify-coverage, lint-assumptions, detect-duplicate-ids, name-drift. Stdlib-only. 6 working scripts.</div>
+  </div>
+  <div class="mech-card">
+    <div class="name">HTML review surface <span class="pill pill-amber">half-real</span></div>
+    <div class="desc">make-review.py renders dag + adjudications + escalations as one HTML page. 659 LOC. But hardcodes structural_ok=True / alignment_ok=True at lines 277-278 — gate verdict is always green regardless of reality.</div>
+  </div>
+  <div class="mech-card">
+    <div class="name">Cascade engine <span class="pill pill-red">documented; not implemented</span></div>
+    <div class="desc">Bumping a contract version cascades stale-marking to all consumer phases. <code>invalidate.py &lt;contract-id&gt;</code> is referenced in skill.md and design-notes #7. The script does not exist.</div>
+  </div>
+  <div class="mech-card">
+    <div class="name">Phase-complete gate <span class="pill pill-red">documented; not implemented</span></div>
+    <div class="desc"><code>verify-phase-complete.py Pn</code> referenced to block self-declared completion. Script does not exist; self-declared completion is the only path.</div>
+  </div>
+  <div class="mech-card">
+    <div class="name">Mechanical dispatcher <span class="pill pill-red">documented; not implemented</span></div>
+    <div class="desc">Spec C.2 implies the skill reads <code>skill_requirements</code> + <code>audit_triggers</code> from each phase plan and dispatches automatically. Reality: dispatch is purely architect-conducted prose — no code reads those fields.</div>
+  </div>
+  <div class="mech-card" style="border-color: #6f42c1; border-width: 2px;">
+    <div class="name">Multi-model allocation <span class="pill pill-red">load-bearing intent; not delivered</span></div>
+    <div class="desc"><strong>Maps directly to intent 2.</strong> Today: a 9-row table in skill.md ("Edge reviewer → Opus off-thinking; Implementer default → Sonnet; Haiku checks → Haiku") that the architect must consult and apply by hand. The cognitive offload the user wants isn't delivered — the table is a heuristic for the human, not automation.</div>
+  </div>
+  <div class="mech-card" style="border-color: #6f42c1; border-width: 2px;">
+    <div class="name">Auto-verifier selection <span class="pill pill-red">load-bearing intent; not delivered</span></div>
+    <div class="desc"><strong>Maps directly to intent 2.</strong> No mechanism today picks which Structural / Alignment / Judgment verifiers to run per phase. The skill says "run the relevant ones" — architect decides. For the cognitive offload to land, the skill itself needs to read a phase's shape and emit a verifier set.</div>
+  </div>
+  <div class="mech-card">
+    <div class="name">Haiku alignment loop <span class="pill pill-amber">manual</span></div>
+    <div class="desc">~60 Haiku dispatches per sweep (claim-check + coverage-check templates) to verify each phase's claims and coverage. The templates exist; the loop is run by hand. No batcher.</div>
+  </div>
+</div>
+
+<h2>Reality check — claim vs implementation</h2>
+
+<table class="reality">
+  <thead>
+    <tr><th style="width: 32%">Claim (from skill.md or spec)</th><th style="width: 48%">Reality (from code)</th><th style="width: 20%" class="status">Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="claim">5-stage procedure: Framing → Planning → Review → Execute → Close-out</td>
+      <td class="reality">Documented in skill.md as the procedure the architect follows. No code enforces stages, but the prose is detailed and consistent.</td>
+      <td class="status"><span class="pill pill-green">real</span></td>
+    </tr>
+    <tr>
+      <td class="claim">ORIENT every cycle — read disk, lint, decide</td>
+      <td class="reality">The discipline lives in skill.md. The structural verifier scripts the architect runs during ORIENT are real and well-tested.</td>
+      <td class="status"><span class="pill pill-green">real</span></td>
+    </tr>
+    <tr>
+      <td class="claim">Cascade engine — bumping a contract version cascades to consumers</td>
+      <td class="reality"><code>invalidate.py</code> does not exist. Cascade is prose; the architect must manually identify consumers and re-stale them.</td>
+      <td class="status"><span class="pill pill-red">missing</span></td>
+    </tr>
+    <tr>
+      <td class="claim">verify-phase-complete.py blocks self-declared completion</td>
+      <td class="reality">Script does not exist. Phases are completed by architect saying so.</td>
+      <td class="status"><span class="pill pill-red">missing</span></td>
+    </tr>
+    <tr>
+      <td class="claim">Automatic gate evaluation (4-condition: structural ✓, alignment ✓, judgment ✓, no open escalations)</td>
+      <td class="reality">make-review.py hardcodes structural_ok=True and alignment_ok=True. The HTML always shows green gates regardless of what the verifier scripts actually returned.</td>
+      <td class="status"><span class="pill pill-red">broken</span></td>
+    </tr>
+    <tr>
+      <td class="claim">Progress visibility via progress-tracker MCP</td>
+      <td class="reality">Real but in a sibling skill (<code>skills/progress-tracker/</code>) that is currently untracked in git. Hard-coupling without explicit declaration.</td>
+      <td class="status"><span class="pill pill-amber">coupled</span></td>
+    </tr>
+    <tr>
+      <td class="claim">Verification toolbox — Structural, Alignment, Judgment classes</td>
+      <td class="reality">Structural class fully real (6 scripts). Alignment class is manual Haiku dispatches. Judgment class is templates the architect fills. <strong>Critical gap (intent 2):</strong> nothing picks which verifiers to run per phase — that decision is left to the architect.</td>
+      <td class="status"><span class="pill pill-amber">partial</span></td>
+    </tr>
+    <tr>
+      <td class="claim">Auto-allocate model + verifier per phase (intent 2)</td>
+      <td class="reality">Not implemented. The 9-row model allocation table is for humans to read; nothing matches phase → model. No verifier-set emitter exists. <strong>This is one of the two stated intents and is the largest unaddressed gap.</strong></td>
+      <td class="status"><span class="pill pill-red">missing</span></td>
+    </tr>
+    <tr>
+      <td class="claim">Composition with existing skills via <code>skill_requirements</code> on each phase</td>
+      <td class="reality">The field is documented in dag-skeleton.md. No code reads it or auto-dispatches. The architect manually invokes skills based on prose convention.</td>
+      <td class="status"><span class="pill pill-amber">convention</span></td>
+    </tr>
+    <tr>
+      <td class="claim">Spec tree at <code>specs/</code> describes the skill in itself (12 nodes)</td>
+      <td class="reality">Spec describes 3 templates with trivial existence checks. Covers ~25–30% of the actual code. Performative, not driving.</td>
+      <td class="status"><span class="pill pill-amber">decorative</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Relationship to manifold</h2>
+
+<div class="intent-box" style="border-left-color: #b85c00;">
+  <div class="label">today</div>
+  <div class="quote">plan-orchestrator and manifold do not talk. No code path connects them. Conceptual overlap is significant; mechanical overlap is zero.</div>
+</div>
+
+<h3>Vocabulary collision (same word, different meaning)</h3>
+
+<table class="reality">
+  <thead>
+    <tr><th style="width: 16%">Term</th><th style="width: 38%">In manifold</th><th style="width: 38%">In plan-orchestrator</th><th style="width: 8%" class="status">Same?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="claim"><code>contract</code></td>
+      <td class="reality">A <em>spec node</em> at the contracts layer. Stable typed commitment with field anchors, versioning, frozen body. Lives forever in the project spec.</td>
+      <td class="reality">A <em>runtime artifact</em> between two phases ("P1 produces C2 consumed by P3"). Producer/consumer pair with field anchors + version. Lives for one run.</td>
+      <td class="status"><span class="pill pill-amber">overlap</span></td>
+    </tr>
+    <tr>
+      <td class="claim"><code>DAG</code></td>
+      <td class="reality">Intra-layer (peers_depends_on) + inter-layer (parent/child) within one spec tree.</td>
+      <td class="reality">Phases as nodes, contracts as typed edges, gates as boundary markers. One DAG per run.</td>
+      <td class="status"><span class="pill pill-amber">overlap</span></td>
+    </tr>
+    <tr>
+      <td class="claim"><code>verify</code></td>
+      <td class="reality">Structural checks (tree property, intra-layer DAG, coverage) + verdict runners (automated_check / python_assertion / human_signoff / llm_judge) over <em>spec nodes</em>.</td>
+      <td class="reality">Structural verifiers (verify-refs / verify-dag / verify-coverage / lint-assumptions / etc.) over <em>run artifacts</em>.</td>
+      <td class="status"><span class="pill pill-amber">overlap</span></td>
+    </tr>
+    <tr>
+      <td class="claim"><code>realizations</code></td>
+      <td class="reality">A spec <em>layer</em> — bottom of the tree, where files/modules/tests live.</td>
+      <td class="reality">Not a concept. plan-orchestrator's equivalent is "what phase Pn shipped" (escalations + learnings + actual code).</td>
+      <td class="status"><span class="pill pill-gray">distinct</span></td>
+    </tr>
+    <tr>
+      <td class="claim"><code>delegate_to</code></td>
+      <td class="reality">An aspirational frontmatter field on manifold contract nodes — would dispatch the named skill (e.g. <code>plan-orchestrator</code>) with the contract as input. Documented in design; not wired.</td>
+      <td class="reality">Not present in plan-orchestrator. The skill expects to be invoked by a human controller, not by another skill.</td>
+      <td class="status"><span class="pill pill-red">phantom</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Plausible interaction points (none implemented)</h3>
+
+<div class="mechanism-grid">
+  <div class="mech-card">
+    <div class="name">Manifold spec → plan-orchestrator input <span class="pill pill-red">not wired</span></div>
+    <div class="desc">A manifold contract node carries enough info (title, body, contract.version, field_anchors) to be a plan-orchestrator input spec. <code>delegate_to: plan-orchestrator</code> on a contract would auto-dispatch. Design lives in manifold's notes; no code reads it.</div>
+  </div>
+  <div class="mech-card">
+    <div class="name">plan-orchestrator output → manifold revisions <span class="pill pill-red">not wired</span></div>
+    <div class="desc">Each phase produces realized work that could land back in manifold as new revisions on the realizations layer. plan-orchestrator's <code>learnings.md</code> + <code>run-quality.yaml</code> would feed verdict_status (satisfied / violated) back to the originating contract node.</div>
+  </div>
+  <div class="mech-card">
+    <div class="name">Shared verdict mechanism <span class="pill pill-red">not wired</span></div>
+    <div class="desc">manifold has <code>automated_check</code> / <code>python_assertion</code> / <code>human_signoff</code> / <code>llm_judge</code>. plan-orchestrator could expose a new mechanism — <code>orchestrated_run</code> — where the verdict is the outcome of a plan-orchestrator run against the contract. Closes the spec→execute→verify loop in the DB.</div>
+  </div>
+</div>
+
+<h3>The tension</h3>
+
+<p>
+A user with a manifold spec asks: <em>"Do I also need plan-orchestrator? Couldn't
+manifold's contract layer just BE the phase contracts?"</em> The honest answer
+today is <strong>they're parallel solutions with overlapping vocabulary, and
+neither was designed with the other in mind</strong>. The overlap is real:
+</p>
+
+<ul>
+  <li>plan-orchestrator's DAG of phase+contract nodes <em>is structurally</em> a 2-layer manifold spec (phases as capabilities, typed contracts as the contracts layer).</li>
+  <li>manifold's "intent / capabilities / contracts / realizations" decomposition <em>matches</em> plan-orchestrator's "spec / phases / phase-contracts / shipped code."</li>
+  <li>Both want to verify their respective DAGs. Manifold has a generalized validation engine; plan-orchestrator has 8 ad-hoc scripts. The scripts could be specific verdict mechanisms in manifold's framework.</li>
+</ul>
+
+<h3>Three possible futures</h3>
+
+<div class="two-col" style="grid-template-columns: 1fr 1fr 1fr;">
+  <div class="col">
+    <h4>A. Keep separate; build the bridge</h4>
+    <p style="font-size: 0.88rem; color: #555;">
+      Stay two skills. Wire <code>delegate_to: plan-orchestrator</code> end-to-end: manifold contract nodes can dispatch a plan-orchestrator run; the run's output lands back as a verdict + new realizations. Honest about the duplication; pragmatic about scope.
+    </p>
+  </div>
+  <div class="col">
+    <h4>B. Subsume plan-orchestrator into manifold</h4>
+    <p style="font-size: 0.88rem; color: #555;">
+      plan-orchestrator becomes a manifold <em>mode</em> (`manifold run &lt;contract&gt;`) that creates a temporary 2-layer sub-spec under the contract, dispatches phases with auto-allocation, lands realizations. One skill, one vocabulary. Significant refactor; biggest scope-cut win.
+    </p>
+  </div>
+  <div class="col">
+    <h4>C. Split plan-orchestrator into two skills</h4>
+    <p style="font-size: 0.88rem; color: #555;">
+      One skill produces the DAG (output: a manifold-format sub-spec). A separate skill runs phases with auto-allocation (intent 2). Each is simpler than today's plan-orchestrator. The split aligns with where the audits independently landed.
+    </p>
+  </div>
+</div>
+
+<h2>The alignment questions</h2>
+
+<div class="question-box">
+  <span class="num">1</span>
+  <span class="q">Does the 5-stage shape match your actual frustration?</span>
+  <div class="body">
+    Intent 1: massive plan files break end-to-end ship. The skill's response: decompose into a DAG with typed contracts at boundaries. Is "DAG with typed contracts" the right shape, or would something simpler — "a list of phases small enough each fits in one execution, with a one-page handoff doc between" — solve the actual pain without the 72-decision design?
+  </div>
+</div>
+
+<div class="question-box" style="border-color: #6f42c1; border-width: 2px;">
+  <span class="num" style="background: #6f42c1;">2</span>
+  <span class="q">What's the auto-allocation API in your head?</span>
+  <div class="body">
+    Intent 2 is about offloading "what model / what verifier per phase" from you to the skill. The simplest version: each phase declares its <em>kind</em> ("planner-style decomposition" / "implementation" / "edge review" / "skeptic" / "claim check"), and the skill maps kind → model + thinking depth + verifier set. The current 9-row table is the heuristic; just needs to be executable. Is that the shape you want, or something more dynamic (the skill <em>infers</em> phase kind from the spec)?
+  </div>
+</div>
+
+<div class="question-box">
+  <span class="num">3</span>
+  <span class="q">Which of the 11 mechanisms (cards above) would you actually use?</span>
+  <div class="body">
+    Honestly rank: ORIENT, work-dir layout, structural verifiers, HTML review, cascade engine, phase-complete gate, mechanical dispatcher, multi-model allocation, auto-verifier selection, Haiku alignment loop. Of these, which would you actually use? Which would you skip? (The two intent-2 cards probably move from "potentially skip" to "must build" given your message.)
+  </div>
+</div>
+
+<div class="question-box">
+  <span class="num">4</span>
+  <span class="q">Is the $20–$100 per invocation gate the right size?</span>
+  <div class="body">
+    A skill that costs $20+ per use needs the projects it runs on to be large enough that the cost is worth it. "Massive plan files" was your phrase, but where's the threshold? At what project size does the ceremony actually pay off vs. doing it conversationally with Claude + just being careful?
+  </div>
+</div>
+
+<div class="question-box">
+  <span class="num">5</span>
+  <span class="q">Has it actually been used yet, on a real project?</span>
+  <div class="body">
+    The audits both flag that the design has been iterated through reasoning + synthetic test beds, not field use. Before deciding what to keep vs cut, an honest answer here would calibrate everything. If "not yet," then audit 2's recommendation — ship a small core, let real usage drive what gets added back — is probably right.
+  </div>
+</div>
+
+<div class="question-box">
+  <span class="num">6</span>
+  <span class="q">If we rename, does "contract-dag" fit?</span>
+  <div class="body">
+    Both audits independently proposed "contract-dag." With intent 2 made explicit, an alternative shape emerges: "phase-conductor" or "auto-allocator" — names that highlight the skill is doing the dispatch + resource management, not just specifying a structure. Or maybe two skills: one that produces the DAG (a spec output), one that runs phases with auto-allocation (a dispatcher).
+  </div>
+</div>
+
+<div class="question-box" style="border-color: #b85c00; border-width: 2px;">
+  <span class="num" style="background: #b85c00;">7</span>
+  <span class="q">Manifold + plan-orchestrator: A, B, or C?</span>
+  <div class="body">
+    Given the vocabulary collision and structural overlap above: should they (A) stay separate with an explicit bridge wired, (B) merge into manifold as a "run mode," or (C) split plan-orchestrator into two simpler skills, one of which outputs manifold-format spec? The answer here changes everything downstream — a rename and a cut list look different in each world.
+  </div>
+</div>
+
+<footer>
+  Generated 2026-05-24 · alignment artifact, not a release doc
+</footer>
+
+</main>
+</body>
+</html>

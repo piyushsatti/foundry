@@ -1,0 +1,51 @@
+# MANIFEST — Claude portable overlay
+# Lists every file/directory the capture/apply scripts manage.
+# Format: <overlay-path>  →  <live ~/.claude/ destination>
+# Used by post-install-claude.sh; capture-claude.sh mirrors this list.
+
+# ── As-is copies (hooks, commands, skills, bin, statuslines) ─────────────────
+hooks/                           →  ~/.claude/hooks/
+# New hooks added 2026-06-11 (workflow-tiered access redesign):
+hooks/unsandboxed-install-guard.sh  →  ~/.claude/hooks/unsandboxed-install-guard.sh
+hooks/install-tagger.sh             →  ~/.claude/hooks/install-tagger.sh
+hooks/patterns.sh                   →  ~/.claude/hooks/patterns.sh
+commands/                        →  ~/.claude/commands/
+statusline-command.sh            →  ~/.claude/statusline-command.sh
+statuslines/                     →  ~/.claude/statuslines/
+bin/bless                        →  ~/.claude/bin/bless
+skills/                          →  ~/.claude/skills/
+CLAUDE.md                        →  ~/.claude/CLAUDE.md
+
+# ── Templated ─────────────────────────────────────────────────────────────────
+# $HOME placeholder substituted at apply time.
+# REGENERATED 2026-06-22 — settings.template.json regenerated from live via capture-claude.sh;
+#   3 template files (settings.template.json dot, settings-template.json hyphen, settings-staged.json)
+#   collapsed to 1 canonical file. Verify: failIfUnavailable=true, deny≥8, allow≥160.
+settings.template.json           →  ~/.claude/settings.json
+
+# ── Memory (Decision A — slug remap) ─────────────────────────────────────────
+# Source slug recorded in memory/.source-slug (set by capture-claude.sh).
+# Target slug derived from $HOME on the new machine: / → - with leading -.
+# Example: /home/<user>  →  -home-<user>
+memory/*.md                      →  ~/.claude/projects/<target-slug>/memory/*.md
+memory/.source-slug              →  (not deployed; used only for remap logic)
+
+# ── EXCLUDED from capture (intentional) ──────────────────────────────────────
+# .credentials.json              SECRET — never committed
+# audit.jsonl / *.jsonl          Ephemeral transcripts
+# audit.log                      Ephemeral log
+# cache/                         Regenerable cache
+# telemetry/                     Ephemeral telemetry
+# image-cache/                   Regenerable
+# tasks/                         Session-specific agent tasks
+# agents/                        Session-specific agent state
+# sessions/                      Session state
+# shell-snapshots/               Ephemeral shell state
+# daemon*                        Daemon process files
+# jobs/                          Session job queue
+# plans/                         Session planning state
+# downloads/                     Transient downloads
+# file-history/                  Machine-specific undo history
+# paste-cache/                   Ephemeral paste buffer
+# stats-cache.json               Regenerable stats cache
+# projects/*/  (except memory/)  All project-specific state except portable memory

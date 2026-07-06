@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Orchestrator — Four Perspectives, One Synthesis</title>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#fafaf7',
+      primaryTextColor: '#1a1a1a',
+      primaryBorderColor: '#1f3a5f',
+      lineColor: '#1f3a5f',
+      secondaryColor: '#e8eef5',
+      tertiaryColor: '#fdf0eb',
+      fontFamily: 'SF Mono, Menlo, monospace',
+      fontSize: '13px',
+    }
+  });
+</script>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #fafaf7;
+    --rule: #d8d4cc;
+    --muted: #6b6b6b;
+    --navy: #1f3a5f;
+    --navy-soft: #e8eef5;
+    --good: #2e6b3d;
+    --good-soft: #eaf3ec;
+    --bad: #b8221a;
+    --bad-soft: #fde0e0;
+    --warn: #b8881a;
+    --warn-soft: #fdf8e8;
+    --accent: #c44d2a;
+    --accent-soft: #fdf0eb;
+    --code-bg: #f0ece4;
+    /* Perspective colors */
+    --persp-sys: #1f3a5f;
+    --persp-ux: #6b3b8f;
+    --persp-sre: #2e6b3d;
+    --persp-red: #b8221a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 48px 32px 96px; }
+  header.hero {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+  }
+  .eyebrow {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-size: 48px;
+    font-weight: 600;
+    margin: 12px 0 8px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  h1 .em { color: var(--accent); }
+  .lede {
+    font-size: 19px;
+    color: var(--muted);
+    margin: 0;
+    max-width: 720px;
+  }
+  h2 {
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 72px 0 4px;
+    letter-spacing: -0.01em;
+  }
+  h2 .num {
+    font-family: "SF Mono", Menlo, monospace;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 4px;
+  }
+  h3 {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 28px 0 8px;
+  }
+  h4 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 8px;
+  }
+  p { margin: 0 0 12px; }
+  p + p { margin-top: 12px; }
+  a { color: var(--navy); }
+  code {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  pre {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 12.5px;
+    background: var(--code-bg);
+    padding: 16px 20px;
+    border-radius: 4px;
+    overflow-x: auto;
+    line-height: 1.5;
+    margin: 12px 0;
+  }
+  blockquote {
+    border-left: 4px solid var(--accent);
+    margin: 16px 0;
+    padding: 12px 20px;
+    background: var(--accent-soft);
+    color: var(--ink);
+    font-style: italic;
+    font-size: 16px;
+  }
+  blockquote .cite {
+    display: block;
+    font-style: normal;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  /* Perspective cards */
+  .perspective {
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 20px 0;
+    background: white;
+    border-left: 6px solid var(--rule);
+  }
+  .perspective.sys  { border-left-color: var(--persp-sys);  background: linear-gradient(to right, #f1f4f9, white 5%); }
+  .perspective.ux   { border-left-color: var(--persp-ux);   background: linear-gradient(to right, #f5f0fa, white 5%); }
+  .perspective.sre  { border-left-color: var(--persp-sre);  background: linear-gradient(to right, #ecf3ee, white 5%); }
+  .perspective.red  { border-left-color: var(--persp-red);  background: linear-gradient(to right, #fce8e8, white 5%); }
+  .perspective h3 {
+    margin-top: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .perspective .role {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: white;
+    border: 1px solid var(--rule);
+    color: var(--muted);
+  }
+  .perspective.sys  .role { color: var(--persp-sys); border-color: var(--persp-sys); }
+  .perspective.ux   .role { color: var(--persp-ux); border-color: var(--persp-ux); }
+  .perspective.sre  .role { color: var(--persp-sre); border-color: var(--persp-sre); }
+  .perspective.red  .role { color: var(--persp-red); border-color: var(--persp-red); }
+  .perspective ul { margin: 8px 0 0; padding-left: 22px; }
+  .perspective li { margin-bottom: 6px; }
+
+  /* Good vs Bad pairs */
+  .vs-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0 24px;
+  }
+  @media (max-width: 800px) { .vs-pair { grid-template-columns: 1fr; } }
+  .vs-card {
+    padding: 20px 22px;
+    border-radius: 6px;
+    border-left: 5px solid;
+  }
+  .vs-card.bad  { background: var(--bad-soft); border-left-color: var(--bad); }
+  .vs-card.good { background: var(--good-soft); border-left-color: var(--good); }
+  .vs-card .label {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 8px;
+  }
+  .vs-card.bad  .label { color: var(--bad); }
+  .vs-card.good .label { color: var(--good); }
+  .vs-card h4 {
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: 0;
+    margin: 0 0 10px;
+  }
+  .vs-card pre {
+    background: rgba(255,255,255,0.6);
+    margin: 8px 0;
+  }
+  .vs-card p:last-child { margin-bottom: 0; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    background: var(--code-bg);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  td.match { color: var(--good); font-weight: 600; }
+  td.partial { color: var(--warn); }
+  td.miss { color: var(--bad); }
+
+  /* Callouts */
+  .callout {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin: 16px 0;
+    background: white;
+  }
+  .callout.accent { border-left: 4px solid var(--accent); background: var(--accent-soft); }
+  .callout.warn   { border-left: 4px solid var(--warn);   background: var(--warn-soft); }
+  .callout.good   { border-left: 4px solid var(--good);   background: var(--good-soft); }
+  .callout.navy   { border-left: 4px solid var(--navy);   background: var(--navy-soft); }
+
+  /* Mermaid */
+  .mermaid {
+    text-align: center;
+    margin: 24px 0;
+    padding: 24px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid var(--rule);
+  }
+
+  /* TOC */
+  .toc {
+    border: 1px solid var(--rule);
+    background: white;
+    padding: 20px 24px;
+    border-radius: 6px;
+    margin: 32px 0 48px;
+    font-size: 14px;
+  }
+  .toc h4 { color: var(--muted); margin-bottom: 12px; }
+  .toc ol { margin: 0; padding-left: 22px; }
+  .toc li { margin-bottom: 4px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  ul, ol { padding-left: 24px; margin: 12px 0; }
+  li { margin-bottom: 6px; }
+
+  footer {
+    margin-top: 96px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="eyebrow">Orchestrator design · synthesis from 4 Opus subagents · 2026-05-24</span>
+  <h1>Orchestrator: <span class="em">four perspectives, one synthesis</span></h1>
+  <p class="lede">Your vision said "advanced Airflow, CTO cockpit, fail-loud-ask-early." Four independent Opus subagents thought about it — a systems engineer, a cockpit UX designer, an SRE, and a red-teamer. Here's what they each said, where they agreed, where they fought, and what falls out as the proposed v0.1 contract.</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ol>
+    <li><a href="#vision">Your vision (verbatim)</a></li>
+    <li><a href="#four">The four perspectives</a></li>
+    <li><a href="#agreements">Where they agree</a></li>
+    <li><a href="#disagreements">Where they fight — and my adjudication</a></li>
+    <li><a href="#reframes">Headline reframes that change the design</a></li>
+    <li><a href="#examples">Concrete good-vs-bad examples for the load-bearing concepts</a></li>
+    <li><a href="#contract">Proposed v0.1 contract</a></li>
+    <li><a href="#questions">Three decisions only you can make</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="vision"><span class="num">§1</span> Your vision (verbatim)</h2>
+
+<blockquote>
+  Orchestrator is like an advanced version of Airflow or like an advanced version of a React loop. It's basically a sort of engine that is also state machine but also tracks what's happening at different levels. It has a DB. It has MCP tools. It can query, like, what's at what state. It can present to me, like, what's running, how much of it's done, what's next, what's the quality of the different code or different PRs that we have written, what's the iteration level.
+  <br><br>
+  I should feel like a CTO that's sitting in this, like, massive office having tabs on all the different projects. As if I'm sitting on this, like, cockpit, and I'm having a visual of everything that's going on. We can slow certain things down. I can fast forward other things.
+  <br><br>
+  Failure is not seen as something that's to be avoided. Unilateral decisions should be seen as something to be avoided. The subagents [should] know that it's okay and feasible and wanted to surface issues that they are facing.
+  <span class="cite">— you, 2026-05-24</span>
+</blockquote>
+
+<p>This vision has four distinct loads in it: <strong>autonomy</strong> (orchestrator does work without you), <strong>visibility</strong> (you see everything that happens), <strong>control</strong> (you can speed up / slow down / intervene), and <strong>honest failure</strong> (subagents surface issues rather than guess). Each subagent below stress-tested a different leg of that.</p>
+
+<!-- ============================================================ -->
+<h2 id="four"><span class="num">§2</span> The four perspectives</h2>
+
+<div class="perspective sys">
+  <h3>1. The systems engineer <span class="role">substrate · correctness · recovery</span></h3>
+  <p><em>"You will regret this within a week of running it."</em></p>
+  <p>Came in tearing apart the state model. Built workflow engines before; doesn't believe in vibes-as-design. Pushed hardest on:</p>
+  <ul>
+    <li>The 5-state model conflates <em>where the job is in its lifecycle</em> with <em>what its outcome was</em>. Crash recovery needs the first; reporting needs the second. They're orthogonal.</li>
+    <li>Missing states: <code>timeout</code> (single most common AI failure mode), <code>crashed</code> (≠ failed), <code>blocked</code> (parent drift detected pre-run), <code>needs_review</code> (the explicit "ask-early" success state).</li>
+    <li><strong>Fencing tokens on every writeback from day one</strong> (Kleppmann pattern). Without it, retried writebacks corrupt the manifold spec.</li>
+    <li>"Fail loud, ask early" needs <em>technical teeth</em> — mandatory output schema with <code>assumptions_made[]</code>; auto-downgrade <code>achieved → needs_review</code> if non-empty. Make lying expensive, asking cheap.</li>
+    <li>Phase rows (one per phase entry) are the recovery unit, not job rows. Phase 2 hooks just become more phase rows. Phase 3 parallelism is N workers writing phase rows. <strong>The substrate doesn't change.</strong></li>
+  </ul>
+  <p>One direct disagreement with your framing: <em>"failure not to be avoided" is correct as philosophy but dangerous as implementation default.</em> Distinguish failure-as-signal (subagent said failed with evidence — keep) from failure-as-noise (timeout, crash, schema violation — retry or escalate, don't pollute the dataset).</p>
+</div>
+
+<div class="perspective ux">
+  <h3>2. The cockpit UX designer <span class="role">surfaces · hierarchy · honest signals</span></h3>
+  <p><em>"The 'CTO in a massive office' framing is wrong, and you should drop it."</em></p>
+  <p>Designed dashboards for trading desks, SRE consoles, render farms. Came in correcting the metaphor before answering anything:</p>
+  <ul>
+    <li><strong>Drop "CTO cockpit." A CTO watches people; you're watching jobs.</strong> The right reference is an SRE on-call dashboard or a render-farm queue console. Same calm-comprehensive-in-control feeling; cleaner design constraints.</li>
+    <li>The dashboard must answer three questions in 2 seconds of a glance: <em>Is it still running? Is anything stuck? What got done since I last looked?</em> Everything else is drill-down.</li>
+    <li>"Speed up / slow down" is cinematic but vague — the real primitives are <em>pause job, cancel job, bump model tier (haiku→sonnet→opus), demote model tier, re-queue with note, drag-to-reorder, concurrency slider, daily budget cap.</em></li>
+    <li>Quality signals split sharply into <strong>real</strong> (tests, lint, files, tokens, manifold validation, tool-call rounds), <strong>partial</strong> (LLM judge scores — show next to tests, never alone), and <strong>vapor</strong> (aggregate "code health," velocity graphs, ETAs — do not build).</li>
+    <li>"Iteration level" you mentioned: needs to be precisely defined or dropped. Three meanings overlap and none is honest as a single number.</li>
+    <li><strong>The daemon heartbeat is sacred.</strong> Top-left of every page, always visible, red and loud if &gt;60s stale. Without it, every other signal on the page is suspect.</li>
+  </ul>
+</div>
+
+<div class="perspective sre">
+  <h3>3. The SRE / observability engineer <span class="role">logs · diagnostics · silent failures</span></h3>
+  <p><em>"It's 9am. Operator opens cockpit. Sees one red row. Clicks it."</em></p>
+  <p>Has been paged at 2am too many times. Believes observability is a property of the system, not an add-on. Pushed three specific designs:</p>
+  <ul>
+    <li><strong>Three log streams</strong>, not one. Event log (structured, in DB, every phase transition). Session transcripts (JSONL per job, in files). Daemon log (structured JSON, non-job-tied events). Never grep a 12GB file at 2am.</li>
+    <li><strong>Verdicts must return structured failure data, not booleans.</strong> "Verdict failed" tells you nothing. "Verdict failed: expected=200, actual=500, diff=…" tells you everything. <em>This is a manifold contract change.</em></li>
+    <li><strong>Silent failure detection.</strong> Three guards: (a) phase-completeness invariant — every "success" must have all phase rows or it's a silent failure; (b) writeback verification — read back after write, assert manifold changed as expected; (c) staleness check on verdict — record manifold revision at claim AND at verdict, alarm if they don't match.</li>
+    <li><strong>Subagent "guessing" is partially observable.</strong> Free signal: count clarifying questions, mutate-vs-read tool-call ratio. Built signal: typed <code>issue_raised</code> events (ambiguity / missing_context / conflicting_constraints) as first-class tool calls. Proxy: post-hoc verdict failure rate per subagent.</li>
+    <li><strong>Drift detection should be both subagent-reported and orchestrator-caught</strong> — tagged differently (<code>drift_reported_by = subagent</code> vs <code>orchestrator</code>) because they mean different things diagnostically.</li>
+  </ul>
+</div>
+
+<div class="perspective red">
+  <h3>4. The red-team thinker <span class="role">first principles · assumptions · "dumbest version that works"</span></h3>
+  <p><em>"Build the bash script first. The 'advanced Airflow' framing is aspirational cosplay."</em></p>
+  <p>Doesn't soften. Made the sharpest call of the four:</p>
+  <ul>
+    <li><strong>"You don't have an Airflow problem. You have a 'I want to walk away from my computer for 2 hours' problem."</strong> Airflow exists because hundreds of analysts share one scheduler. You are one person on one laptop running maybe 5–50 leaves a day.</li>
+    <li><strong>The dumbest version that could work:</strong> a bash <code>while read</code> loop calling Claude + a verifier, logging to a file. 80% of value, zero infrastructure. <em>"Phases 2 and 3 of v0.1 are not v0.1. They are v0.3 and v0.5 disguised as 'phases.'"</em></li>
+    <li><strong>Five killer assumptions to challenge:</strong>
+      <ul>
+        <li>"Manifold is single source of truth" — no, it's a <em>recorded</em> truth. Drifts the moment a human edits a file outside the loop.</li>
+        <li>"Verdict_check accurately measures done" — false passes are the dominant LLM-verification failure (Claude will write a stub test that passes; overfits to test cases).</li>
+        <li>"Subagents surface issues honestly" — LLMs are sycophantic; they surface what THEY find interesting, weighted toward the obvious, rephrased in agreeable language.</li>
+        <li>"Claude is the right router for skill selection" — no feedback loop; silent miscategorization is the default.</li>
+        <li>"Daemon model fits this workload" — daemons are for continuous load; yours is bursty and solo-triggered. <code>orchestrator run</code> invoked when you walk away is simpler.</li>
+      </ul>
+    </li>
+    <li><strong>Failure modes nobody planned for:</strong> SQLite database-is-locked during writeback; user edits leaves while daemon is processing them (no etag at claim); non-idempotent verdict_checks fire twice on crash (verifier that opens a GitHub PR creates duplicates); runaway cost burning $50/hr while you sleep; "step-away gap" where leaf 1 destructive migration + leaf 2 depends-on-old-schema = broken repo with green dashboard.</li>
+    <li><strong>The cockpit will lie:</strong> green when integrated system is broken (per-leaf verdicts don't check the joint); progress when looping (retry-to-success looks like first-try); productivity when wasteful (47 trivial doc edits looks like work); calm when on fire (cached dashboard during outage).</li>
+    <li><strong>Architectural debt risk:</strong> calling it a "daemon" commits you to uptime / supervision / log rotation / signal handling forever. <em>"Call it a runner invoked on demand and you keep the option to upgrade to daemon later. The reverse path is much harder."</em></li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="agreements"><span class="num">§3</span> Where they agree (3+ perspectives converge)</h2>
+
+<table>
+  <thead>
+    <tr><th>Claim</th><th>Sys</th><th>UX</th><th>SRE</th><th>Red</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>The simple 5-state model is wrong</td>
+      <td class="match">✓ split lifecycle×outcome</td>
+      <td class="partial">— (implied by quality-signal granularity)</td>
+      <td class="match">✓ per-phase events</td>
+      <td class="match">✓ 2-state minimum then earn more</td>
+    </tr>
+    <tr>
+      <td>Verdicts must return structured data, not booleans</td>
+      <td class="match">✓ output schema</td>
+      <td class="match">✓ "verdict failed" tells nothing</td>
+      <td class="match">✓ diff between expected and actual</td>
+      <td class="match">✓ false passes invisible without structure</td>
+    </tr>
+    <tr>
+      <td>"Fail loud, ask early" needs technical teeth, not vibes</td>
+      <td class="match">✓ mandatory <code>assumptions_made[]</code></td>
+      <td class="partial">— (orthogonal)</td>
+      <td class="match">✓ typed issue_raised events</td>
+      <td class="match">✓ LLMs are sycophantic</td>
+    </tr>
+    <tr>
+      <td>The cockpit will lie if not designed carefully</td>
+      <td class="partial">—</td>
+      <td class="match">✓ daemon heartbeat sacred</td>
+      <td class="match">✓ silent successes are deadly</td>
+      <td class="match">✓ green when broken</td>
+    </tr>
+    <tr>
+      <td>Idempotency is non-negotiable from day one</td>
+      <td class="match">✓ fencing tokens</td>
+      <td class="partial">—</td>
+      <td class="match">✓ writeback read-back verification</td>
+      <td class="match">✓ verdict_checks with side effects</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="disagreements"><span class="num">§4</span> Where they fight — and my adjudication</h2>
+
+<h3>Disagreement 1 — "CTO cockpit" framing</h3>
+<p><strong>UX + Red Team converge:</strong> wrong metaphor. UX explicitly: <em>"A CTO watches people; you're watching jobs. The right reference is an SRE on-call dashboard or a render farm."</em> Red Team agrees: <em>"Solo devs want to NOT LOOK AT THINGS."</em></p>
+<div class="callout accent">
+  <strong>Adjudication:</strong> drop the "CTO cockpit" framing. Keep the user-facing intent (calm, comprehensive, in-command). Adopt "SRE on-call console" or "render-farm queue" as the design metaphor. Both surface only what needs attention; both have heartbeats as load-bearing signals; both treat silence as a property to design around, not a failure to fix.
+</div>
+
+<h3>Disagreement 2 — Separate DB or shared with manifold?</h3>
+<p><strong>Systems Engineer says SEPARATE</strong> (Airflow pattern; different concerns, different schema velocities; cross-DB integrity via messages, never joins). <strong>Red Team says SHARED</strong> (two-database consistency is forever).</p>
+<div class="callout accent">
+  <strong>Adjudication:</strong> separate DB. Red Team's pragmatic concern is real but the answer is the Systems Engineer's contract — fencing tokens + idempotency keys on every cross-DB write. We need that contract for crash recovery anyway. Coupling the schemas would mean every orchestrator migration risks the spec store, which is strictly worse.
+</div>
+
+<h3>Disagreement 3 — Daemon or runner?</h3>
+<p><strong>Systems Engineer, UX, SRE all assumed daemon. Red Team pushed back hard:</strong> <em>"Daemons are for continuous load. Your load is bursty and solo-triggered. <code>make run-leaves</code> invoked when you walk away is simpler and has zero uptime semantics to debug."</em></p>
+<div class="callout accent">
+  <strong>Adjudication: Red Team wins.</strong> The "step away and trust" affordance you stated does NOT require a daemon — it requires a long-running invocation that exits when done. The daemon model adds real ops cost (systemd / launchd, signal handling, log rotation, supervisor) for no marginal benefit at solo workload. <strong>Build it as <code>orchestrator run</code></strong>; promote to daemon only if Phase 3+ ever needs continuous polling. Calling it "runner" preserves the upgrade path.
+</div>
+
+<h3>Disagreement 4 — Bash script vs. structured Phase 1</h3>
+<p><strong>Systems Engineer says 6-table substrate from day one. Red Team says bash script first; let real pain dictate Phase 1.</strong></p>
+<div class="callout accent">
+  <strong>Adjudication:</strong> add a <strong>Stage 0</strong> before Phase 1. Two-day bash spike against chronicler. Document what hurts. THEN commit to Phase 1 design. The substrate we'll likely build IS the Systems Engineer's, but the spike tells us if any of it is theatrical. Cheap insurance against overdesign.
+</div>
+
+<h3>Disagreement 5 — Hooks contract in Phase 1?</h3>
+<p>Systems Engineer: scaffold the table (empty, ready for Phase 2). Red Team: plugin APIs are forever — don't ship them until you know what hooks you need.</p>
+<div class="callout accent">
+  <strong>Adjudication: Red Team.</strong> Write lifecycle code with explicit named phases. If Phase 2 needs declarable hooks, extract from the existing code at that point. Cheaper to extract than to design-without-evidence.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="reframes"><span class="num">§5</span> Headline reframes that change the design</h2>
+
+<table>
+  <thead><tr><th style="width: 33%">Was</th><th>Now</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>"Daemon"</strong> running continuously</td>
+      <td><strong>"Runner"</strong> invoked on demand, exits when queue empty / budget hit / time up. Promote to daemon later if needed.</td>
+    </tr>
+    <tr>
+      <td><strong>"CTO cockpit"</strong> feel — corner office, tabs on people</td>
+      <td><strong>SRE on-call console / render-farm queue.</strong> Same calm-comprehensive feel. Designed to NOT demand attention unless something needs it.</td>
+    </tr>
+    <tr>
+      <td>Phase 1 = minimal daemon + DB + sequential</td>
+      <td><strong>Stage 0</strong> (bash spike on chronicler, 2 days) → <strong>Phase 1</strong> = informed minimum substrate.</td>
+    </tr>
+    <tr>
+      <td>5-state model: queued → claimed → running → {achieved, failed, abandoned, drift}</td>
+      <td><strong>Two orthogonal axes:</strong> lifecycle (where in the pipeline) × outcome (what the result was). 9 lifecycle states × 8 outcomes. See §6 for visual.</td>
+    </tr>
+    <tr>
+      <td>"Fail loud, ask early" stated as a principle in <code>skill.md</code></td>
+      <td><strong>Schema-enforced.</strong> Mandatory <code>assumptions_made[]</code> in output; auto-downgrade <code>achieved → needs_review</code> if non-empty. Lying becomes expensive at the wire level.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="examples"><span class="num">§6</span> Concrete good-vs-bad examples</h2>
+
+<p>These are the load-bearing concepts where the perspectives sharply agreed. Each pair shows the wrong way (which is also the seductive way) and the right way side-by-side.</p>
+
+<h3>State machine</h3>
+<div class="vs-pair">
+  <div class="vs-card bad">
+    <div class="label">⚠ Bad — collapsed state</div>
+    <h4>Single axis, conflates lifecycle and outcome</h4>
+<pre>queued → claimed → running →
+  {achieved, failed, abandoned, drift}</pre>
+    <p>When a job goes from <code>running</code> to <code>failed</code>: was it a subagent that found a real issue and reported failure (signal — keep, learn from), or was it a daemon crash mid-session (noise — retry)? The state doesn't distinguish. Your retry logic conflates them; your metrics lie.</p>
+  </div>
+  <div class="vs-card good">
+    <div class="label">✓ Good — two orthogonal axes</div>
+    <h4>Lifecycle (where) × Outcome (what)</h4>
+<pre>Lifecycle: queued → claimed → pre_hooks
+  → running → verdict → post_hooks
+  → writeback → released → terminal
+
+Outcome (at terminal):
+  achieved | failed | abandoned | drift |
+  crashed | timeout | cancelled | needs_review</pre>
+    <p>Recovery scans for stale heartbeats per lifecycle state (idempotent retry vs needs compensation). Reporting groups by outcome. Different concerns, different axes. Adding <code>timeout</code> and <code>crashed</code> as separate outcomes from <code>failed</code> stops poisoning your dataset.</p>
+  </div>
+</div>
+
+<div class="mermaid">
+flowchart LR
+  Q[queued] --> C[claimed]
+  C --> Pre[pre_hooks]
+  Pre --> S[session]
+  S --> V[verdict]
+  V --> Post[post_hooks]
+  Post --> W[writeback]
+  W --> R[released]
+  R --> T((terminal))
+  T -.outcome.-> O1[achieved]
+  T -.outcome.-> O2[failed]
+  T -.outcome.-> O3[needs_review]
+  T -.outcome.-> O4[timeout]
+  T -.outcome.-> O5[crashed]
+  T -.outcome.-> O6[drift]
+  style T fill:#1f3a5f,color:#fff
+  style O1 fill:#eaf3ec,stroke:#2e6b3d
+  style O2 fill:#fde0e0,stroke:#b8221a
+  style O3 fill:#fdf8e8,stroke:#b8881a
+  style O4 fill:#fde0e0,stroke:#b8221a
+  style O5 fill:#fde0e0,stroke:#b8221a
+  style O6 fill:#fdf8e8,stroke:#b8881a
+</div>
+
+<h3>Verdict return shape</h3>
+<div class="vs-pair">
+  <div class="vs-card bad">
+    <div class="label">⚠ Bad — boolean</div>
+    <h4>You see this in the cockpit and have to grep</h4>
+<pre>{ "status": "violated" }</pre>
+    <p>9am. You open the cockpit. You see one red leaf. You click it. You see: "violated". <strong>Now you SSH to find the log file</strong> and grep for what actually failed. The cockpit failed to help you.</p>
+  </div>
+  <div class="vs-card good">
+    <div class="label">✓ Good — structured failure data</div>
+    <h4>You see this and you immediately know</h4>
+<pre>{
+  "status": "violated",
+  "expected": "POST /checkout returns 200",
+  "actual": "POST /checkout returns 500",
+  "diff": "stack trace: NullPointerException at...",
+  "evidence": [
+    "test_logs/checkout.log:42",
+    "fixtures/valid_order.json"
+  ]
+}</pre>
+    <p>Operator opens the leaf, sees expected vs actual at a glance, has a path to debug. Doesn't have to leave the cockpit.</p>
+  </div>
+</div>
+
+<h3>The cockpit lying about state</h3>
+<div class="vs-pair">
+  <div class="vs-card bad">
+    <div class="label">⚠ Bad — false confidence</div>
+    <h4>Looks great, daemon died 20 min ago</h4>
+    <pre>┌──────────────────────────────┐
+│ ORCHESTRATOR  ✓ HEALTHY     │
+│ Project: 47/89 leaves done  │
+│ All systems nominal         │
+└──────────────────────────────┘</pre>
+    <p>The dashboard is cached. The runner crashed 20 minutes ago. Nothing has updated. The green badge is a lie. You walk away confident.</p>
+  </div>
+  <div class="vs-card good">
+    <div class="label">✓ Good — heartbeat as load-bearing signal</div>
+    <h4>If the heartbeat is stale, every other signal is suspect</h4>
+    <pre>┌──────────────────────────────┐
+│ ORCHESTRATOR [RUNNING 4h12m] │
+│ last heartbeat: 14s ago      │
+│ ─────────────────────────────│
+│ ATTENTION (0)  All clear     │
+│ NOW RUNNING (2) ...          │
+└──────────────────────────────┘
+heartbeat ages: green &lt; 30s,
+                amber 30-60s, RED &gt; 60s</pre>
+    <p>Heartbeat top-left, always visible. Red and loud if &gt;60s. Without it, every other signal might be from before the system died.</p>
+  </div>
+</div>
+
+<h3>Daemon vs runner</h3>
+<div class="vs-pair">
+  <div class="vs-card bad">
+    <div class="label">⚠ Bad — daemon (premature)</div>
+    <h4>Continuous uptime semantics, solo workload</h4>
+<pre># systemd unit, pidfile, log rotation,
+# signal handlers, restart policy,
+# port conflict handling, "why is the
+# daemon eating CPU at 3am" debugging
+
+$ orchestrator serve --pidfile X --log Y
+$ systemctl --user enable orchestrator</pre>
+    <p>You're buying uptime infrastructure for bursty solo work. Every crash is a 3am page even though nobody is going to be paged.</p>
+  </div>
+  <div class="vs-card good">
+    <div class="label">✓ Good — runner (right-sized)</div>
+    <h4>Invoke when you walk away. Exit when done.</h4>
+<pre># Just a long-running invocation.
+# Exits when queue empty, budget hit,
+# or time up. No supervision.
+
+$ orchestrator run \
+    --project chronicler \
+    --max-budget $10 \
+    --max-time 4h
+[runner exits when one of:
+ - queue empty
+ - $10 spent
+ - 4 hours elapsed]</pre>
+    <p>If you decide Phase 3 needs continuous polling, promote to daemon then. <em>Runner → daemon is easy. Daemon → runner is a rewrite.</em></p>
+  </div>
+</div>
+
+<h3>"Fail loud, ask early" — wire-format teeth</h3>
+<div class="vs-pair">
+  <div class="vs-card bad">
+    <div class="label">⚠ Bad — stated as principle in prose</div>
+    <h4><code>skill.md</code> says "please surface issues"</h4>
+<pre># In orchestrator's skill.md
+"If you have any uncertainty
+about what to build, please
+surface it rather than guess."
+
+# In the DB, 3 months later:
+SELECT change_reason, count(*)
+FROM revisions
+GROUP BY change_reason;
+
+evolution   847
+drift         0   ← agents learned to lie</pre>
+    <p>Agents read the principle, ignore it, write <code>achieved</code> and move on. The principle has no teeth.</p>
+  </div>
+  <div class="vs-card good">
+    <div class="label">✓ Good — schema-enforced auto-downgrade</div>
+    <h4>Lying becomes expensive at the wire level</h4>
+<pre># Required output schema for any subagent:
+{
+  "verdict": "achieved" | "failed"
+           | "blocked"  | "needs_human",
+  "evidence": [string],
+  "assumptions_made": [string],
+  "unresolved_questions": [string],
+  "change_reason": string
+}
+
+# Orchestrator's auto-downgrade rule:
+if verdict == "achieved"
+   and assumptions_made.length > 0:
+   verdict = "needs_human"
+   # Surfaces in cockpit ATTENTION panel
+   # Costs the agent its "done" claim</pre>
+    <p>Silent assumptions become a protocol violation the engine catches. <em>"The orchestrator's job is to make lying expensive and asking cheap."</em></p>
+  </div>
+</div>
+
+<h3>Architecture — manifold ↔ orchestrator</h3>
+<p>The two skills don't talk via DB joins. They talk via the CLI/MCP contract. Each owns its schema; cross-system writes carry idempotency keys.</p>
+
+<div class="mermaid">
+flowchart TB
+  subgraph M["📋 Manifold (the spec / compass)"]
+    M1[nodes]
+    M2[verdicts]
+    M3[revisions]
+    M4[CLI / MCP / HTTP]
+  end
+  subgraph O["⚙️ Orchestrator (the runner)"]
+    O1[jobs]
+    O2[job_phases]
+    O3[leaf_leases]
+    O4[writeback_log]
+    O5[events]
+  end
+  subgraph C["🤖 Claude + Skills"]
+    K1[realizer]
+    K2[other skills]
+    K3[Claude direct]
+  end
+  M4 -.next-leaves.-> O
+  O -.dispatch via Skill tool.-> C
+  C -.work + verdict.-> O
+  O -.update-node + change_reason + idempotency_key.-> M4
+  style M fill:#e8eef5,stroke:#1f3a5f
+  style O fill:#fdf0eb,stroke:#c44d2a
+  style C fill:#eaf3ec,stroke:#2e6b3d
+</div>
+
+<!-- ============================================================ -->
+<h2 id="contract"><span class="num">§7</span> Proposed v0.1 contract</h2>
+
+<p>If you accept the reframes in §5, the v0.1 substrate locks at this. It's smaller than the original proposal because the runner reframe (vs daemon) eliminates substantial complexity, and because hooks/web-UI move to later phases informed by real usage.</p>
+
+<div class="callout navy">
+  <h4>Stage 0 — bash spike (2 days)</h4>
+  <p>Literal bash script orchestrator running against chronicler. <code>while read leaf; do claude -p ...; verifier; manifold update-node; done</code>. Document what hurts. Phase 1 design informed by spike findings.</p>
+</div>
+
+<div class="callout navy">
+  <h4>Phase 1 — informed minimum (weeks)</h4>
+  <p><strong>Substrate</strong></p>
+  <ul>
+    <li><code>orchestrator</code> is a CLI runner, not a daemon (<code>orchestrator run --project X --max-budget $N --max-time Yh</code>)</li>
+    <li>Separate SQLite DB at <code>~/.claude/orchestrator.db</code>, WAL mode, busy_timeout 5000</li>
+    <li>Six tables: <code>jobs</code>, <code>job_phases</code>, <code>leaf_leases</code>, <code>writeback_log</code> (idempotency_key PK), <code>events</code>, <code>schema_migrations</code></li>
+    <li>Two orthogonal state axes (lifecycle × outcome) — see §6 diagram</li>
+    <li>Phase rows append-only, one row per phase entry, with heartbeat — recovery unit</li>
+  </ul>
+  <p><strong>Fail-loud enforcement</strong></p>
+  <ul>
+    <li>Mandatory structured output schema for every subagent (<code>verdict</code>, <code>evidence[]</code>, <code>assumptions_made[]</code>, <code>unresolved_questions[]</code>, <code>change_reason</code>)</li>
+    <li>Auto-downgrade rule: <code>achieved + assumptions_made[] non-empty</code> → <code>needs_review</code></li>
+    <li>Typed <code>issue_raised</code> events (ambiguity / missing_context / conflicting_constraints / out_of_scope) — counted per-subagent</li>
+    <li>Wall-clock timeouts per phase (20m running, 2m others) — daemon-enforced, not agent-enforced</li>
+  </ul>
+  <p><strong>Observability</strong></p>
+  <ul>
+    <li>Three log streams: event log in DB · session transcripts per-job in JSONL files · runner log file</li>
+    <li>Writeback verification: read-back after write, assert manifold changed as expected</li>
+    <li>Phase-completeness invariant checker (runs periodically; alarms on success-without-all-phase-rows)</li>
+    <li>Heartbeat freshness as load-bearing signal in CLI status / future cockpit</li>
+  </ul>
+  <p><strong>Surface</strong></p>
+  <ul>
+    <li>CLI only: <code>orchestrator run</code> · <code>orchestrator status</code> · <code>orchestrator logs &lt;job_id&gt;</code> · <code>orchestrator retry &lt;job_id&gt;</code> · <code>orchestrator cancel</code> · <code>orchestrator version</code></li>
+    <li>No web UI in Phase 1. No MCP server in Phase 1. These are Phase 2/3.</li>
+  </ul>
+</div>
+
+<div class="callout warn">
+  <h4>Manifold contract changes required (flag for v0.4.1)</h4>
+  <ul>
+    <li>Verdict mechanism returns <strong>structured failure data</strong>, not boolean</li>
+    <li><code>update-node</code> accepts <strong>fencing tokens</strong>, rejects stale ones (Kleppmann pattern)</li>
+    <li><code>update-node</code> accepts <strong>idempotency keys</strong>, dedupes</li>
+  </ul>
+  <p>These are additive changes (don't break existing data). ~1-2 days estimated. Must ship before orchestrator Phase 1 work or orchestrator's correctness guarantees can't be met.</p>
+</div>
+
+<div class="callout">
+  <h4>Quality signals — ship REAL only</h4>
+  <ul>
+    <li><strong>Ship:</strong> tests pass/fail counts, lint, files touched, tokens, wall-clock time, manifold validation, tool-call rounds, retries-per-leaf</li>
+    <li><strong>Do not ship:</strong> aggregate "code health" gauge, velocity graphs, predicted ETAs, single-number "project quality" scores</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="questions"><span class="num">§8</span> Three decisions only you can make</h2>
+
+<div class="callout accent">
+  <h4>Q1 — Do you accept the runner-not-daemon reframe?</h4>
+  <p>Big change from your stated vision ("daemon", "cockpit", "advanced Airflow"). The reframe keeps the <em>intent</em> (autonomous work, step-away affordance) but discards the <em>infrastructure assumption</em>. If you want a true daemon for non-trivial reasons (e.g., "I want this running 24/7 polling for new leaves even when I'm not at my computer"), say so and we keep daemon — but acknowledge the ops surface that comes with it.</p>
+</div>
+
+<div class="callout accent">
+  <h4>Q2 — Do you accept Stage 0 (the bash spike)?</h4>
+  <p>Two days of running a literal bash script before committing Phase 1 code. Cheap insurance against overdesign. Or: skip the spike, trust the synthesis, commit to Phase 1 design now.</p>
+</div>
+
+<div class="callout accent">
+  <h4>Q3 — Do you authorize the manifold v0.4.1 contract changes?</h4>
+  <p>Structured verdict failure data + fencing tokens + idempotency keys are <strong>needed</strong> for orchestrator to work safely. They're additive (don't break existing data) but they're real manifold work. If yes, we plan it as v0.4.1 patch before orchestrator Phase 1; if no, orchestrator builds against current manifold and accepts substantial correctness risk.</p>
+</div>
+
+<footer>
+  <p>Generated 2026-05-24 from a synthesis of four Opus subagent perspectives on orchestrator design. The perspectives themselves are preserved in the conversation transcript at <code>~/.claude/projects/-Users-piyushsatti-Documents-code-agent-skills/</code>.</p>
+  <p>Manifold project tracking this orchestrator design lives at <code>manifold show orchestrator I.1</code> (and I.2-I.6). View via <code>manifold serve</code> for the live spec tree.</p>
+</footer>
+
+</div>
+</body>
+</html>
