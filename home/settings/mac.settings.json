@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(/bin/echo \"hello from bash\")",
+      "mcp__plugin_serena_serena__create_text_file",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\(data[0]['text']\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(xargs ls)"
+    ],
+    "defaultMode": "auto"
+  },
+  "model": "opus[1m]",
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "github@claude-plugins-official": false,
+    "feature-dev@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "serena@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true
+  },
+  "effortLevel": "xhigh",
+  "tui": "fullscreen",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "theme": "dark-ansi",
+  "editorMode": "normal",
+  "verbose": false,
+  "preferredNotifChannel": "auto",
+  "autoCompactEnabled": true,
+  "remoteControlAtStartup": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true,
+  "useAutoModeDuringPlan": true,
+  "voiceEnabled": true
+}

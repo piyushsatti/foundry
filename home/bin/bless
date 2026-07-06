@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# bless — remove the user.claude.authored xattr from a file so Claude can exec/copy it.
+#
+# Refuses to run if stdin is not a TTY. This is to prevent Claude itself from
+# invoking bless via the Bash tool — Claude's bash runs without a controlling
+# terminal, so this check fails for Claude but passes for an interactive user.
+#
+# Belt-and-braces: settings.json also has Bash deny rules for `setfattr -x` and
+# `bless` invocations to block the obvious bypass paths.
+
+if [ ! -t 0 ]; then
+  echo "bless: refusing to run without a controlling terminal." >&2
+  echo "       This helper must be run by you, interactively in your terminal." >&2
+  exit 1
+fi
+
+if [ $# -eq 0 ]; then
+  cat >&2 <<'USAGE'
+Usage: bless <file> [<file> ...]
+  Removes the user.claude.authored xattr so Claude can exec/copy the file.
+  Run this only after reviewing what Claude wrote.
+USAGE
+  exit 1
+fi
+
+ok=0
+fail=0
+for f in "$@"; do
+  if [ ! -e "$f" ]; then
+    printf 'bless: %s: no such file\n' "$f" >&2
+    fail=$((fail+1))
+    continue
+  fi
+  if getfattr -n user.claude.authored "$f" >/dev/null 2>&1; then
+    if setfattr -x user.claude.authored "$f" 2>/dev/null; then
+      printf 'blessed: %s\n' "$f"
+      ok=$((ok+1))
+    else
+      printf 'bless: %s: failed to remove xattr\n' "$f" >&2
+      fail=$((fail+1))
+    fi
+  else
+    printf 'no-op (no tag): %s\n' "$f"
+  fi
+done
+
+[ $fail -eq 0 ] && exit 0 || exit 1

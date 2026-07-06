@@ -1,0 +1,13 @@
+{
+  "_comment": "PostToolUse hook: auto-open HTML presentations after Write tool",
+  "_usage": "Add to .claude/settings.json under hooks.PostToolUse",
+  "matcher": "Write",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "jq -r '.tool_input.file_path' | { read -r f; if [[ \"$f\" == */output/*.html ]]; then xdg-open \"$f\" 2>/dev/null || open \"$f\" 2>/dev/null; fi; } || true",
+      "timeout": 5,
+      "statusMessage": "Opening presentation..."
+    }
+  ]
+}

@@ -1,0 +1,681 @@
+{
+  "respectGitignore": false,
+  "cleanupPeriodDays": 3650,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "WebSearch",
+      "WebFetch",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git branch --list:*)",
+      "Bash(git branch -a:*)",
+      "Bash(git branch -r:*)",
+      "Bash(git branch -v:*)",
+      "Bash(git remote -v:*)",
+      "Bash(git remote show:*)",
+      "Bash(git tag --list:*)",
+      "Bash(git stash list:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git blame:*)",
+      "Bash(git shortlog:*)",
+      "Bash(git config --get:*)",
+      "Bash(git config --list:*)",
+      "Bash(ls:*)",
+      "Bash(pwd:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(diff:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(cut:*)",
+      "Bash(tr:*)",
+      "Bash(which:*)",
+      "Bash(type:*)",
+      "Bash(uname:*)",
+      "Bash(whoami:*)",
+      "Bash(hostname:*)",
+      "Bash(date:*)",
+      "Bash(id:*)",
+      "Bash(df:*)",
+      "Bash(du:*)",
+      "Bash(free:*)",
+      "Bash(realpath:*)",
+      "Bash(basename:*)",
+      "Bash(dirname:*)",
+      "Bash(sha256sum:*)",
+      "Bash(md5sum:*)",
+      "Bash(jq:*)",
+      "Bash(ruff check:*)",
+      "Bash(mypy:*)",
+      "Bash(flake8:*)",
+      "Bash(pylint:*)",
+      "Bash(isort --check:*)",
+      "Bash(isort --diff:*)",
+      "Bash(uv lock --check:*)",
+      "Bash(uv pip list:*)",
+      "Bash(uv pip show:*)",
+      "Bash(uv pip freeze:*)",
+      "Bash(uv tree:*)",
+      "Bash(uv --version)",
+      "Bash(uv --help:*)",
+      "Bash(uv help:*)",
+      "Bash(hatch env show:*)",
+      "Bash(hatch status:*)",
+      "Bash(cargo check:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(rustc --version:*)",
+      "Bash(cmake --version:*)",
+      "Bash(colcon list:*)",
+      "Bash(colcon info:*)",
+      "Bash(colcon graph:*)",
+      "Bash(cppcheck:*)",
+      "Bash(g++ --version:*)",
+      "Bash(clang++ --version:*)",
+      "Bash(npm list:*)",
+      "Bash(npm info:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx prettier --check:*)",
+      "Bash(node --version:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker images:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker inspect:*)",
+      "Bash(docker compose config:*)",
+      "Bash(docker compose ps:*)",
+      "Bash(docker compose logs:*)",
+      "Bash(docker compose exec * airflow:*)",
+      "Bash(docker exec * airflow:*)",
+      "Bash(pg_dump --schema-only:*)",
+      "Bash(pg_isready:*)",
+      "Bash(aws sts get-caller-identity:*)",
+      "Bash(aws s3 ls:*)",
+      "Bash(aws ecr describe:*)",
+      "Bash(aws ecs describe:*)",
+      "Bash(aws ecs list:*)",
+      "Bash(aws logs describe-log-groups:*)",
+      "Bash(aws logs get-log-events:*)",
+      "Bash(aws logs filter-log-events:*)",
+      "Bash(aws cloudformation describe:*)",
+      "Bash(ros2 topic list:*)",
+      "Bash(ros2 topic info:*)",
+      "Bash(ros2 topic echo:*)",
+      "Bash(ros2 node list:*)",
+      "Bash(ros2 node info:*)",
+      "Bash(ros2 service list:*)",
+      "Bash(ros2 param list:*)",
+      "Bash(ros2 interface show:*)",
+      "Bash(ros2 pkg list:*)",
+      "Bash(ros2 doctor:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(git ls-tree *)",
+      "Bash(gsettings set:*)",
+      "Bash(dconf write:*)",
+      "Bash(dconf read:*)",
+      "Bash(dpkg -l)",
+      "Bash(snap list:*)",
+      "Bash(flatpak list:*)",
+      "Bash(docker image ls:*)",
+      "Bash(docker image inspect:*)",
+      "Bash(docker image history:*)",
+      "Bash(setfattr -n:*)",
+      "Bash(getfattr:*)",
+      "Bash(ps aux *)",
+      "Skill(update-config)",
+      "Bash(cat:*)",
+      "Bash(less:*)",
+      "Bash(grep:*)",
+      "Bash(egrep:*)",
+      "Bash(fgrep:*)",
+      "Bash(rg:*)",
+      "Bash(zcat:*)",
+      "Bash(xxd:*)",
+      "Bash(od:*)",
+      "Bash(strings:*)",
+      "Bash(nl:*)",
+      "Bash(tac:*)",
+      "Bash(column:*)",
+      "Bash(comm:*)",
+      "Bash(awk:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(http:*)",
+      "Bash(https:*)",
+      "Bash(xh:*)",
+      "Bash(httpie:*)",
+      "Bash(kubectl get:*)",
+      "Bash(kubectl logs:*)",
+      "Bash(kubectl describe:*)",
+      "Bash(kubectl top:*)",
+      "Bash(kubectl config get-contexts:*)",
+      "Bash(journalctl:*)",
+      "Bash(systemctl status:*)",
+      "Bash(docker top:*)",
+      "Bash(docker stats:*)",
+      "Bash(docker version:*)",
+      "Bash(docker compose top:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Bash(rm -r -f:*)",
+      "Bash(rm --recursive:*)",
+      "Bash(shred:*)",
+      "Bash(dd:*)",
+      "Bash(mkfs:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin --force:*)",
+      "Bash(git push origin -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(git clean -df:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git checkout -- .:*)",
+      "Bash(git checkout .:*)",
+      "Bash(docker system prune:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker rmi -f:*)",
+      "Bash(sudo:*)",
+      "Bash(chmod 777:*)",
+      "Bash(chmod 0777:*)",
+      "Bash(chown:*)",
+      "Bash(eval:*)",
+      "Bash(rm -Rf:*)",
+      "Bash(find * -delete)",
+      "Bash(find * -delete *)",
+      "Bash(find * -exec rm *)",
+      "Bash(find * -execdir rm *)",
+      "Bash(su:*)",
+      "Bash(su -:*)",
+      "Bash(pkexec:*)",
+      "Bash(find * -exec mv *)",
+      "Bash(find * -exec chmod *)",
+      "Bash(find * -exec chown *)",
+      "Bash(find * -exec sh *)",
+      "Bash(find * -exec bash *)",
+      "Bash(find * -execdir mv *)",
+      "Bash(find * -execdir chmod *)",
+      "Bash(find * -execdir chown *)",
+      "Bash(find * -execdir sh *)",
+      "Bash(find * -execdir bash *)",
+      "Bash(find * -fprint *)",
+      "Bash(find * -fprintf *)",
+      "Bash(find * -fls *)",
+      "Bash(git filter-branch:*)",
+      "Bash(git filter-repo:*)",
+      "Bash(git update-ref -d:*)",
+      "Bash(npm publish:*)",
+      "Bash(cargo publish:*)",
+      "Bash(twine upload:*)",
+      "Bash(uv publish:*)",
+      "Bash(uv pip uninstall:*)",
+      "Bash(uv tool install:*)",
+      "Bash(uv tool uninstall:*)",
+      "Bash(setfattr -x:*)",
+      "Bash(setfattr --remove:*)",
+      "Bash(setfattr --remove *)",
+      "Bash(bless:*)",
+      "Bash(bless *)",
+      "Bash(*/bless:*)",
+      "Bash(*/bless *)",
+      "Bash(docker image rm:*)",
+      "Bash(docker image rmi:*)",
+      "Bash(docker image prune:*)",
+      "Bash(git remote add *)",
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url *)",
+      "Bash(git remote set-url:*)",
+      "Bash(git remote remove *)",
+      "Bash(git remote rm *)",
+      "Bash(git remote rename *)",
+      "Bash(pipx install:*)",
+      "Bash(pipx run:*)",
+      "Bash(pipx inject:*)",
+      "Bash(pipenv install:*)",
+      "Bash(pipenv update:*)",
+      "Bash(pipenv sync:*)",
+      "Bash(poetry add:*)",
+      "Bash(poetry install:*)",
+      "Bash(poetry update:*)",
+      "Bash(cargo install:*)",
+      "Bash(gem install:*)",
+      "Bash(brew install:*)",
+      "Bash(brew upgrade:*)",
+      "Bash(go install:*)",
+      "Bash(go get:*)",
+      "Bash(apt install:*)",
+      "Bash(apt-get install:*)",
+      "Bash(aptitude install:*)",
+      "Bash(snap install:*)",
+      "Bash(flatpak install:*)",
+      "Bash(dnf install:*)",
+      "Bash(yum install:*)",
+      "Bash(pre-commit install:*)",
+      "Bash(git rebase:*)",
+      "Bash(git pull --rebase:*)"
+    ],
+    "ask": [
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(gh pr review:*)",
+      "Bash(gh pr close:*)",
+      "Bash(gh pr reopen:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr ready:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(gh issue close:*)",
+      "Bash(gh issue reopen:*)",
+      "Bash(gh release create:*)",
+      "Bash(gh release edit:*)",
+      "Bash(gh release delete:*)",
+      "Bash(gh api * --method PATCH*)",
+      "Bash(gh api * --method POST*)",
+      "Bash(gh api * --method PUT*)",
+      "Bash(gh api * --method DELETE*)",
+      "Bash(gh api * -X POST*)",
+      "Bash(gh api * -X PATCH*)",
+      "Bash(gh api * -X PUT*)",
+      "Bash(gh api * -X DELETE*)",
+      "mcp__claude_ai_Atlassian__editJiraIssue",
+      "mcp__claude_ai_Atlassian__createJiraIssue",
+      "mcp__claude_ai_Atlassian__transitionJiraIssue",
+      "mcp__claude_ai_Atlassian__addCommentToJiraIssue",
+      "mcp__claude_ai_Atlassian__addWorklogToJiraIssue",
+      "mcp__claude_ai_Atlassian__createIssueLink",
+      "mcp__claude_ai_Atlassian__createConfluencePage",
+      "mcp__claude_ai_Atlassian__updateConfluencePage",
+      "mcp__claude_ai_Atlassian__createConfluenceFooterComment",
+      "mcp__claude_ai_Atlassian__createConfluenceInlineComment"
+    ],
+    "defaultMode": "default",
+    "additionalDirectories": [
+      "$HOME/.claude/hooks"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/settings-lock.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/secret-scanner.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/sensitive-file-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/claude-files-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/ai-artifact-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/persistence-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/claude-self-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/audit-log.sh",
+            "async": true
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/settings-lock.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/secret-scanner.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/cwd-drift-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/unsandboxed-install-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/pipe-rce-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/docker-escape-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/bash-cred-read-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/persistence-bash-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/claude-files-bash-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/xattr-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/audit-log.sh",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/main-branch-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/conventional-commit.sh"
+          },
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // empty'); if echo \"$CMD\" | grep -qi 'psql' && echo \"$CMD\" | grep -qiE 'DROP[[:space:]]+(TABLE|DATABASE|SCHEMA|INDEX)|TRUNCATE[[:space:]]'; then jq -n '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Destructive DDL (DROP/TRUNCATE) detected in psql command. Run manually if intentional.\"}}'; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; [[ \"$f\" == *.py ]] && uvx ruff format \"$f\" 2>/dev/null; } || true",
+            "statusMessage": "Formatting Python..."
+          },
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; if [[ \"$f\" == *.py ]]; then result=$(uvx ruff check \"$f\" 2>/dev/null); code=$?; if [ $code -ne 0 ] && [ -n \"$result\" ]; then jq -n --arg ctx \"Ruff issues in $f:\\n$result\" '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":$ctx}}'; fi; fi; } || true",
+            "statusMessage": "Linting Python..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/docker-compose-validator.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/xattr-tagger.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/audit-log.sh",
+            "async": true
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/audit-log.sh",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/install-tagger.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/session-log.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Summarize the 3-5 most important decisions, context, or progress from this session that should survive context compaction. Be concise — bullet points only.",
+            "statusMessage": "Saving session context before compaction..."
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -n '{\"systemMessage\":\"Reminder: Never add Co-Authored-By trailers to commits.\"}'",
+            "statusMessage": "Restoring key rules..."
+          },
+          {
+            "type": "command",
+            "command": "jq -n '{\"systemMessage\":\"If this session is working in a named scope, consider running /primer to update the scope primer with key decisions from this session.\"}'",
+            "statusMessage": "Scope primer check..."
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/pending-cleanup-check.sh",
+            "statusMessage": "Checking for pending cleanup items..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/project-bootstrap-check.sh",
+            "statusMessage": "Checking project workflow setup..."
+          },
+          {
+            "type": "command",
+            "command": "jq -n '{\"additionalContext\":\"Reminder: Name this session with /name <description> so you can find it later.\"}'",
+            "statusMessage": "Session naming reminder"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/scope-context.sh",
+            "statusMessage": "Loading scope context..."
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/memory-durability.sh --mode=sessionstart",
+            "statusMessage": "Re-anchoring durable memory..."
+          }
+        ]
+      }
+    ]
+  },
+  "worktree": {
+    "baseRef": "fresh"
+  },
+  "enableWorkflows": false,
+  "workflowKeywordTriggerEnabled": false,
+  "statusLine": {
+    "type": "command",
+    "command": "bash $HOME/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": false,
+    "superpowers@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "playwright@claude-plugins-official": false,
+    "claude-md-management@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": false,
+    "pyright-lsp@claude-plugins-official": true,
+    "serena@claude-plugins-official": true,
+    "playground@claude-plugins-official": true,
+    "hookify@claude-plugins-official": false,
+    "data@claude-plugins-official": false,
+    "chrome-devtools-mcp@claude-plugins-official": false,
+    "greptile@claude-plugins-official": false,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": false,
+    "ralph-loop@claude-plugins-official": false,
+    "security-guidance@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "explanatory-output-style@claude-plugins-official": true,
+    "learning-output-style@claude-plugins-official": false,
+    "remember@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": false,
+    "mcp-server-dev@claude-plugins-official": false,
+    "data-engineering@claude-plugins-official": true,
+    "caveman@caveman": true
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    }
+  },
+  "outputStyle": "Explanatory",
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": true,
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "registry.npmjs.org",
+        "index.crates.io",
+        "ghcr.io",
+        "registry-1.docker.io",
+        "auth.docker.io",
+        "production.cloudflare.docker.com",
+        "objects.githubusercontent.com",
+        "raw.githubusercontent.com",
+        "codeload.github.com",
+        "static.crates.io",
+        "pkg.go.dev",
+        "proxy.golang.org",
+        "sum.golang.org",
+        "docs.python.org",
+        "docs.rs",
+        "docs.airflow.apache.org",
+        "developer.mozilla.org"
+      ],
+      "allowLocalBinding": true
+    },
+    "filesystem": {
+      "allowWrite": [
+        "$HOME/.claude/projects",
+        "$HOME/.claude/plans",
+        "$HOME/.claude/tasks",
+        "$HOME/.claude/agents",
+        "$HOME/.claude/scopes",
+        "$HOME/.claude/sessions",
+        "$HOME/.claude/session-env",
+        "$HOME/.claude/shell-snapshots",
+        "$HOME/.claude/file-history",
+        "$HOME/.claude/paste-cache",
+        "$HOME/.claude/downloads",
+        "$HOME/.claude/cache",
+        "$HOME/.claude/jobs",
+        "$HOME/.claude/daemon",
+        "$HOME/.claude/ide",
+        "$HOME/.claude/telemetry",
+        "$HOME/.claude/backups",
+        "$HOME/.claude/security",
+        "$HOME/.claude/playwright-output",
+        "$HOME/.claude/audit.jsonl",
+        "$HOME/.claude/hook-stats.jsonl",
+        "$HOME/.claude/history.jsonl",
+        "$HOME/.claude/session-log.md",
+        "$HOME/Documents/notes",
+        "$HOME/Documents/projects",
+        "/tmp"
+      ],
+      "denyRead": [
+        "$HOME/.ssh",
+        "$HOME/.gnupg",
+        "$HOME/.aws",
+        "$HOME/.kube",
+        "$HOME/.docker",
+        "$HOME/.config/gcloud",
+        "$HOME/.config/gh",
+        "$HOME/.netrc"
+      ]
+    },
+    "excludedCommands": [
+      "docker *",
+      "docker compose *"
+    ]
+  },
+  "spinnerTipsEnabled": true,
+  "effortLevel": "medium",
+  "tui": "fullscreen",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "prefersReducedMotion": false,
+  "skipWorkflowUsageWarning": true,
+  "theme": "dark-ansi",
+  "editorMode": "normal",
+  "verbose": false,
+  "preferredNotifChannel": "auto",
+  "autoCompactEnabled": true,
+  "terminalProgressBarEnabled": true,
+  "remoteControlAtStartup": false,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true,
+  "useAutoModeDuringPlan": true,
+  "voiceEnabled": true
+}
