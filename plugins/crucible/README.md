@@ -74,21 +74,23 @@ consider running `red-vs-blue` before proceeding — at most once, and it
 always allows the tool call regardless. `hooks/hooks.json` wires it via
 `${CLAUDE_PLUGIN_ROOT}` for plugin-native autoloading.
 
-**This is the first hook shipped by any plugin in this repo, and two things
-remain unverified without a live install** (checked 2026-07-05 against the
+**This is the first hook shipped by any plugin in this repo.** Status after the
+2026-07-05 install (checked against the
 [hooks](https://code.claude.com/docs/en/hooks.md) and
 [plugins](https://code.claude.com/docs/en/plugins.md) docs):
 
-1. **Plugin-hook autoload.** Skills and monitors are documented as autoloading
-   on install; hooks are *not explicitly* documented as autoloading, though
-   the pattern strongly implies it. Assume yes, confirm post-install.
-2. **`ExitPlanMode` as a `PreToolUse` matcher.** Tool-name matchers are
-   open-ended, but `ExitPlanMode` is **not in the documented matcher example
-   set**, and `ExitPlanMode` is elsewhere seen paired with `PostToolUse`, not
-   `PreToolUse` — so this exact matcher may not fire. If it doesn't, the
-   supported alternatives are a `PostToolUse` matcher on `ExitPlanMode`, or a
-   `Stop` hook that injects the same `additionalContext`. Either is a
-   drop-in swap in `hooks.json`.
+1. **Plugin-hook autoload — CONFIRMED.** After `claude plugin install`,
+   `claude plugin details crucible@foundry` inventories the hook as
+   `Hooks (1) PreToolUse (harness-only)` — Claude Code parses `hooks.json` and
+   registers the hook with no manual `settings.json` edit. Autoload works.
+2. **`ExitPlanMode` as a `PreToolUse` matcher — still needs a live plan-mode
+   session.** Tool-name matchers are open-ended, but `ExitPlanMode` is **not in
+   the documented matcher example set**, and is elsewhere seen paired with
+   `PostToolUse`, not `PreToolUse` — so this exact matcher may not fire. Confirm
+   by entering plan mode and finalizing a high-stakes plan in a fresh session.
+   If it doesn't fire, the supported swaps are a `PostToolUse` matcher on
+   `ExitPlanMode`, or a `Stop` hook that injects the same `additionalContext` —
+   either is a drop-in edit in `hooks.json`.
 
 Treat the hook as experimental until confirmed working post-install. If
 autoload doesn't fire, `hooks/settings-fragment.example.json` is a manual
