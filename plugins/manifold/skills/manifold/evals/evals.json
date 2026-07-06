@@ -1,0 +1,47 @@
+{
+  "skill_name": "manifold",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Show me what to work on next in the agent-skills project",
+      "expected_output": "Agent invokes manifold next-leaves to surface the frontier of unsatisfied leaf nodes, reports which nodes are currently planned and unblocked.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Run a spec audit on the manifold project",
+      "expected_output": "Agent invokes manifold spec_audit (or spec-audit CLI), surfaces revisions with missing or suspicious change_reason, and interprets results in terms of spec revision discipline.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Does code match the spec on web? Run a drift report.",
+      "expected_output": "Agent invokes manifold drift_report (or drift-report CLI) with project_root/repo when needed, surfaces violated verdicts and unverified realizations — not revision hygiene (that is spec_audit).",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "What is the current state of the manifold project — which goals are achieved and which are still planned?",
+      "expected_output": "Agent uses peek_project or list_targets to query node target_status values across the project, summarizes what is achieved vs. planned, optionally shows the satisfaction state at each layer.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "What's blocking product-app?",
+      "expected_output": "Agent invokes list_cross_blocking_chain and/or next_leaves with cross-blocked exclusions, reporting which nodes are blocked by cross-project dependencies.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Run drift report on manifold with repo at ai-foundry",
+      "expected_output": "Agent invokes drift_report (or drift-report CLI) on project manifold with project_root/--repo pointing at the ai-foundry checkout; interprets violated vs unverified (and errored/satisfied) buckets — not revision hygiene (that is spec_audit).",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "We need to evolve the manifold spec toward multi-tenant support — propose a trajectory, show the impact preview, then accept the legs",
+      "expected_output": "Agent uses propose_trajectory (or trajectory propose CLI) with target brief + legs without mutating the graph, then peek_trajectory/show for impact preview (next_leaves_after), then accept_trajectory_leg — not ad-hoc update_node chains or next-leaves inside propose/show.",
+      "files": []
+    }
+  ]
+}
