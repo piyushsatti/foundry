@@ -1,0 +1,35 @@
+{
+  "skill_name": "hats",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want different perspectives on this migration plan before I commit to it — put on some hats.",
+      "expected_output": "Agent invokes hats: proposes 3-4 genuinely distinct lenses (each catching a failure class the others miss), gets confirmation, dispatches all hats as parallel subagents blind to each other, then synthesizes in the main thread with agreements, disagreements presented as signal, and a severity rollup. No hat implements fixes; agent does not ask which model to use or whether to run sequentially.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Get me a security, ops, and product read on this API design doc.",
+      "expected_output": "Agent recognizes a named-roles panel and runs hats with exactly the three named lenses in parallel-blind mode, each producing the structured per-hat contract (findings table with severity and evidence location, confidence). Synthesis surfaces any CRITICAL finding in the executive summary even if only one hat raised it, and does not send results back to hats for a second round.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Review our requirements checklist from a few different angles — I need to know if it's ready.",
+      "expected_output": "Agent invokes hats and, because the artifact is completeness-oriented, includes a dedicated coverage/completeness lens among the 3-4 hats (per D9 precision-bias guard). Synthesis includes coverage gaps, not just flaw findings.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Can you double-check this two-line bugfix diff for me?",
+      "expected_output": "Agent does NOT invoke hats (a panel on a trivial diff is overkill); routes to a single review (audit skill or direct code review) and may mention hats is for artifacts needing multiple professional lenses.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Put some hats on this API design doc — you pick which ones.",
+      "expected_output": "Agent invokes hats and proposes 3-4 lenses drawn from the wardrobe roster (e.g. security, sre, senior-engineer, coverage) rather than inventing ad-hoc personas, applies the HATS.md distinctness test (checking each candidate's Failure classes / Overlaps so no two collide), and confirms with the user. Each panelist prompt is composed from the wardrobe hat file content plus the neutral-stance rules (preferring the panelist agent type, falling back to a general-purpose subagent with the stance inlined). A requested lens absent from the wardrobe would be drafted inline per the HATS.md contract and flagged for wardrobe addition, not silently improvised.",
+      "files": []
+    }
+  ]
+}

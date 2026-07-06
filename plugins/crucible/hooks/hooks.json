@@ -1,0 +1,18 @@
+{
+  "_comment": "EXPERIMENTAL — first plugin hook in this repo; plugin-hook autoloading is unverified. See plugins/crucible/README.md.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/plan-review-nudge.sh",
+            "timeout": 5,
+            "statusMessage": "Checking plan stakes..."
+          }
+        ]
+      }
+    ]
+  }
+}

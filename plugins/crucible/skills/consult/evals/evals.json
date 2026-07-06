@@ -1,0 +1,23 @@
+{
+  "skill_name": "consult",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Can you be my architect on this? I'm thinking about splitting the monolith into services and want to talk it through before I write anything down.",
+      "expected_output": "Agent invokes consult: picks/confirms exactly ONE lens (architect), loads the architect hat from the wardrobe (../wardrobe/hats/architect.md), and engages conversationally as a thinking partner — brainstorming and pressure-testing the idea through that lens using the hat's always-ask questions and evidence bar. No panel, no blind subagent dispatch, no findings table, no verdict. It both builds on the idea and raises where the lens would worry. Ends with a short 'As an architect:' lens-summary paragraph (what it liked, what it's still worried about, what it would check next).",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want a few different professional perspectives on this design doc at once — tell me what each would flag.",
+      "expected_output": "Agent does NOT run consult (consult is a single lens, conversational). It recognizes a request for multiple perspectives at once on a finished artifact and routes to hats (3-4 parallel distinct lenses from the wardrobe, blind, then structured synthesis). It may note consult is for thinking one idea through with a single perspective, not a panel.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "This migration plan is high-stakes and expensive if it goes wrong — attack it and see if it breaks before we commit.",
+      "expected_output": "Agent does NOT run consult (consult is a partner that brainstorms and validates, not an adversary). It recognizes an adversarial, high-stakes stress-test and routes to red-vs-blue (attack/verify pair + adjudication). Consult is offered only if the user actually wanted to think the plan through with one perspective rather than have it attacked.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "skill_name": "red-vs-blue",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Red team this launch plan before we commit — I want it attacked properly.",
+      "expected_output": "Agent invokes red-vs-blue: red and blue dispatched as parallel subagents blind to each other; blue does NOT receive or adjudicate red's findings (blue verifies soundness + runs the mandatory coverage check); adjudication of red's findings happens only in the synthesis step (main thread or third agent), ending in a verdict (proceed / proceed with fixes / halt). Neither side implements fixes.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want an adversarial review of our new auth architecture before we build it.",
+      "expected_output": "Agent confirms the artifact is high-stakes and runs red-vs-blue once (single round, no red-on-blue rebuttal loop). Red findings cite evidence distinct from the artifact's own reasoning (independence contract); synthesis judges severity from evidence rather than red's expressed confidence and separates must-address / acceptable-as-is / disputed.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Attack this requirements document — tear it apart.",
+      "expected_output": "Agent runs red-vs-blue but applies the D9 precision-bias guard for a completeness-oriented artifact: blue's coverage-gaps section is mandatory and surfaced in synthesis (or agent suggests hats with a coverage lens as the better fit), so the review does not just delete content without checking what is missing.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Can you review the wording of this README?",
+      "expected_output": "Agent does NOT invoke red-vs-blue (routine, low-stakes); suggests a single review (audit) or just does the light review directly, reserving red-vs-blue for high-stakes plans and architecture.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Run a full red-vs-blue on this two-paragraph draft blog post.",
+      "expected_output": "Agent runs the worthiness gate FIRST (cheap in-thread check) and, finding low stakes and thin maturity, warns the user before dispatching — e.g. 'this doesn't look worth a full red-vs-blue because the blast radius is low / it's a short draft — audit or a single consult would do. Continue anyway?' — and waits for the user's call. The gate informs but never blocks: if the user says proceed, the agent runs the pair anyway. It neither silently refuses nor silently proceeds.",
+      "files": []
+    }
+  ]
+}
