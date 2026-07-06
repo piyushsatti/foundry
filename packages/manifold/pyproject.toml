@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "manifold-lib"
+version = "0.1.0"
+description = "KAOS spec substrate — the manifold project-compass engine (importable as `manifold`)."
+requires-python = ">=3.10"
+authors = [{ name = "Piyush Satti" }]
+license = "MIT"
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/piyushsatti/foundry"
+
+[tool.hatch.build.targets.wheel]
+packages = ["manifold"]

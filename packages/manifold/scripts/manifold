@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Run manifold CLI against the repo checkout (host-agnostic).
+PKG_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "$PKG_ROOT/../.." && pwd)"
+export PYTHONPATH="${PKG_ROOT}:${REPO_ROOT}/apps/manifold-web${PYTHONPATH:+:$PYTHONPATH}"
+exec python3 -m manifold "$@"
