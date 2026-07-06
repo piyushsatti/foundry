@@ -1,0 +1,42 @@
+# ── THE FENCE ──────────────────────────────────────────────────────────
+# local/ holds work-sensitive, machine-bound content (hostnames, employer
+# refs, internal IPs). Ignored by default so a public repo can't leak it.
+#
+#   • Going PUBLIC  → keep this line (or switch local/ to chezmoi encryption).
+#   • Whole repo PRIVATE → delete this line to track local/ too.
+/local/
+
+# ── never track ──
+**/.credentials.json
+**/*.key
+**/*.pem
+**/*.token
+.DS_Store
+
+# ── Python / build (workshop side) ──
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# ── local runtime state ──
+.claude/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.env
+.env.*
+*~
+.*.swp
+.vscode/
+.idea/
+
+# ── meditate per-machine config (config/targets.example.yaml is the tracked template) ──
+/plugins/meditate/config/targets.yaml
+
+# ── ephemeral scratch: session artifacts / plans / audits / handoffs (kept locally, never tracked) ──
+!.gitignored/
+.gitignored/*
+!.gitignored/README.md
