@@ -12,13 +12,22 @@ import traceback
 from pathlib import Path
 from typing import Any, Callable
 
-# Locate the `manifold` library: prefer an installed copy (`pip install packages/manifold`);
-# otherwise walk up to find packages/manifold (running from the repo or via --plugin-dir).
+# Locate the `manifold` library, in preference order:
+#   1. an installed copy (`pip install packages/manifold`) — the repo dev flow;
+#   2. packages/manifold in an enclosing repo checkout (running from source / --plugin-dir);
+#   3. the copy vendored under server/_vendor — the marketplace install, where the
+#      plugin ships without packages/. Keep the vendored tree in sync with
+#      packages/manifold via scripts/vendor_sync.py (enforced by tests/test_vendor_parity.py).
 if importlib.util.find_spec("manifold") is None:
-    for _base in Path(__file__).resolve().parents:
+    _here = Path(__file__).resolve()
+    for _base in _here.parents:
         if (_base / "packages" / "manifold" / "manifold" / "__init__.py").exists():
             sys.path.insert(0, str(_base / "packages" / "manifold"))
             break
+    else:
+        _vendor = _here.parent / "_vendor"
+        if (_vendor / "manifold" / "__init__.py").exists():
+            sys.path.insert(0, str(_vendor))
 
 from manifold import config, db, errors, queries, schema, writes
 

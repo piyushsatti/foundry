@@ -8,18 +8,25 @@ auto-loads when the plugin is installed — no manual host registration. The ser
 launched as `${CLAUDE_PLUGIN_ROOT}/server/mcp_server.py` with its database at
 `${CLAUDE_PLUGIN_DATA}/manifold.db`.
 
-## Install prerequisite
+## Bundled library — self-contained
 
-The server imports the `manifold` library. Install it once per machine so the import
-resolves after the plugin is copied to `~/.claude/plugins/cache/`:
+The server imports the `manifold` library and resolves it in this order:
+
+1. a pip-installed copy (`pip install -e packages/manifold`) — the repo dev flow;
+2. the sibling `packages/manifold` tree when running from a repo checkout;
+3. the copy **vendored under [`server/_vendor/`](server/_vendor/)** — used by a
+   marketplace install, which ships only `plugins/manifold/`.
+
+Because of (3), the plugin works from a clean `/plugin install manifold@foundry`
+with **no extra setup** — the library (stdlib-only) and `schema.sql` travel with it.
+
+The vendored copy is generated from `packages/manifold` and must stay in sync:
 
 ```bash
-pip install -e packages/manifold      # from the foundry repo root
+python3 plugins/manifold/scripts/vendor_sync.py   # regenerate after changing the lib
 ```
 
-When run from inside the repo (development), the server also walks up to find
-`packages/manifold` automatically, so the pip install is only strictly required for the
-installed/cached plugin outside the repo tree.
+`tests/test_vendor_parity.py` fails the build if the vendored copy drifts.
 
 ## Tests
 
