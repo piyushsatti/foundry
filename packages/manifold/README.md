@@ -62,7 +62,7 @@ packages/manifold/scripts/manifold version
 | Consumer | Path |
 |---|---|
 | Skill (agent instructions) | `plugins/manifold/skills/manifold/` |
-| MCP server (42 tools) | `plugins/manifold/server/` |
+| MCP server (46 tools) | `plugins/manifold/server/` |
 | Web UI | `apps/manifold-web/` |
 
 ## Tests

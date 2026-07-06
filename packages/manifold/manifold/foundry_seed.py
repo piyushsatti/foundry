@@ -110,7 +110,7 @@ def seed_ai_foundry(
 
     reals = [
         ("R.core", "Core library", "packages/manifold", "C.1", "achieved"),
-        ("R.mcp", "Manifold MCP server", "plugins/manifold (42 tools)", "C.1", "achieved"),
+        ("R.mcp", "Manifold MCP server", "plugins/manifold (46 tools)", "C.1", "achieved"),
         ("R.web", "Manifold web UI", "apps/manifold-web", "C.1", "achieved"),
         ("R.traj", "Trajectory v1", "schema + CLI + MCP + HTTP peek", "C.3", "achieved"),
         ("R.j3", "Trajectory web inbox", "J3 — plan/apply UX on web", "C.3", "planned"),
