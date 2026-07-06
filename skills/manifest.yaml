@@ -1,0 +1,247 @@
+# Foundry skill registry — source of truth for install allowlist + dependencies.
+#
+# Fields per skill:
+#   path        — repo-relative directory
+#   mcp_bundle  — optional; rsync mcps/<name>/ server+web+scripts+examples into install dir
+#   origin      — authored | vendor
+#   bundle      — vendor bundle name (vendor only)
+#   status      — shipped | draft (authored only)
+#   requires    — hard deps; must exist in this manifest (fail validate if missing)
+#   suggests    — soft handoff / next-step after this skill completes
+#   dispatches  — may invoke via Skill tool or subagent (must exist in manifest)
+#   external    — outside foundry bundle (plugins); documented, not validated
+#
+version: 1
+
+skills:
+  # --- Authored ---
+
+  manifold:
+    path: plugins/manifold/skills/manifold
+    origin: authored
+    status: shipped
+    requires: []
+    suggests: [red-vs-blue, present]
+    dispatches: []
+    external: []
+
+  present:
+    path: skills/present
+    origin: authored
+    status: draft
+    requires: []
+    suggests: [manifold]
+    dispatches: []
+    external: []
+
+  plan-orchestrator:
+    path: plugins/plan-orchestrator/skills/plan-orchestrator
+    origin: authored
+    status: shipped
+    requires: [progress-tracker]
+    suggests: [brief, subset]
+    dispatches: [audit, hats, red-vs-blue, grill-with-docs, handoff, design-taste-frontend]
+    external: [brainstorming, writing-plans, verification-before-completion]
+
+  os-doctor:
+    path: skills/os-doctor
+    origin: authored
+    status: shipped
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  progress-tracker:
+    path: plugins/plan-orchestrator/skills/progress-tracker
+    mcp_bundle: plugins/plan-orchestrator
+    origin: authored
+    status: shipped
+    requires: []
+    suggests: [plan-orchestrator, manifold]
+    dispatches: []
+    external: []
+
+  brief:
+    path: skills/brief
+    origin: authored
+    status: draft
+    requires: []
+    suggests: [subset, audit, hats, red-vs-blue]
+    dispatches: []
+    external: [brainstorming, writing-plans]
+
+  audit:
+    path: skills/audit
+    origin: authored
+    status: draft
+    requires: []
+    suggests: [hats, red-vs-blue]
+    dispatches: []
+    external: []
+
+  subset:
+    path: skills/subset
+    origin: authored
+    status: draft
+    requires: []
+    suggests: [audit]
+    dispatches: []
+    external: []
+
+  wardrobe:
+    path: plugins/crucible/skills/wardrobe
+    origin: authored
+    status: shipped
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  consult:
+    path: plugins/crucible/skills/consult
+    origin: authored
+    status: shipped
+    requires: [wardrobe]
+    suggests: [hats, red-vs-blue]
+    dispatches: []
+    external: []
+
+  hats:
+    path: plugins/crucible/skills/hats
+    origin: authored
+    status: shipped
+    requires: [wardrobe]
+    suggests: [audit, red-vs-blue]
+    dispatches: []
+    external: []
+
+  red-vs-blue:
+    path: plugins/crucible/skills/red-vs-blue
+    origin: authored
+    status: shipped
+    requires: [wardrobe]
+    suggests: [audit, hats]
+    dispatches: []
+    external: []
+
+  worktree:
+    path: skills/worktree
+    origin: authored
+    status: shipped
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  # --- Vendor: mattpocock ---
+
+  grill-with-docs:
+    path: vendor/skills/mattpocock/grill-with-docs
+    origin: vendor
+    bundle: mattpocock
+    requires: []
+    suggests: [audit, hats, red-vs-blue]
+    dispatches: []
+    external: []
+
+  handoff:
+    path: vendor/skills/mattpocock/handoff
+    origin: vendor
+    bundle: mattpocock
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  write-a-skill:
+    path: vendor/skills/mattpocock/write-a-skill
+    origin: vendor
+    bundle: mattpocock
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  caveman:
+    path: vendor/skills/mattpocock-trimmed/caveman
+    origin: vendor
+    bundle: mattpocock-trimmed
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  # --- Vendor: taste-skill ---
+
+  design-taste-frontend:
+    path: vendor/skills/taste-skill/design-taste-frontend
+    origin: vendor
+    bundle: taste-skill
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  high-end-visual-design:
+    path: vendor/skills/taste-skill/high-end-visual-design
+    origin: vendor
+    bundle: taste-skill
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  minimalist-ui:
+    path: vendor/skills/taste-skill/minimalist-ui
+    origin: vendor
+    bundle: taste-skill
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  industrial-brutalist-ui:
+    path: vendor/skills/taste-skill/industrial-brutalist-ui
+    origin: vendor
+    bundle: taste-skill
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  redesign-existing-projects:
+    path: vendor/skills/taste-skill/redesign-existing-projects
+    origin: vendor
+    bundle: taste-skill
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  full-output-enforcement:
+    path: vendor/skills/taste-skill/full-output-enforcement
+    origin: vendor
+    bundle: taste-skill
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+  stitch-design-taste:
+    path: vendor/skills/taste-skill/stitch-design-taste
+    origin: vendor
+    bundle: taste-skill
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
+# Plugin / host skills referenced by authored skills but not vendored in foundry.
+external_registry:
+  brainstorming:
+    source: superpowers plugin
+  writing-plans:
+    source: superpowers plugin
+  verification-before-completion:
+    source: superpowers plugin
