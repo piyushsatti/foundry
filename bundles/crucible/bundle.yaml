@@ -1,0 +1,11 @@
+# Build composition: this dir is copied verbatim to plugins/crucible (minus excludes).
+build: true
+compose:
+  skills: []
+  agents: []
+  packages: []
+exclude:
+  - "**/__pycache__"
+  - "**/*.pyc"
+  - "**/evals/**"
+  - "bundle.yaml"

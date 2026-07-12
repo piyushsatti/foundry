@@ -1,0 +1,14 @@
+# Build composition: verbatim copy + vendored manifold lib (packages/manifold -> server/_vendor).
+build: true
+compose:
+  skills: []
+  agents: []
+  packages:
+    - package: manifold
+      dest: server/_vendor
+      sidecars: [schema.sql]
+exclude:
+  - "**/__pycache__"
+  - "**/*.pyc"
+  - "**/evals/**"
+  - "bundle.yaml"
