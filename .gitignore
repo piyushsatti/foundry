@@ -40,3 +40,6 @@ dist/
 !.gitignored/
 .gitignored/*
 !.gitignored/README.md
+
+# Build output — materialized by scripts/build.py; served from the release ref
+/plugins/
