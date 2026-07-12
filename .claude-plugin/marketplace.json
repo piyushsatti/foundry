@@ -3,27 +3,57 @@
   "owner": {
     "name": "Piyush Satti"
   },
-  "description": "Piyush's agentic infrastructure — memory curation, project-compass, and multi-agent orchestration plugins.",
+  "description": "Piyush's agentic infrastructure — memory curation, project-compass, review, orchestration, and dev-environment plugins.",
   "plugins": [
     {
-      "name": "meditate",
-      "source": "./plugins/meditate",
-      "description": "Reflective memory curation: pause, review, consolidate, release."
+      "name": "crucible",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/piyushsatti/foundry.git",
+        "path": "plugins/crucible",
+        "ref": "release"
+      },
+      "description": "Lens x stance adversarial + panel review system: consult, hats, red-vs-blue, and audit built on a shared hat wardrobe."
+    },
+    {
+      "name": "devtools",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/piyushsatti/foundry.git",
+        "path": "plugins/devtools",
+        "ref": "release"
+      },
+      "description": "Dev-environment tooling — worktree-native lifecycle with memory and serena wiring."
     },
     {
       "name": "manifold",
-      "source": "./plugins/manifold",
-      "description": "KAOS project compass — DB-canonical spec substrate + MCP tools over a project's goal graph."
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/piyushsatti/foundry.git",
+        "path": "plugins/manifold",
+        "ref": "release"
+      },
+      "description": "KAOS project compass — DB-canonical spec substrate + MCP tools over a project's goal graph, with the present projection skill."
+    },
+    {
+      "name": "meditate",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/piyushsatti/foundry.git",
+        "path": "plugins/meditate",
+        "ref": "release"
+      },
+      "description": "Reflective memory curation: pause, review, consolidate, release."
     },
     {
       "name": "plan-orchestrator",
-      "source": "./plugins/plan-orchestrator",
-      "description": "Multi-agent plan orchestration with live dispatch telemetry (bundles the progress-tracker MCP)."
-    },
-    {
-      "name": "crucible",
-      "source": "./plugins/crucible",
-      "description": "Lens x stance adversarial + panel review system: consult, hats, and red-vs-blue built on a shared hat wardrobe."
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/piyushsatti/foundry.git",
+        "path": "plugins/plan-orchestrator",
+        "ref": "release"
+      },
+      "description": "Multi-agent plan orchestration with live dispatch telemetry, plus the brief and subset scoping skills."
     }
   ]
 }

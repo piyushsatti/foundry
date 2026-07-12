@@ -1,11 +1,17 @@
 {
   "name": "meditate",
-  "description": "Reflective memory curation: pause → review → consolidate → release. Audits Claude memory + CLAUDE.md (+ serena if active), proposes dispositions via a read-only Opus curator agent, gates, and executes approved changes with archive-not-destroy safety.",
-  "version": "0.1.0",
+  "description": "Reflective memory curation: pause \u2192 review \u2192 consolidate \u2192 release. Audits Claude memory + CLAUDE.md (+ serena if active), proposes dispositions via a read-only Opus curator agent, gates, and executes approved changes with archive-not-destroy safety.",
+  "version": "0.1.1",
   "author": {
     "name": "Piyush Satti",
     "email": "piyushsatti@gmail.com"
   },
   "license": "MIT",
-  "keywords": ["memory", "curation", "claude-memory", "reflection", "consolidation"]
+  "keywords": [
+    "memory",
+    "curation",
+    "claude-memory",
+    "reflection",
+    "consolidation"
+  ]
 }

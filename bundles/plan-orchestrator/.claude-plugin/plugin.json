@@ -1,10 +1,16 @@
 {
   "name": "plan-orchestrator",
   "description": "Orchestrate multi-agent plans with live dispatch telemetry. Bundles the progress-tracker skill and its MCP server.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Piyush Satti"
   },
   "license": "MIT",
-  "keywords": ["orchestration", "planning", "multi-agent", "progress-tracker", "mcp"]
+  "keywords": [
+    "orchestration",
+    "planning",
+    "multi-agent",
+    "progress-tracker",
+    "mcp"
+  ]
 }

@@ -34,7 +34,7 @@ DB: `$MANIFOLD_DB` (default: a per-idea file under `~/.claude/`). One DB file pe
 
 ## Plugins
 
-Each plugin is self-contained under `bundles/<name>/` with `.claude-plugin/plugin.json`. MCP servers live inside their bundle (`server/`) and are declared in the plugin's `.mcp.json` via `${CLAUDE_PLUGIN_ROOT}`. `scripts/build.py` materializes each bundle into `plugins/<name>/` (gitignored); the marketplace catalog `.claude-plugin/marketplace.json` points at those build outputs.
+Each plugin is self-contained under `bundles/<name>/` with `.claude-plugin/plugin.json`. MCP servers live inside their bundle (`server/`) and are declared in the plugin's `.mcp.json` via `${CLAUDE_PLUGIN_ROOT}`. `scripts/build.py` materializes each bundle into `plugins/<name>/` (gitignored); the release workflow publishes that tree to the `release` branch, and the marketplace catalog `.claude-plugin/marketplace.json` on `main` points each plugin at it via `git-subdir` sources (`ref: release`).
 
 ## Skills registry
 

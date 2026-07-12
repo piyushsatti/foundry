@@ -1,0 +1,25 @@
+# CI on main/PRs: source-tree validation only. plugins/ is build output and
+# never exists here; the release workflow owns materialization.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Skill registry valid
+        run: python3 scripts/skills_manifest.py validate
+      - name: Boundary guard (no bundle -> bundle path reach)
+        run: python3 scripts/check_boundaries.py
+      - name: Build determinism + vendored fidelity + guard fixtures
+        run: python3 -m unittest tests.test_build_determinism tests.test_check_boundaries -v
+      - name: manifold library tests
+        run: python3 -m unittest discover
+        working-directory: packages/manifold

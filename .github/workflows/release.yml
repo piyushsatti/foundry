@@ -1,0 +1,54 @@
+# Release: materialize bundles/ -> plugins/ and publish the built tree to the
+# `release` branch that marketplace.json's git-subdir sources point at.
+#
+# Structure of the release branch: a self-contained snapshot whose root holds
+# plugins/<name>/ (what each git-subdir source pulls) and .claude-plugin/
+# marketplace.json with relative ./plugins/<name> sources (so adding the
+# release ref directly also works).
+#
+# Rollback runbook: a bad ship = repoint the release branch to the last good
+# sha (git push --force origin <sha>:release). Installs are pull-based; users
+# recover on their next `claude plugin marketplace update` + `plugin update`.
+# A partial/failed push leaves the previous release intact — the branch update
+# is a single atomic ref move; just re-run the workflow.
+name: release
+on:
+  workflow_dispatch:
+  push:
+    tags: ["release-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Gates (same as CI)
+        run: |
+          python3 scripts/skills_manifest.py validate
+          python3 scripts/check_boundaries.py
+          python3 -m unittest tests.test_build_determinism tests.test_check_boundaries
+      - name: Materialize bundles
+        run: python3 scripts/build.py
+      - name: Publish plugins/ to the release branch
+        run: |
+          set -euo pipefail
+          STAGE="$(mktemp -d)"
+          cp -R plugins "$STAGE/plugins"
+          mkdir -p "$STAGE/.claude-plugin"
+          mv "$STAGE/plugins/.claude-plugin/marketplace.json" "$STAGE/.claude-plugin/marketplace.json"
+          SRC_SHA="$GITHUB_SHA"
+          git checkout --orphan release-stage
+          git rm -rfq .
+          find . -mindepth 1 -maxdepth 1 -not -name .git -exec rm -rf {} +
+          cp -R "$STAGE/plugins" plugins
+          cp -R "$STAGE/.claude-plugin" .claude-plugin
+          git add -A
+          git -c user.name="foundry-release" -c user.email="release@foundry" \
+            commit -m "release: materialized plugins from $SRC_SHA"
+          git push --force origin HEAD:release
