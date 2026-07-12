@@ -1,20 +1,22 @@
-# home — personal `~/.claude` kit
+# home — authored Claude Code tooling
 
-The Claude Code configuration I sync across machines, versioned here so it's
-reviewable and portable. This is the **generic, you-owned** layer; anything
-machine-bound or work-sensitive stays out (see the fence below).
+Tooling I **built** for my Claude Code setup — hooks, commands, statuslines,
+subagents, helper bins — versioned because they are developed artifacts.
+
+**Live personal state is deliberately NOT here.** `~/.claude/CLAUDE.md` (global
+rules) and `~/.claude/settings.json` drift by design per machine/preference;
+mirroring them in a repo produces stale copies, so the live files are the only
+truth (evicted 2026-07-12). Machine-bound or work-sensitive content stays out
+(see the fence below).
 
 ## Layout
 
 | Path | What it is |
 |------|-----------|
-| `CLAUDE.md` | Global workflow discipline — rules that apply to every project (generic only; no employer/project/language specifics) |
-| `settings/` | Per-machine settings variants + the wired template. **Not yet merged** — see [`settings/NOTES.md`](settings/NOTES.md) |
 | `hooks/` | 32 guard/logging/nudge hooks (secret-scan, sandbox guards, conventional-commit, audit trail, …) + `lib/` |
 | `commands/` | Slash commands (`primer`, …) |
 | `agents/` | User-level subagents (`scrutineer` — research-rigor auditor) |
 | `bin/` | Helper executables (`bless`) |
-| `memory/` | Recalled facts/references (`MEMORY.md` index + `feedback_*` / `reference_*`) — generic, portable memories only |
 | `statuslines/` | Statusline scripts + `statusline-command.sh` dispatcher |
 
 ## The fence — what does NOT live here

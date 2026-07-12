@@ -17,7 +17,7 @@ Piyush's agentic-infrastructure monorepo: a Claude Code plugin marketplace, the 
 | `apps/manifold-web/` | Browser UI |
 | `skills/` | Authored skills in staging (not yet bundles); registry: `skills/manifest.yaml` |
 | `vendor/skills/` | Vendored upstream skills |
-| `home/` | Personal `~/.claude` kit — global `CLAUDE.md`, settings, hooks, commands, memory, statuslines |
+| `home/` | Authored Claude Code tooling — hooks, commands, statuslines, subagents (live `~/.claude` state is not mirrored here) |
 | `docs/` · `research/` · `archived/` | Design docs, studies, deprecated reference |
 | `local/` | Work-sensitive (gitignored) |
 | `.gitignored/` | Local scratch — plans, audits, handoffs (never committed) |

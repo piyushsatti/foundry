@@ -6,7 +6,7 @@ foundry is three things under one roof:
 
 - **A plugin marketplace** — versioned, installable Claude Code plugins, sourced from `bundles/`, built to `plugins/`, cataloged in `.claude-plugin/marketplace.json`.
 - **A development workspace** — the libraries, MCP servers, and apps those plugins build on (`packages/`, `apps/`).
-- **A personal dotfiles kit** — the `~/.claude` configuration I sync across machines (`home/`).
+- **Authored Claude Code tooling** — hooks, commands, statuslines, and subagents I built (`home/`; live `~/.claude` state is not mirrored).
 
 ## Layout
 
@@ -20,7 +20,7 @@ foundry is three things under one roof:
 | `apps/` | Human-facing apps (e.g. `manifold-web`) |
 | `skills/` | Authored skills in staging — not yet promoted to a bundle |
 | `vendor/skills/` | Vendored upstream skills (pinned) |
-| `home/` | Personal `~/.claude` kit — global `CLAUDE.md`, settings, hooks, commands, memory, statuslines |
+| `home/` | Authored Claude Code tooling — hooks, commands, statuslines, subagents (live `~/.claude` state is not mirrored here) |
 | `docs/` · `research/` · `archived/` | Design docs, landscape studies, deprecated reference |
 | `local/` | Work-sensitive, machine-bound (gitignored) |
 | `scripts/` | Registry + sync tooling |
