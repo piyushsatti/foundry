@@ -34,7 +34,7 @@ dist/
 .idea/
 
 # ── meditate per-machine config (config/targets.example.yaml is the tracked template) ──
-/plugins/meditate/config/targets.yaml
+/bundles/meditate/config/targets.yaml
 
 # ── ephemeral scratch: session artifacts / plans / audits / handoffs (kept locally, never tracked) ──
 !.gitignored/
