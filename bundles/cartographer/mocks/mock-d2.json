@@ -1,0 +1,850 @@
+{
+  "schema_version": 2,
+  "based_on": "mock-d.json (schema v1 — kept untouched as the structural-faithfulness record)",
+  "session": {
+    "surface": "claude-code",
+    "title": "meditate full review: three lenses merge, doc recovery loops back, repair pass executes",
+    "intent": {
+      "version": 3,
+      "text": "Make meditate run on this machine: execute the approved repair plan (workstreams A–E plus a no-live-mutation verification pass) on top of the recovered spec.",
+      "history": [
+        {
+          "version": 1,
+          "text": "Assess meditate end to end — design, implementation quality, and standing against the memory-curation field — as read-only reconnaissance: no plugin edits, no version bump, findings to .gitignored/.",
+          "superseded_because": "The synthesis's scariest critical — the plugin's spec existed only on the old laptop — was ruled a workstream, not just a finding: recovery entered the goal.",
+          "shifted_at": "n09@1"
+        },
+        {
+          "version": 2,
+          "text": "Assess meditate and recover its lost spec: vendor the authority docs into the repo and build the README around them, so the verdict rests on a spec that exists here.",
+          "superseded_because": "Pi returned asking for 'a plan for the natural next moves'; the plan's approval retired the read-only rule and turned assessment into repair.",
+          "shifted_at": "n15@1"
+        }
+      ]
+    },
+    "frontier": {
+      "node": "n17@1",
+      "detail": "apply/SKILL.md rewrite mid-edit at capture (transcript line 718)"
+    },
+    "date": "2026-07-05",
+    "source_transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+    "captured_at_line": 718,
+    "compaction_events": []
+  },
+  "lines": [
+    {
+      "id": "REVIEW",
+      "label": "What state is meditate in?",
+      "because": {
+        "text": "Uh, don't update the version number Right now, I want you to do information gathering, and you can store all the information in gitignore folder, uh, for now.",
+        "verbatim": true,
+        "speaker": "user",
+        "lines": [
+          8,
+          8
+        ],
+        "note": "This verbatim fragment carries the line's MODE (information gathering, read-only). The line's SCOPE — a full review at three levels: design/architecture, implementation quality, literature — exists in mock-d only as summarized prose (mock-d.md, n01.summary); the label wording is editorial. See friction note 2 in mock-d2.md."
+      },
+      "from": null,
+      "into": null,
+      "outcome": "Answered at n07@2: conceptually ahead of the field; as built it cannot run on this machine. Its scariest critical (the spec lived only on the old laptop) spawned RESCUE, whose landing resolved it.",
+      "segments": [
+        {
+          "id": "REVIEW/design",
+          "label": "design/architecture lens",
+          "carrier": "background agent",
+          "fans_out": "n03",
+          "lands": "n07",
+          "nodes": [
+            "n04"
+          ]
+        },
+        {
+          "id": "REVIEW/impl",
+          "label": "implementation-quality lens",
+          "carrier": "background agent",
+          "fans_out": "n03",
+          "lands": "n07",
+          "nodes": [
+            "n05"
+          ]
+        },
+        {
+          "id": "REVIEW/literature",
+          "label": "memory-curation field survey",
+          "carrier": "background agent",
+          "fans_out": "n03",
+          "lands": "n07",
+          "nodes": [
+            "n06"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "RESCUE",
+      "label": "Rescue the lost spec",
+      "because": {
+        "text": "So the first thing that makes sense to me is creating the README, and I'm ready to take whatever, um, suggestions you have here. However, we do have the file system of the laptop that originally created, Meditate, so that is accessible. It's in the m n t folder.",
+        "verbatim": true,
+        "speaker": "user",
+        "lines": [
+          196,
+          196
+        ],
+        "note": "Spawned by the lost-spec critical inside n07 v1; Pi's words above are the fork's charter."
+      },
+      "from": {
+        "line": "REVIEW",
+        "node": "n07",
+        "version": 1,
+        "relation": "fork"
+      },
+      "into": {
+        "line": "REVIEW",
+        "node": "n07",
+        "version": 2,
+        "relation": "merge-update"
+      },
+      "outcome": "Authority docs vendored into plugins/meditate/docs/, README written around them; the landing bumped n07 to v2 — the critical that spawned the line is resolved.",
+      "segments": []
+    },
+    {
+      "id": "RUNNABLE",
+      "label": "Make meditate run here",
+      "because": {
+        "text": "make a plan for the natural next moves",
+        "verbatim": true,
+        "speaker": "user",
+        "lines": [
+          340,
+          340
+        ]
+      },
+      "from": {
+        "line": "REVIEW",
+        "node": "n07",
+        "version": 2,
+        "relation": "succession"
+      },
+      "into": null,
+      "outcome": "Open at capture: plan approved as workstreams A–E + verification; C and D5 done, A+B active (frontier), E and the verification pass not started.",
+      "segments": []
+    }
+  ],
+  "beats": [
+    {
+      "title": "Three lenses, one verdict",
+      "from_node": "n01",
+      "to_node": "n07"
+    },
+    {
+      "title": "The spec was on the old laptop",
+      "from_node": "n08",
+      "to_node": "n11"
+    },
+    {
+      "title": "From verdict to repair",
+      "from_node": "n12",
+      "to_node": "n19",
+      "note": "opens after a ~5-hour gap"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "a01",
+      "kind": "file",
+      "name": "00-scope-and-method.md — scope + firsthand findings",
+      "produced_by": "n03@1",
+      "status": "created"
+    },
+    {
+      "id": "a02",
+      "kind": "report",
+      "name": "design/architecture review report",
+      "produced_by": "n04@1",
+      "status": "created"
+    },
+    {
+      "id": "a03",
+      "kind": "report",
+      "name": "implementation-quality review report",
+      "produced_by": "n05@1",
+      "status": "created"
+    },
+    {
+      "id": "a04",
+      "kind": "report",
+      "name": "memory-curation literature survey",
+      "produced_by": "n06@1",
+      "status": "created"
+    },
+    {
+      "id": "a05",
+      "kind": "report",
+      "name": "SYNTHESIS.md — combined verdict, doc-update plan, phased code plan, open decisions",
+      "produced_by": "n07@1",
+      "updated_by": "n07@2",
+      "status": "updated"
+    },
+    {
+      "id": "a06",
+      "kind": "docs",
+      "name": "vendored authority docs ×6 (five curator docs + applier design doc) → plugins/meditate/docs/",
+      "produced_by": "n10@1",
+      "status": "created"
+    },
+    {
+      "id": "a07",
+      "kind": "file",
+      "name": "plugins/meditate/README.md — the plugin's front door",
+      "produced_by": "n11@1",
+      "status": "created"
+    },
+    {
+      "id": "a08",
+      "kind": "plan",
+      "name": "repair plan — workstreams A–E + no-live-mutation verification pass",
+      "produced_by": "n15@1",
+      "status": "created"
+    },
+    {
+      "id": "a09",
+      "kind": "code",
+      "name": "bin/ helpers ×3 — meditate-lock, meditate-slug, manifest extract+validate",
+      "produced_by": "n16@1",
+      "status": "created"
+    },
+    {
+      "id": "a10",
+      "kind": "code",
+      "name": "curate/curator/review skills rewired (candidates: container, 14-verb enum, bin/ wiring)",
+      "produced_by": "n17@1",
+      "status": "updated"
+    },
+    {
+      "id": "a11",
+      "kind": "config",
+      "name": "per-machine config split — tracked example template + gitignored real config",
+      "produced_by": "n17@1",
+      "status": "created"
+    },
+    {
+      "id": "a12",
+      "kind": "code",
+      "name": "apply/SKILL.md rewiring",
+      "produced_by": "n17@1",
+      "status": "in-progress"
+    },
+    {
+      "id": "a13",
+      "kind": "code",
+      "name": "migrate_frontmatter.py hardened — line-anchored split, backup-on-write, body-identity self-check",
+      "produced_by": "n18@1",
+      "status": "updated"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "n01",
+      "version": 1,
+      "type": "topic",
+      "title": "meditate plugin — full three-lens review",
+      "summary": "Full review of plugins/meditate run as three parallel lenses — design/architecture, implementation quality, and a literature check on the memory-curation field — merged into a single synthesis with a combined verdict: conceptually ahead of the field, currently unable to run on this machine.",
+      "status": "done",
+      "moment": "grind",
+      "parent": null,
+      "line": "REVIEW",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            8,
+            8
+          ]
+        },
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            81,
+            193
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n02",
+      "version": 1,
+      "type": "decision",
+      "title": "Ground rules: information-gathering only",
+      "summary": "The review is read-only reconnaissance: no plugin edits, no version bump; all outputs (reports, research, scratch) land in .gitignored/ until a repair plan is approved.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n01",
+      "line": "REVIEW",
+      "standing": "expired",
+      "superseded_by": "n15@1",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            8,
+            8
+          ]
+        }
+      ],
+      "quote": {
+        "text": "Uh, don't update the version number Right now, I want you to do information gathering, and you can store all the information in gitignore folder, uh, for now.",
+        "lines": [
+          8,
+          8
+        ]
+      }
+    },
+    {
+      "id": "n03",
+      "version": 1,
+      "type": "move",
+      "title": "Three review lenses dispatched; mainline keeps working",
+      "summary": "Design, implementation, and literature reviews dispatched as parallel background agents — the fork. The mainline did not idle: it captured scope and firsthand findings (00-scope-and-method.md) while the agents ran, and scheduled an insurance wakeup in case the session went quiet before they returned.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n01",
+      "line": "REVIEW",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            81,
+            100
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n04",
+      "version": 1,
+      "type": "move",
+      "title": "Design/architecture review",
+      "summary": "Verdict: the pipeline is dead on this machine — curate reads targets.yaml from an absent ~/Documents/... tree and self-aborts, while the plugin's own config/targets.yaml is referenced by nothing — and there is a real contract break between curate's manifest output and what apply expects to parse (candidates: list vs bare fenced list; neither manifest shape in the repo passes apply's own schema).",
+      "status": "done",
+      "moment": "setback",
+      "parent": "n01",
+      "line": "REVIEW",
+      "segment": "REVIEW/design",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            81,
+            81
+          ]
+        },
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            107,
+            122
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n05",
+      "version": 1,
+      "type": "move",
+      "title": "Implementation-quality review",
+      "summary": "Everything verified empirically on this machine. Standouts: migrate_frontmatter.py has a reproduced silent-corruption bug — the substring-based split on '---\\n' mis-splits frontmatter containing a line ending in '---', yet prints VALIDATED OK and exits 0 — and the slug scheme the skills describe diverges from the store's actual on-disk naming (later confirmed against the canonical decisions log).",
+      "status": "done",
+      "moment": "setback",
+      "parent": "n01",
+      "line": "REVIEW",
+      "segment": "REVIEW/impl",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            83,
+            83
+          ]
+        },
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            120,
+            129
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n06",
+      "version": 1,
+      "type": "move",
+      "title": "Memory-curation literature research",
+      "summary": "Field survey of 2026 memory-curation work. Landed the synthesis's conceptual verdict: the field has converged toward meditate's core bet — TOKI showed write-path LLM judges admit anomalies, memorywire standardized diff-and-approve, and OpenAI's 'Dreaming' went full-automation and lost its audit trail — which makes meditate's human-gated governance position crisp.",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": "n01",
+      "line": "REVIEW",
+      "segment": "REVIEW/literature",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            85,
+            85
+          ]
+        },
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            133,
+            135
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n07",
+      "version": 2,
+      "type": "move",
+      "title": "SYNTHESIS.md — combined verdict",
+      "summary": "Five files in .gitignored/audits/meditate-full-review-2026-07-05/ — scope, three reports, and SYNTHESIS.md (combined verdict, doc-update plan with papers to cite, phased code plan, open decisions). Verdict: conceptually ahead of the field; as built it cannot run on this machine, with contract breaks that would bite even on the original Linux box. v2 folds in the recovered authority docs: the 'spec exists nowhere in this repo' critical is resolved and several contract-unclear findings became answerable.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n01",
+      "line": "REVIEW",
+      "settled": "The lost-spec critical is resolved: the authority docs live in plugins/meditate/docs/ and the synthesis reads against a spec that exists in this repo.",
+      "residuals": [
+        {
+          "label": "Insurance wakeup fired stale",
+          "detail": "A fallback wakeup scheduled at dispatch time (line 100) fired at 14:01 carrying instructions to check the three agents and write the synthesis — hours of state behind reality: all three agents had completed, SYNTHESIS.md was already written, and the doc-recovery line had gone further still. Declared stale, no action taken, no new wakeup scheduled.",
+          "provenance": [
+            {
+              "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+              "lines": [
+                100,
+                100
+              ]
+            },
+            {
+              "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+              "lines": [
+                314,
+                325
+              ]
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "version": 1,
+          "summary": "Combined verdict from the three review lines plus the mainline's firsthand findings. Four criticals confirmed independently by both code-facing agents, the scariest being: all five curator authority docs plus the applier design doc live only in a missing tree on the old laptop — if those copies are gone, the system's spec is lost.",
+          "superseded_because": "The doc-recovery line (n08–n11) vendored the authority docs into plugins/meditate/docs/, resolving the lost-spec critical; synthesis and memory were updated in place (lines 298–309) when that line merged back."
+        }
+      ],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            135,
+            193
+          ]
+        },
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            298,
+            313
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n08",
+      "version": 1,
+      "type": "topic",
+      "title": "Authority-doc recovery + README",
+      "summary": "The review's scariest critical — the plugin's spec (five curator authority docs plus the applier design doc) existed only on the old laptop — became its own workstream: reach the old machine's filesystem, vendor the docs into plugins/meditate/docs/, and write the README around them. Output merged back into the synthesis (n07 v2).",
+      "status": "done",
+      "moment": "grind",
+      "parent": null,
+      "line": "RESCUE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            196,
+            313
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n09",
+      "version": 1,
+      "type": "decision",
+      "title": "Recover the docs; build the README around them",
+      "summary": "Pi ruled the README the first natural move and pointed at the original laptop's filesystem (mounted under ~/mnt) as the doc source: inspect it, pull everything needed, rewrite and link it so it is useful in this repo.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n08",
+      "line": "RESCUE",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            196,
+            198
+          ]
+        }
+      ],
+      "quote": {
+        "text": "So the first thing that makes sense to me is creating the README, and I'm ready to take whatever, um, suggestions you have here. However, we do have the file system of the laptop that originally created, Meditate, so that is accessible. It's in the m n t folder.",
+        "lines": [
+          196,
+          196
+        ]
+      }
+    },
+    {
+      "id": "n10",
+      "version": 1,
+      "type": "move",
+      "title": "Old filesystem reached; docs located and vendored",
+      "summary": "The existing mount point was stale (empty — the sshfs mount was not active), so the old machine was reached directly over SSH after resolving a wrong-default-user rejection. All curator authority docs and the applier design doc were located in the old notes tree and copied into plugins/meditate/docs/.",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": "n08",
+      "line": "RESCUE",
+      "residuals": [
+        {
+          "label": "Stale-mount false start",
+          "detail": "The ~/mnt mount directory existed but was empty, and the first direct-SSH attempt bounced on a wrong default username from the SSH config. Both consumed a few minutes before the working route was found. (The source lines here name personal machines and a tailnet IP; those identifiers are excluded from this mock.)",
+          "provenance": [
+            {
+              "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+              "lines": [
+                199,
+                232
+              ]
+            }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            199,
+            286
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n11",
+      "version": 1,
+      "type": "move",
+      "title": "README written — the plugin's front door",
+      "summary": "Main README written for plugins/meditate, built around the recovered authority docs and linked so the vendored docs are the canonical spec. Delivered with the recovery report; synthesis and memory were then updated to match — the merge back into n07 (v2).",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n08",
+      "line": "RESCUE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            287,
+            297
+          ]
+        },
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            310,
+            313
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n12",
+      "version": 1,
+      "type": "topic",
+      "title": "Repair plan + execution",
+      "summary": "After a roughly five-hour gap, the natural next moves were planned: re-read the recovered contract docs, lock the open calls, and run a P0/P1 repair pass as workstreams A–E plus a verification pass. Execution underway at capture: helpers built (C), migrate hardened (A3+D5), skill rewiring in progress (A+B).",
+      "status": "active",
+      "moment": "grind",
+      "parent": null,
+      "line": "RUNNABLE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            326,
+            718
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n13",
+      "version": 1,
+      "type": "decision",
+      "title": "Plan the natural next moves",
+      "summary": "Pi returned and asked for a plan rather than more findings — converting the review and recovery outputs into an actionable repair pass.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n12",
+      "line": "RUNNABLE",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            326,
+            343
+          ]
+        }
+      ],
+      "quote": {
+        "text": "make a plan for the natural next moves",
+        "lines": [
+          340,
+          340
+        ]
+      }
+    },
+    {
+      "id": "n14",
+      "version": 2,
+      "type": "move",
+      "title": "Contract re-read: recovered docs mined before planning",
+      "summary": "The recovered authority docs — absent when the review agents ran — were mined for the exact manifest container shape, the canonical verb lexicon, and the latest locked decisions. Decisive: the manifest is a candidates: container (the review's 'neither shape works' finding is settled), the canonical slug rule is confirmed from the decisions log, and the verb lexicon is a 14-verb superset.",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": "n12",
+      "line": "RUNNABLE",
+      "settled": "The manifest container is candidates:, the slug rule follows the canonical decisions log, and the verb lexicon is the 14-verb superset — the review's 'neither shape works' ambiguity is closed.",
+      "residuals": [
+        {
+          "label": "Folded fork/merge",
+          "detail": "In the source session this node was itself a fork and merge: two parallel Explore agents (dispatched at lines 344 and 346, both landed by line 390) while the mainline started the plan file. Folded into the RUNNABLE line in this mock to stay within the line budget — a full-fidelity render would draw a third fork/merge pair here.",
+          "provenance": [
+            {
+              "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+              "lines": [
+                344,
+                346
+              ]
+            },
+            {
+              "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+              "lines": [
+                377,
+                390
+              ]
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "version": 1,
+          "summary": "Open contract questions carried out of the synthesis: manifest container shape ambiguous (neither shape in the repo passes apply's own schema), slug rule unverified against the store, verb lexicon uncertain.",
+          "superseded_because": "The contract read was decisive and reframed several findings (lines 377, 390): container settled as candidates:, slugging decided from the canonical decisions log, 14-verb lexicon confirmed."
+        }
+      ],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            343,
+            361
+          ]
+        },
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            377,
+            400
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n15",
+      "version": 1,
+      "type": "decision",
+      "title": "Three calls locked; plan approved as workstreams A–E + verification",
+      "summary": "Repair-plus-bin/-helper (not rewrite), codify the 14-verb superset, per-machine gitignored config. The plan was presented and approved through the plan-mode gate — no user prose exists for the approval, so the anchored quote is the assistant's locked-in articulation immediately before writing the plan — then decomposed into tracked workstreams A–E plus a no-live-mutation verification pass.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n12",
+      "line": "RUNNABLE",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            401,
+            441
+          ]
+        }
+      ],
+      "quote": {
+        "text": "All three calls locked in: **repair + bin/ helper**, **codify the 14-verb superset**, **per-machine gitignored config**.",
+        "lines": [
+          401,
+          401
+        ]
+      }
+    },
+    {
+      "id": "n16",
+      "version": 1,
+      "type": "move",
+      "title": "Workstream C: bin/ helpers built and unit-tested",
+      "summary": "meditate-lock (portable sha256+mtime), meditate-slug (canonical slug, self-verifying), and the Python manifest helper (extract + validate with the law-1 graph check) built first since everything else calls into them. All three pass unit tests; lock output matches shasum exactly and the slug helper resolves $HOME to the real project dir.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n12",
+      "line": "RUNNABLE",
+      "residuals": [
+        {
+          "label": "uv stdout-purity check",
+          "detail": "Verified uv's 'Installed 1 package' banner goes to stderr, not stdout — it would corrupt the extracted block when curate captures output. A cat -A cross-check failed only because macOS lacks the GNU flag, ironically on-theme for the portability workstream.",
+          "provenance": [
+            {
+              "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+              "lines": [
+                480,
+                485
+              ]
+            }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            442,
+            496
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n17",
+      "version": 1,
+      "type": "move",
+      "title": "Workstreams A+B: skill rewiring + config split",
+      "summary": "curate rewired (config path, slug helper, bin/ wiring, candidates: manifest container, de-hardcoded paths), the per-machine config split done (tracked example template + gitignored real config), and curator's output template reindented under the candidates: container with the 14-verb enum. review/SKILL.md done; apply/SKILL.md in progress at capture.",
+      "status": "active",
+      "moment": "grind",
+      "parent": "n12",
+      "line": "RUNNABLE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            497,
+            596
+          ]
+        },
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            698,
+            718
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n18",
+      "version": 1,
+      "type": "move",
+      "title": "Migrate script hardening (A3 + D5)",
+      "summary": "The reproduced silent-corruption case fixed with a line-anchored frontmatter split, backup-on-write with a shared stamp, a body-identity self-check, and a de-hardcoded default target. The corruption fixture now migrates cleanly with byte-identical bodies; crash and backup behaviors verified.",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": "n12",
+      "line": "RUNNABLE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            597,
+            698
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n19",
+      "version": 1,
+      "type": "open-question",
+      "title": "Workstream E + verification pass; literature citations unapplied",
+      "summary": "Workstream E (rebuild skills/apply/tests as a runnable sandbox suite) and the no-live-mutation verification pass are defined but not started at capture. Separately, the synthesis's doc-update plan — the papers the kickoff wanted cited in the documentation — is written but not yet applied to the docs.",
+      "status": "open",
+      "moment": "grind",
+      "parent": "n12",
+      "line": "RUNNABLE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            429,
+            441
+          ]
+        },
+        {
+          "transcript": "ae18157a-6ffd-4fbe-bea4-dfaa8ec95cb7.jsonl",
+          "lines": [
+            135,
+            193
+          ]
+        }
+      ]
+    }
+  ]
+}

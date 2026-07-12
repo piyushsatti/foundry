@@ -1,0 +1,217 @@
+{
+  "session": {
+    "surface": "claude-code",
+    "title": "Debugging revenue_rollup_daily — 2026-07-03 run failure",
+    "date": "2026-07-04",
+    "compaction_events": []
+  },
+  "nodes": [
+    {
+      "id": "n01",
+      "version": 1,
+      "type": "topic",
+      "title": "Debug: revenue_rollup_daily failed for 2026-07-03",
+      "summary": "revenue_rollup_daily's 2026-07-03 run failed its row-count quality gate (-94% vs trailing mean). Root cause: the ingest team's orders-enriched-export v4.2.0 deploy renamed order status 'completed' to 'settled', and the rollup's status filter silently dropped the renamed rows. Patched the daily and weekly rollups to accept both values, backfilled 07-03 plus a silently-undercounted 07-02, and verified against upstream aggregates. One hardening follow-up (enum-drift sentinel) remains open.",
+      "status": "done",
+      "parent": null,
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [1, 1402] }
+      ]
+    },
+    {
+      "id": "n02",
+      "version": 1,
+      "type": "move",
+      "title": "Triage — DQ gate tripped, not a crash",
+      "summary": "The 02:31 UTC page was a data-quality failure, not a crash: revenue_rollup_daily (logical date 2026-07-03) failed at check_rollup_quality — partition row count 11,842 vs a 196.4k trailing 7-day mean (-94%). Every upstream task was green and build_daily_rollup exited 0, so the pipeline ran; it just produced almost nothing.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [
+        {
+          "label": "Misread the page as an enrichment-task crash",
+          "detail": "The alert template truncates task ids at 20 characters; 'check_rollup_quality' rendered as 'check_rollup_qual…' and was initially read as the enrichment task failing. Spent two minutes in the wrong task's logs before the run graph made the actual failing task obvious.",
+          "provenance": [
+            { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [18, 33] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [9, 118] }
+      ]
+    },
+    {
+      "id": "n03",
+      "version": 1,
+      "type": "move",
+      "title": "Facts from logs — SQL ran clean, output tiny",
+      "summary": "Pulled task and scheduler logs for the failed run: the rollup SQL executed cleanly (0 errors, 41s) and genuinely returned 11,842 rows — the tiny count is real output, not an execution failure. Upstream partition analytics.orders_enriched/2026-07-03 landed on time at 02:14 UTC with 2.11M rows per meta.load_audit. Net facts: full input, near-empty output, no errors anywhere.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [121, 258] }
+      ]
+    },
+    {
+      "id": "n04",
+      "version": 3,
+      "type": "move",
+      "title": "Hypothesis — upstream status enum changed; filter silently drops rows",
+      "summary": "Current reading: the rows are all there — they are being silently filtered. The ingest team's orders-enriched-export v4.2.0 deploy (2026-07-02, 18:40 UTC) renamed the order status value 'completed' to 'settled'; the rollup filters WHERE status = 'completed', so 94% of the 2026-07-03 partition vanishes before aggregation. ASSUMPTION: 'settled' is a pure rename of 'completed' — the two states are disjoint per order, and no third status value carries revenue (unverified with the ingest team).",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [
+        {
+          "version": 1,
+          "summary": "Most likely a late or partial upstream landing: orders_enriched for 2026-07-03 delivered only a fraction of the day before the DAG's sensor cut over. Fits a 94% row drop with zero SQL errors.",
+          "superseded_because": "meta.load_audit shows the partition landed complete at 02:14 UTC with 2.11M rows — volume within 2% of the 7-day mean. Partial-landing ruled out (see 'Ruled out: late/partial upstream landing')."
+        },
+        {
+          "version": 2,
+          "summary": "If the data is all there, we are reading the wrong slice: the platform team's Airflow 2.8.4 -> 2.9.1 upgrade on 2026-07-01 may have shifted data_interval bounds so the rollup queries an empty or partial window.",
+          "superseded_because": "data_interval_start/end and the fully rendered SQL are byte-identical between the last green run and the failed run except for the date literal — interval shift ruled out (see 'Ruled out: scheduler-upgrade interval shift'). The distinct-status query then exposed the real signal."
+        }
+      ],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [262, 308] },
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [421, 448] },
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [641, 698] }
+      ]
+    },
+    {
+      "id": "n05",
+      "version": 1,
+      "type": "move",
+      "title": "Ruled out: late/partial upstream landing",
+      "summary": "Hypothesis v1 is dead: meta.load_audit shows orders_enriched/2026-07-03 landed complete at 02:14 UTC with 2,112,406 rows, within 2% of the 7-day mean, and the wait_orders_enriched sensor only released after the completeness marker was written. Input volume was never the problem.",
+      "status": "dead-end",
+      "parent": "n04",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [311, 418] }
+      ]
+    },
+    {
+      "id": "n06",
+      "version": 1,
+      "type": "move",
+      "title": "Ruled out: scheduler-upgrade interval shift",
+      "summary": "Hypothesis v2 is dead: the Airflow 2.8.4 -> 2.9.1 upgrade (2026-07-01) smelled like the classic data_interval regression, but diffing the last green run against the failed run shows data_interval_start/end and the fully rendered SQL are byte-identical except for the date literal. The rollup queried exactly the window it always queries.",
+      "status": "dead-end",
+      "parent": "n04",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [451, 638] }
+      ]
+    },
+    {
+      "id": "n07",
+      "version": 1,
+      "type": "move",
+      "title": "Root cause — 'completed' renamed to 'settled' upstream",
+      "summary": "SELECT status, COUNT(*) on the 2026-07-03 partition broke it open: settled = 1,943,208 rows, completed = 11,842. The ingest team's orders-enriched-export v4.2.0 (deployed 2026-07-02, 18:40 UTC — confirmed in their changelog: 'status model migration') renamed 'completed' to 'settled'. The rollup's WHERE status = 'completed' silently dropped 94% of rows. The 11,842 survivors come from a legacy writer path not yet migrated — which is why the run produced a small result instead of zero and slipped past everything except the row-count gate.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [
+        {
+          "label": "Briefly suspected the DQ check itself",
+          "detail": "Before querying distinct statuses, spent a pass reading check_rollup_quality's trailing-window config on the theory that the 7-day mean was computed over the wrong window. The config was correct — the check was the only thing in the pipeline that worked exactly as designed.",
+          "provenance": [
+            { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [703, 724] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [700, 861] }
+      ]
+    },
+    {
+      "id": "n08",
+      "version": 1,
+      "type": "decision",
+      "title": "Decision — patch our side, don't wait on upstream",
+      "summary": "Chose to patch the consumer instead of waiting for upstream: map 'settled' as revenue-complete in the rollup SQL, backfill the bad days, and file a ticket with the ingest team requesting a deprecation window plus change notifications for future status-model migrations.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [864, 902] }
+      ],
+      "quote": {
+        "text": "Patch our side: make the rollup treat 'settled' as revenue-complete, backfill the third, and file the ticket with ingest for a proper deprecation window. I'm not gating tonight's numbers on another team's release train.",
+        "lines": [878, 881]
+      }
+    },
+    {
+      "id": "n09",
+      "version": 2,
+      "type": "move",
+      "title": "Fix — status mapping in daily AND weekly rollups",
+      "summary": "Patched the rollup to treat 'settled' as revenue-complete: WHERE status IN ('completed', 'settled') in pipelines/sql/rollup_daily.sql AND pipelines/sql/rollup_weekly.sql — a grep for the status literal found the identical filter in the weekly DAG, which would have failed on Sunday. Hotfix plan, rollback notes, and follow-ups written to .gitignored/plans/rollup-status-hotfix-2026-07-03.md; change shipped through the normal pipelines CI.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [
+        {
+          "version": 1,
+          "summary": "Patched pipelines/sql/rollup_daily.sql only and re-ran the failed task.",
+          "superseded_because": "A grep for the status literal turned up the identical filter in pipelines/sql/rollup_weekly.sql — the weekly rollup would have hit the same wall on Sunday. Widened the fix to both files before deploying."
+        }
+      ],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [905, 1148] }
+      ]
+    },
+    {
+      "id": "n10",
+      "version": 1,
+      "type": "move",
+      "title": "Verify — 07-03 green; caught and backfilled a silent 07-02 undercount",
+      "summary": "Cleared check_rollup_quality and re-ran the 2026-07-03 dag_run: 198,410 rows vs the 196.4k trailing mean (+1%), gate green, publish_rollup succeeded, and day revenue cross-checked against the upstream aggregate within 0.3%. A sweep of adjacent days caught a silent casualty: 2026-07-02 had PASSED the 50% gate at -31% rows (the deploy landed mid-day), undercounting revenue roughly 29% without any alert. Backfilled 07-02 with the fixed filter and re-published.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [1151, 1329] }
+      ]
+    },
+    {
+      "id": "n11",
+      "version": 1,
+      "type": "move",
+      "title": "Closeout — incident note + upstream ticket",
+      "summary": "Posted the incident write-up to the pipeline team's channel (timeline, root cause, blast radius: 07-02 silent undercount plus 07-03 failure, both backfilled) and filed the upstream ticket asking the ingest team for schema/enum change announcements with a deprecation window.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [1332, 1378] }
+      ]
+    },
+    {
+      "id": "n12",
+      "version": 1,
+      "type": "open-question",
+      "title": "Open — enum-drift sentinel never built",
+      "summary": "Never done: a drift sentinel on analytics.orders_enriched — a cheap daily check asserting the set of distinct status values (and the column set) matches an allowlist, so the next enum migration pages at ingest time instead of surfacing as a revenue anomaly. Drafted in the follow-ups section of .gitignored/plans/rollup-status-hotfix-2026-07-03.md; no ticket filed, no owner.",
+      "status": "open",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "cc-session-2026-07-04-rollup-debug", "lines": [1381, 1402] }
+      ]
+    }
+  ]
+}

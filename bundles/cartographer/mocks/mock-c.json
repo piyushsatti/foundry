@@ -1,0 +1,339 @@
+{
+  "session": {
+    "surface": "claude-code",
+    "title": "tessel storage-layer extraction — refactor, flake, CI drift, release",
+    "date": "2026-06-30",
+    "compaction_events": [
+      {
+        "after_node": "n13",
+        "note": "Auto-compaction fired at ~148k tokens while the CI diagnosis was concluding (transcript line ~610). Everything after this point was reduced against the compaction summary, not raw pre-compaction context. Nodes created or updated after the seam carry provenance into 'c-mega-0630.compact-1.summary' where they assert things about pre-compaction events. NOTE: 'after_node' names the chronologically-last node touched before the seam — but this map is consolidated, not chronological, so spine-earlier nodes (n05, n06 under the refactor topic) are chronologically POST-seam. See mock-c.md, design questions."
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "n01",
+      "version": 3,
+      "type": "topic",
+      "title": "Extract storage backend from tessel engine",
+      "summary": "Split the monolithic tessel/store.py (direct sqlite3 calls) into a tessel/storage/ package: a five-method StorageBackend ABC, SqliteBackend as the default, a new JsonBackend, and a deprecation shim keeping the old import path alive. Completed after two forced detours (a test flake, then a CI matrix drift) that the extraction itself surfaced.",
+      "status": "done",
+      "parent": null,
+      "residuals": [],
+      "history": [
+        {
+          "version": 1,
+          "summary": "Extract SqliteStore out of engine.py so a second backend becomes possible.",
+          "superseded_because": "Scope grew on first contact: the engine touched sqlite3 in 14 call sites, so the extraction needed a real interface, not a class move."
+        },
+        {
+          "version": 2,
+          "summary": "StorageBackend interface extracted and SqliteBackend carved out; completion blocked — the reorganized test suite surfaced an intermittent failure that has to be understood first.",
+          "superseded_because": "Refactor resumed and completed after the flake and a CI matrix drift were resolved; JsonBackend and the compat shim landed post-compaction."
+        }
+      ],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [12, 16] },
+        { "transcript": "c-mega-0630.compact-1.summary", "lines": [3, 11] },
+        { "transcript": "c-mega-0630.jsonl", "lines": [720, 826] }
+      ]
+    },
+    {
+      "id": "n02",
+      "version": 1,
+      "type": "move",
+      "title": "Map engine ↔ sqlite coupling",
+      "summary": "Audited engine.py: 14 call sites reach into sqlite3 directly (cursor handling in 9, connection lifecycle in 3, PRAGMA tuning in 2). Grouped them into five capability clusters — read, write, delete, scan, flush — which became the interface surface.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [18, 96] }
+      ]
+    },
+    {
+      "id": "n03",
+      "version": 1,
+      "type": "decision",
+      "title": "StorageBackend = five-method ABC, sqlite stays default",
+      "summary": "The interface is an ABC with exactly the five methods the engine actually uses; no speculative surface. SqliteBackend remains the default so existing configs are untouched.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [98, 141] }
+      ],
+      "quote": {
+        "text": "make it an ABC with exactly the five calls the engine actually uses — read, write, delete, scan, flush. sqlite stays the default, nobody's config should change.",
+        "lines": [126, 129]
+      }
+    },
+    {
+      "id": "n04",
+      "version": 2,
+      "type": "move",
+      "title": "Carve out SqliteBackend behind the interface",
+      "summary": "Moved sqlite logic into tessel/storage/sqlite_backend.py behind the ABC; engine.py now depends only on StorageBackend. Suite green on first run — but a second full run failed test_concurrent_write intermittently, which opened the flake investigation.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [
+        {
+          "label": "Premature green",
+          "detail": "First full-suite run passed and the extraction was declared complete. The pass was one lucky test-collection ordering; the second run exposed the order-dependent failure.",
+          "provenance": [
+            { "transcript": "c-mega-0630.jsonl", "lines": [252, 259] }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "version": 1,
+          "summary": "SqliteBackend extracted; full suite green, extraction complete.",
+          "superseded_because": "Second full run surfaced an intermittent test_concurrent_write failure — the green run was one lucky ordering, not a verified pass."
+        }
+      ],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [143, 268] }
+      ]
+    },
+    {
+      "id": "n05",
+      "version": 1,
+      "type": "move",
+      "title": "Add JsonBackend + tessel.store compat shim",
+      "summary": "Implemented JsonBackend (one file per key, atomic writes via temp-file rename) passing the shared backend contract tests. tessel/store.py became a shim re-exporting from tessel.storage with a DeprecationWarning, so no downstream import breaks. [Created post-compaction; provenance is raw post-seam transcript only.]",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [720, 801] }
+      ]
+    },
+    {
+      "id": "n06",
+      "version": 1,
+      "type": "decision",
+      "title": "Deprecation policy: old import warns until 0.9",
+      "summary": "tessel.store keeps working with a DeprecationWarning for two minor versions and is removed in 0.9. No hard break outside a minor release.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [803, 826] }
+      ],
+      "quote": {
+        "text": "keep the old import working for two minor versions with a warning, kill it in 0.9 — I don't want a hard break in a patch release.",
+        "lines": [812, 814]
+      }
+    },
+    {
+      "id": "n07",
+      "version": 2,
+      "type": "topic",
+      "title": "test_concurrent_write flake",
+      "summary": "Intermittent failure surfaced by the refactor's test reorganization — but pre-existing: test_concurrent_write silently depended on state left in a module-scoped tmpdir by test_bulk_import. Moving tests into tests/storage/ changed collection order and unmasked it. Fixed by scoping the fixture per-test; 50/50 clean local runs.",
+      "status": "done",
+      "parent": null,
+      "residuals": [],
+      "history": [
+        {
+          "version": 1,
+          "summary": "The new storage backend appears to have introduced a concurrency bug — test_concurrent_write fails intermittently since the extraction.",
+          "superseded_because": "Root cause predates the refactor: order-dependent fixture state, reproducible on the pre-refactor commit. The refactor only changed collection order and unmasked it."
+        }
+      ],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [270, 304] },
+        { "transcript": "c-mega-0630.jsonl", "lines": [419, 447] }
+      ]
+    },
+    {
+      "id": "n08",
+      "version": 1,
+      "type": "move",
+      "title": "Reproduce: fails 3/10, only after test_bulk_import",
+      "summary": "Ten full-suite runs: 3 failures, all in orderings where test_bulk_import ran first in the same module scope. Running test_concurrent_write alone: 20/20 green. Established the failure is order-dependent, not load-dependent.",
+      "status": "done",
+      "parent": "n07",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [306, 371] }
+      ]
+    },
+    {
+      "id": "n09",
+      "version": 1,
+      "type": "move",
+      "title": "Root cause: shared module-scoped tmpdir",
+      "summary": "The db_dir fixture is module-scoped; test_bulk_import leaves 5k rows in the shared directory, and test_concurrent_write's row-count assertion assumes an empty store. The refactor's move of tests into tests/storage/ changed collection order, so the polluting test now sometimes runs first. Two dead-end hypotheses folded below.",
+      "status": "done",
+      "parent": "n07",
+      "residuals": [
+        {
+          "label": "Dead end: SQLite WAL race",
+          "detail": "Hypothesis that WAL-mode journal checkpointing raced the concurrent writers. Disproved: failure reproduces with a single writer thread and journal_mode=DELETE.",
+          "provenance": [
+            { "transcript": "c-mega-0630.jsonl", "lines": [381, 398] }
+          ]
+        },
+        {
+          "label": "Dead end: new backend introduced it",
+          "detail": "Hypothesis that the freshly extracted SqliteBackend changed transaction boundaries. Disproved: same failure reproduces on the pre-refactor commit under the same test ordering.",
+          "provenance": [
+            { "transcript": "c-mega-0630.jsonl", "lines": [400, 417] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [373, 447] }
+      ]
+    },
+    {
+      "id": "n10",
+      "version": 1,
+      "type": "move",
+      "title": "Fix: per-test tmp_path, no shared state",
+      "summary": "Replaced the module-scoped db_dir fixture with pytest's function-scoped tmp_path and made the bulk-import test clean up after itself. 50 consecutive local full-suite runs green.",
+      "status": "done",
+      "parent": "n07",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [449, 512] }
+      ]
+    },
+    {
+      "id": "n11",
+      "version": 1,
+      "type": "open-question",
+      "title": "Other order-dependent tests hiding?",
+      "summary": "The same masking pattern (module-scoped fixtures + lucky ordering) could hide other order-dependent tests. A pytest-randomly sweep across the suite was proposed but deferred — never run, never scheduled. Left open at session end.",
+      "status": "open",
+      "parent": "n07",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [500, 511] }
+      ]
+    },
+    {
+      "id": "n12",
+      "version": 2,
+      "type": "topic",
+      "title": "CI workflow drift (Python matrix)",
+      "summary": "CI stayed red after the flake fix — for an unrelated, refactor-triggered reason: the workflow matrix still tests Python 3.9 while pyproject.toml has declared requires-python >=3.10 for months, and the new ABC's typing.Self annotations fail at import on 3.9. Matrix realigned to 3.10–3.12; CI green, twice.",
+      "status": "done",
+      "parent": null,
+      "residuals": [],
+      "history": [
+        {
+          "version": 1,
+          "summary": "CI still failing after the flake fix — presumed the fix is incomplete in the CI environment.",
+          "superseded_because": "The CI failure is independent of the flake: an import-time error on Python 3.9 introduced by the refactor's typing.Self usage, exposing a matrix/pyproject drift."
+        }
+      ],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [514, 538] },
+        { "transcript": "c-mega-0630.compact-1.summary", "lines": [13, 19] }
+      ]
+    },
+    {
+      "id": "n13",
+      "version": 1,
+      "type": "move",
+      "title": "Diagnose: typing.Self breaks 3.9 at import",
+      "summary": "CI logs show ImportError on Python 3.9 only — the new StorageBackend uses typing.Self (3.11+; backported acceptably to 3.10 via typing_extensions already in deps, but 3.9 is genuinely unsupported). pyproject.toml has required >=3.10 since 0.6; the workflow matrix was never updated. The drift, not the flake fix, is what keeps CI red. [Chronologically the last node touched before compaction.]",
+      "status": "done",
+      "parent": "n12",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [540, 604] }
+      ]
+    },
+    {
+      "id": "n14",
+      "version": 1,
+      "type": "decision",
+      "title": "Drop 3.9 from matrix, add 3.12",
+      "summary": "Align the CI matrix with the package's declared support: remove 3.9, keep 3.10–3.11, add 3.12. No code contortions to keep an unsupported version importable. [Created post-compaction; quote anchors to raw post-seam lines.]",
+      "status": "done",
+      "parent": "n12",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [640, 668] }
+      ],
+      "quote": {
+        "text": "drop 3.9 from the matrix, we declared 3.10 in pyproject months ago — CI should follow the package, not the other way around.",
+        "lines": [655, 657]
+      }
+    },
+    {
+      "id": "n15",
+      "version": 1,
+      "type": "move",
+      "title": "Verify: CI green on 3.10–3.12, twice",
+      "summary": "Updated the workflow matrix, pushed, and ran the pipeline twice back-to-back to confirm both the matrix fix and that the flake fix holds in CI's ordering. Both runs fully green across all three Python versions.",
+      "status": "done",
+      "parent": "n12",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [670, 718] }
+      ]
+    },
+    {
+      "id": "n16",
+      "version": 1,
+      "type": "topic",
+      "title": "Release prep: tessel 0.8.0",
+      "summary": "With the refactor complete and CI trustworthy again, prepared the release: version decision, changelog covering the backend interface and the deprecation policy, and a local build check. Publish itself deferred to Pi.",
+      "status": "done",
+      "parent": null,
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [828, 842] }
+      ]
+    },
+    {
+      "id": "n17",
+      "version": 1,
+      "type": "decision",
+      "title": "Ship as 0.8.0, not 0.7.4",
+      "summary": "A new public backend interface is a feature: minor bump to 0.8.0, not a patch. Also sets the clock for the 0.9 shim removal decided under the refactor topic.",
+      "status": "done",
+      "parent": "n16",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [844, 861] }
+      ],
+      "quote": {
+        "text": "call it 0.8.0 — a new public backend interface is a feature, not a patch.",
+        "lines": [852, 853]
+      }
+    },
+    {
+      "id": "n18",
+      "version": 1,
+      "type": "move",
+      "title": "Changelog + local build check",
+      "summary": "Wrote the 0.8.0 changelog (backend ABC, JsonBackend, deprecation window, CI matrix change), bumped the version, and verified sdist/wheel build cleanly in a local dry run. Publishing left for Pi to trigger.",
+      "status": "done",
+      "parent": "n16",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "c-mega-0630.jsonl", "lines": [863, 941] }
+      ]
+    }
+  ]
+}

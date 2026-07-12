@@ -1,0 +1,508 @@
+{
+  "schema_version": 2,
+  "based_on": "mined directly from a real transcript at schema v2 (no v1 intermediate)",
+  "session": {
+    "surface": "claude-code",
+    "title": "foundry's first commits: fifteen sections, one scrub, then a dogfood install that crashed and got fixed",
+    "intent": {
+      "version": 3,
+      "text": "Dogfood the published marketplace: back up and wipe the local duplicates, install all four plugins from GitHub, and make a fresh install actually work.",
+      "history": [
+        {
+          "version": 1,
+          "text": "Section the untracked tree into clean, disciplined commits — docs verified up to date, no plan/review files committed raw, safest surfaces first.",
+          "superseded_because": "The recon found employer identity, a work email, and infra topology inside the tree, and Pi ruled the repo is going public for sure — publishability entered the goal.",
+          "shifted_at": "n06@1"
+        },
+        {
+          "version": 2,
+          "text": "Commit the tree clean AND publishable: scrub employer identifiers everywhere, redact the home/ kit, and author every commit under the personal GitHub identity.",
+          "superseded_because": "Pi returned after the /compact having published the repo himself; the mission flipped from preparing the tree to proving a stranger's install of it works.",
+          "shifted_at": "n09@1"
+        }
+      ]
+    },
+    "frontier": {
+      "node": "n13@1",
+      "detail": "session closed at 02:51 — final check ran the manifold server from the actual installed marketplace cache and exercised a real tool call (transcript line 1062)"
+    },
+    "date": "2026-07-05",
+    "source_transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl",
+    "captured_at_line": 1066,
+    "compaction_events": [
+      {
+        "after_node": "n05",
+        "note": "/compact at transcript line 740 (02:25); the DOGFOOD line opens from the compacted summary at line 751"
+      }
+    ]
+  },
+  "lines": [
+    {
+      "id": "SECTION",
+      "label": "Can 505 untracked files become clean commits?",
+      "because": {
+        "text": "i want you to go ahead and analyze the entire git diff and, uh, particularly look at each of the different sections, different files, different things, see if the documentation is up to date, um, make, like, section commits based on the different things that have been worked on so that, um, like, nothing, like, collides with each other, and, uh, have, like, clean discipline in how we are committing the code in this, uh, repository.",
+        "verbatim": true,
+        "speaker": "user",
+        "lines": [12, 12]
+      },
+      "from": null,
+      "into": null,
+      "outcome": "Answered at n05@1: 15 clean section commits, trailer-free, each section's docs fixed against reality before landing; the archive deleted on Pi's ruling; the concurrent session's four hats recognized as not-mine and left uncommitted.",
+      "segments": []
+    },
+    {
+      "id": "SCRUB",
+      "label": "Is this tree safe to go public?",
+      "because": {
+        "text": "its going to go public for sure, so we want to remove employer speicifc stuff and for the email and name and stuff want to use my github credentials and stuff... not my work github crednetials",
+        "verbatim": true,
+        "speaker": "user",
+        "lines": [100, 100],
+        "note": "Typed by Pi as an AskUserQuestion answer — the words are his, but they live inside a tool_result, not a user message. A new provenance class for the verbatim rule (see friction notes)."
+      },
+      "from": {
+        "line": "SECTION",
+        "node": "n02",
+        "version": 1,
+        "relation": "fork"
+      },
+      "into": {
+        "line": "SECTION",
+        "node": "n03",
+        "version": 2,
+        "relation": "merge-update"
+      },
+      "outcome": "Resolved: leakage was wider than home/ — a repo-wide sweep confirmed the committed sections clean, home/ was redacted file by file and landed as the train's 15th commit, bumping the commit-train node to v2.",
+      "segments": []
+    },
+    {
+      "id": "DOGFOOD",
+      "label": "Does a fresh install from the published marketplace work?",
+      "because": {
+        "text": "leave both for now. i have published this repo, lets remove any local plugins skills agents that are cusom and install this marketplace and check if everythign works...",
+        "verbatim": true,
+        "speaker": "user",
+        "lines": [775, 775]
+      },
+      "from": {
+        "line": "SECTION",
+        "node": "n05",
+        "version": 1,
+        "relation": "succession"
+      },
+      "into": null,
+      "outcome": "Answered yes — after a real defect: the manifold MCP crashed on a clean install (its library isn't shipped), got vendored self-contained with a sync script and parity test, and the final verification ran the server from the actual installed cache. All four plugins verified.",
+      "segments": []
+    }
+  ],
+  "beats": [
+    {
+      "title": "A fresh repo, not a diff",
+      "from_node": "n01",
+      "to_node": "n02"
+    },
+    {
+      "title": "Fifteen commits, one redaction",
+      "from_node": "n03",
+      "to_node": "n07"
+    },
+    {
+      "title": "The install that crashed, then didn't",
+      "from_node": "n08",
+      "to_node": "n14",
+      "note": "opens after the /compact seam at 02:26"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "a01",
+      "kind": "report",
+      "name": "section map from five parallel deep-reads — 505 files, ~10 sections, per-section risk calls",
+      "produced_by": "n02@1",
+      "status": "created"
+    },
+    {
+      "id": "a02",
+      "kind": "release",
+      "name": "15 section commits — foundation → home/ kit, every message trailer-free after the rewrite",
+      "produced_by": "n03@2",
+      "updated_by": "n04@1",
+      "status": "updated"
+    },
+    {
+      "id": "a03",
+      "kind": "docs",
+      "name": "vendored-skills license-status note — honest gap, flagged as a pre-publish blocker",
+      "produced_by": "n03@1",
+      "status": "created"
+    },
+    {
+      "id": "a04",
+      "kind": "docs",
+      "name": "home/ kit redacted + its missing README + a real context7-nudge hook (kit made self-consistent)",
+      "produced_by": "n07@1",
+      "status": "created"
+    },
+    {
+      "id": "a05",
+      "kind": "file",
+      "name": "pre-migration backup of ~/.claude skills/commands/plugin-config (816K)",
+      "produced_by": "n10@1",
+      "status": "created"
+    },
+    {
+      "id": "a06",
+      "kind": "config",
+      "name": "foundry marketplace repointed from a local directory to the published GitHub repo",
+      "produced_by": "n10@1",
+      "status": "created"
+    },
+    {
+      "id": "a07",
+      "kind": "code",
+      "name": "manifold lib vendored into the plugin (whole package root incl. schema.sql) + sync script + parity test",
+      "produced_by": "n12@1",
+      "status": "created"
+    },
+    {
+      "id": "a08",
+      "kind": "release",
+      "name": "self-containment fix pushed; manifold force-reinstalled from the marketplace — 46 tools live from the installed cache",
+      "produced_by": "n13@1",
+      "status": "created"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "n01",
+      "version": 1,
+      "type": "topic",
+      "title": "Initial commits for a 505-file tree",
+      "summary": "The ask assumed a diff to analyze; the repo turned out to have zero commits — everything untracked. The mission reframed on contact: carve 505 trackable files (~10 sections) into clean sectioned commits, verifying each section's documentation against reality instead of assuming it current.",
+      "status": "done",
+      "moment": "grind",
+      "parent": null,
+      "line": "SECTION",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [12, 61] }
+      ]
+    },
+    {
+      "id": "n02",
+      "version": 1,
+      "type": "move",
+      "title": "Recon: five parallel deep-reads map the tree — and find the leak",
+      "summary": "Doc drift surfaced immediately (the root docs disagree with the marketplace catalog and the filesystem about how many plugins exist), and the section map came back with one finding that dominated everything: the home/ kit contains employer identity, a work email, and production-infrastructure topology. That finding forked the SCRUB line before any commit landed.",
+      "status": "done",
+      "moment": "setback",
+      "parent": "n01",
+      "line": "SECTION",
+      "residuals": [
+        {
+          "label": "Folded fan-out ×5",
+          "detail": "Five Explore agents dispatched in one burst (transcript lines 62–66), each deep-reading a section group; all landed by line 89. Folded into this single node — a full-fidelity render would draw a five-segment fan here, but the probes were homogeneous and their only story-relevant output is the merged section map plus the leak finding.",
+          "provenance": [
+            { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [62, 89] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [24, 98] }
+      ]
+    },
+    {
+      "id": "n03",
+      "version": 2,
+      "type": "move",
+      "title": "The commit train: fifteen sections, each fixing its own drift before landing",
+      "summary": "Safest-first: foundation → root docs → scripts → the library → the web app → all four plugins → skills → vendored skills → docs → research — and finally, once the SCRUB line landed its redaction, the home/ kit as commit 15. No section committed as-found: stale plugin lists corrected, dead layout paths rewritten, broken links fixed, a missing research index written. The discipline rule held — nothing ephemeral or non-self-contained landed.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n01",
+      "line": "SECTION",
+      "settled": "All fifteen sections are in history with their documentation verified against reality — the tree's documented shape finally matches its actual shape.",
+      "residuals": [
+        {
+          "label": "The tool-count chase",
+          "detail": "The manifold docstrings claimed one tool count, the registry showed another; the wrong number got propagated into a commit before the real count was pinned by counting registrations directly — then all four affected files were corrected and the unpushed HEAD amended. A documentation pass that almost committed its own drift.",
+          "provenance": [
+            { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [240, 273] }
+          ]
+        },
+        {
+          "label": "License gap in the vendored skills",
+          "detail": "No upstream LICENSE was ever captured — a genuine redistribution problem for a public repo that can't be fixed by fabricating license text. Handled honestly: a license-status note in the vendor README and an explicit pre-publish blocker flag.",
+          "provenance": [
+            { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [452, 466] }
+          ]
+        },
+        {
+          "label": "Stale paths ran deeper than the scan said",
+          "detail": "The plan-orchestrator plugin's top README and server header still described a pre-reorg layout and a dead repo path — the per-section scan under-reported it; the fix expanded mid-commit to cover all of it.",
+          "provenance": [
+            { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [295, 356] }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "version": 1,
+          "summary": "Fourteen sections committed clean; home/ held back entirely pending the public-posture ruling and a dedicated redaction pass.",
+          "superseded_because": "The SCRUB line finished the home/ redaction and landed it as commit 15 (transcript lines 669–678), completing the train."
+        }
+      ],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [123, 537] },
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [669, 682] }
+      ]
+    },
+    {
+      "id": "n04",
+      "version": 1,
+      "type": "decision",
+      "title": "Strip both trailers from all fifteen commits",
+      "summary": "Every commit had been given a Co-Authored-By and a session trailer per the harness's session defaults — but Pi's global CLAUDE.md bans them, and the conflict was surfaced rather than silently resolved. Pi chose the full strip; a filter-branch rewrite cleaned all fifteen messages while history was still local and unpushed. The conflict itself was recorded as a memory so future sessions don't repeat it.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n01",
+      "line": "SECTION",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [683, 706] }
+      ],
+      "quote": {
+        "text": "Strip both from all 15",
+        "lines": [684, 684],
+        "note": "An option label Pi selected in an AskUserQuestion gate — not free prose. The verbatim rule needs a class for chosen-option quotes (see friction notes)."
+      }
+    },
+    {
+      "id": "n05",
+      "version": 1,
+      "type": "decision",
+      "title": "Archive deleted — and four alien hats appear in the tree",
+      "summary": "Pi ruled the archived/ hold-back worthless and it was deleted permanently (never committed; its only unique content was superseded by the live plugin). In the same breath the working tree showed files that hadn't existed at scan time: four new wardrobe hats plus a dry-run eval — written minutes earlier by a concurrent session in another window. Recognized as that session's work and left strictly uncommitted.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n01",
+      "line": "SECTION",
+      "standing": "active",
+      "residuals": [
+        {
+          "label": "Cross-session interference",
+          "detail": "The four hats belong to the crucible session running in parallel (the session mock-e maps). Two live sessions were mutating the same working tree; this one had to notice mid-commit that the tree had changed under it and carve its staging around a sibling's uncommitted work.",
+          "provenance": [
+            { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [726, 739] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [715, 739] }
+      ],
+      "quote": {
+        "text": "in the archive is we have old or useless things, we should delete it for sure.",
+        "lines": [715, 715]
+      }
+    },
+    {
+      "id": "n06",
+      "version": 1,
+      "type": "decision",
+      "title": "Public for sure — scrub employer specifics, author as the personal identity",
+      "summary": "The recon's leak finding forced the posture question: a standing note said local-only, but the repo's own docs described a public marketplace. Pi ruled it going public, which flipped two things at once — home/ genuinely needs redaction before it can be committed, and authorship must be the personal GitHub identity (verified already correct). Going public informs the discipline; pushing still waits for Pi's explicit go-ahead.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": null,
+      "line": "SCRUB",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [89, 117] }
+      ],
+      "quote": {
+        "text": "its going to go public for sure, so we want to remove employer speicifc stuff and for the email and name and stuff want to use my github credentials and stuff... not my work github crednetials",
+        "lines": [100, 100]
+      }
+    },
+    {
+      "id": "n07",
+      "version": 1,
+      "type": "move",
+      "title": "The scrub: leakage wider than home/, then home/ itself, file by file",
+      "summary": "Mid-train, employer markers turned up outside home/ — a worktree recipe carried a work-project name and an infra mount path — proving the per-section scans under-caught and forcing a comprehensive repo-wide sweep (clean, including the already-committed sections). Then home/ itself: the work-identity lines and an employer-specific infrastructure section removed, accumulated personal-project permission grants stripped, an identifying tenant hostname dropped, memory files genericized, and the kit made self-consistent — a missing hook script written, a dangling reference fixed, a README added. Landed as commit 15, closing the loop into the train.",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": "n06",
+      "line": "SCRUB",
+      "residuals": [
+        {
+          "label": "Scattered markers almost slipped through",
+          "detail": "The skills tree carried two employer references the section scan missed; discovering them triggered the full-tree sweep with the complete marker set rather than trusting section-by-section greps. The source lines name the employer and infra host — excluded from this mock's prose and quotes.",
+          "provenance": [
+            { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [424, 448] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [537, 678] }
+      ]
+    },
+    {
+      "id": "n08",
+      "version": 1,
+      "type": "topic",
+      "title": "Dogfood the published marketplace",
+      "summary": "Pi published the repo himself between acts. The post-compaction mission: treat this machine as a fresh user — back up, remove the local custom copies, repoint the marketplace at GitHub, install all four plugins, and check everything actually works.",
+      "status": "done",
+      "moment": "grind",
+      "parent": null,
+      "line": "DOGFOOD",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [775, 791] }
+      ]
+    },
+    {
+      "id": "n09",
+      "version": 1,
+      "type": "decision",
+      "title": "Wipe the local duplicates; install from GitHub",
+      "summary": "The pivot ruling, given right after the compaction seam: the two open items from act one stay parked ('leave both for now'), and the session becomes an install test. Executed carefully — full state gathered first, since this touches the live ~/.claude.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n08",
+      "line": "DOGFOOD",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [775, 811] }
+      ],
+      "quote": {
+        "text": "leave both for now. i have published this repo, lets remove any local plugins skills agents that are cusom and install this marketplace and check if everythign works...",
+        "lines": [775, 775]
+      }
+    },
+    {
+      "id": "n10",
+      "version": 1,
+      "type": "move",
+      "title": "Backup, repoint, install ×4 — and the manifold server crashes",
+      "summary": "A full backup taken, the marketplace repointed from the local directory to the public GitHub repo (verified live at the same commit as local HEAD), all four plugins installed — the real dogfood, exactly what a stranger would get. Three of four load clean. The manifold MCP server crashes on startup: its library lives in the repo's packages tree, which the marketplace clone doesn't ship, and it isn't on PyPI — a defect no amount of local development would ever have hit.",
+      "status": "done",
+      "moment": "setback",
+      "parent": "n08",
+      "line": "DOGFOOD",
+      "residuals": [
+        {
+          "label": "Loose skills are secretly plugins",
+          "detail": "Discovery during state-gathering: loose directories in the user skills dir auto-load as implicit plugins, so five local copies were already shadowing their marketplace equivalents — sharpening what 'remove the custom ones' had to mean.",
+          "provenance": [
+            { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [811, 817] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [811, 881] }
+      ]
+    },
+    {
+      "id": "n11",
+      "version": 1,
+      "type": "decision",
+      "title": "Bundle the lib into the plugin; remove only the five superseded skills",
+      "summary": "Two rulings through one gate: vendor the library into the plugin so a marketplace install is self-contained (chosen over publishing to PyPI or documenting a manual pip step), and of the local removals, take only the five skills the marketplace now supersedes — everything else stays.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n08",
+      "line": "DOGFOOD",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [882, 890] }
+      ],
+      "quote": {
+        "text": "Bundle the lib into the plugin",
+        "lines": [883, 883],
+        "note": "Option label chosen in an AskUserQuestion gate — same quote class as the trailer decision."
+      }
+    },
+    {
+      "id": "n12",
+      "version": 1,
+      "type": "move",
+      "title": "Vendored right on the second try: sync script, parity test, suites green",
+      "summary": "The library vendored into the plugin and the server's import fallback extended (after the pip and repo paths, so the dev flow is untouched). The isolated marketplace simulation then failed one layer deeper — the schema file resolves relative to the package root, which the first vendoring didn't mirror — fixed by vendoring the root layout, after which the isolated server boots, lists its tools, and executes a real call. Made maintainable, not just fixed: a sync script reproduces the tree byte-identically and a parity test fails if the copy ever drifts. Both test suites green.",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": "n08",
+      "line": "DOGFOOD",
+      "residuals": [
+        {
+          "label": "First vendoring shipped only the inner package",
+          "detail": "The schema file lives beside the package, not inside it — the server found the vendored code and then crashed resolving its schema. The lesson the node's summary carries: simulate the actual install layout, not just the import.",
+          "provenance": [
+            { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [920, 933] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [890, 1010] }
+      ]
+    },
+    {
+      "id": "n13",
+      "version": 1,
+      "type": "move",
+      "title": "Pushed, force-reinstalled, verified from the installed cache",
+      "summary": "The fix committed and pushed with Pi's go-ahead; the five superseded loose skills removed (each verified genuinely superseded first; backup already in place). Then the last gotcha: the plugin updater is version-gated — same version, no update, even though the commit moved — beaten with a clean forced reinstall. Final verification ran the manifold server from the actual installed marketplace cache: boots, lists all tools, executes a real call. All four plugins now verifiably work from the published marketplace.",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": "n08",
+      "line": "DOGFOOD",
+      "residuals": [
+        {
+          "label": "Version-pinned update is a no-op",
+          "detail": "The marketplace clone had the fix; the installed cache didn't; update compared equal version strings and skipped. The same gotcha independently bit the concurrent crucible session hours later — it chose a version bump where this session chose a forced reinstall.",
+          "provenance": [
+            { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [1035, 1043] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [1010, 1066] }
+      ]
+    },
+    {
+      "id": "n14",
+      "version": 1,
+      "type": "open-question",
+      "title": "Pre-publish leftovers: license capture, and the held-back trees",
+      "summary": "Still open when the session closed: the vendored skills ship without captured upstream licenses (flagged as a pre-publish blocker — and the repo is now public); the cartographer workspace and the concurrent session's four hats remain uncommitted on disk, deliberately left for their owners.",
+      "status": "open",
+      "moment": "grind",
+      "parent": "n08",
+      "line": "DOGFOOD",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [452, 466] },
+        { "transcript": "06454cdf-5eb4-4c28-9e51-4c5fceb2b4f3.jsonl", "lines": [726, 739] }
+      ]
+    }
+  ]
+}

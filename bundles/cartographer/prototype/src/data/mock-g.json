@@ -1,0 +1,431 @@
+{
+  "schema_version": 2,
+  "based_on": "mined directly from a real transcript at schema v2 (no v1 intermediate)",
+  "session": {
+    "surface": "claude-code",
+    "title": "hailey planned on paper: a spec, a parked skeleton plan, three lived-in weeks, one requirements doc",
+    "intent": {
+      "version": 2,
+      "text": "Produce the high-level understanding docs for Hailey — architecture, use cases, capabilities, an MVP cut — and park technical implementation for a later session.",
+      "history": [
+        {
+          "version": 1,
+          "text": "Plan Hailey from the concept up: present the conceptual/business diagram — devices, roles, how it works, end-user value — then proceed ahead.",
+          "superseded_because": "With the spec committed and a phase-1 implementation plan freshly written, Pi redirected the session to plan files and understanding files only — 'not actually the technical implementations' — parking the plan minutes after it was finished.",
+          "shifted_at": "n07@1"
+        }
+      ]
+    },
+    "frontier": {
+      "node": "n14@1",
+      "detail": "session closed deliberately — 'call it a day' (transcript line 594); the parked phase-1 plan is where a build session would pick up"
+    },
+    "date": "2026-07-05",
+    "source_transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl",
+    "captured_at_line": 621,
+    "compaction_events": []
+  },
+  "lines": [
+    {
+      "id": "SHAPE",
+      "label": "What is Hailey, and what would we build?",
+      "because": {
+        "text": "Lets discuss suggest a plan to build Hailey. Lets first present the high level conceptual and business diagram for hailey - that diagram should contain the different kind of devices, their role, how everythig would work, and what is the value being delieverd to the end user - once we have this conceptual idea and load into context our gaols we can proceed ahead.",
+        "verbatim": true,
+        "speaker": "user",
+        "lines": [12, 12]
+      },
+      "from": null,
+      "into": null,
+      "outcome": "Answered at n06@1: a SwiftUI iPhone app plus a thin cloud brain on the laptop, provisioned free via Developer Mode, spec committed to a fresh repo, phase-1 walking-skeleton plan written in 12 TDD tasks — and parked by the very next message.",
+      "segments": []
+    },
+    {
+      "id": "DOSSIER",
+      "label": "Put the understanding on paper before any code",
+      "because": {
+        "text": "the goal of this session is to make a bunch of plan files for the different, like, plan file for the architecture, plan file for the use cases, and then, um, the high level capabilities that we need in this but not actually the technical implementations that is going to be done at a later point.",
+        "verbatim": true,
+        "speaker": "user",
+        "lines": [341, 341]
+      },
+      "from": {
+        "line": "SHAPE",
+        "node": "n06",
+        "version": 1,
+        "relation": "succession"
+      },
+      "into": null,
+      "outcome": "Done and closed clean: architecture doc with component diagram, a requirements doc consolidating all 28 persona-derived needs into senses/surfaces/capability tiers and a stated MVP cut, the owns-vs-borrows boundary settled — and Pi declared the planning stage complete.",
+      "segments": []
+    },
+    {
+      "id": "LIVED",
+      "label": "Where does Hailey earn its keep in a real week?",
+      "because": {
+        "text": "what happens if we start building out a hypothetical week in a hypothetical person's life? Let's call them person a, and then start giving it, like, different scenarios, different schedules, different sort of needs and requirements and, uh, kind of, like, use that as a basis of seeing that, okay, what features do we need to build because of that.",
+        "verbatim": true,
+        "speaker": "user",
+        "lines": [392, 392]
+      },
+      "from": {
+        "line": "DOSSIER",
+        "node": "n08",
+        "version": 1,
+        "relation": "fork"
+      },
+      "into": {
+        "line": "DOSSIER",
+        "node": "n12",
+        "version": 1,
+        "relation": "merge"
+      },
+      "outcome": "Three personas walked through full weeks — 28 numbered interaction points with a 'Without Hailey' counterfactual on every beat — and the hardest case (someone already winning) forced the value proposition to change shape. All 28 points fed the requirements consolidation.",
+      "segments": []
+    }
+  ],
+  "beats": [
+    {
+      "title": "From idea to spec",
+      "from_node": "n01",
+      "to_node": "n05"
+    },
+    {
+      "title": "The pivot to paper",
+      "from_node": "n06",
+      "to_node": "n08",
+      "note": "opens after a ~5-hour gap (spec committed 13:55; Pi returned 18:57)"
+    },
+    {
+      "title": "Three lives make the requirements",
+      "from_node": "n09",
+      "to_node": "n14"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "a01",
+      "kind": "file",
+      "name": "conceptual + business diagram (mermaid) — devices, roles, value loop",
+      "produced_by": "n02@1",
+      "status": "created"
+    },
+    {
+      "id": "a02",
+      "kind": "docs",
+      "name": "Hailey v1 spec — committed as the fresh repo's first commit (with the research corpus snapshot)",
+      "produced_by": "n05@1",
+      "status": "created"
+    },
+    {
+      "id": "a03",
+      "kind": "plan",
+      "name": "phase-1 walking-skeleton implementation plan — 12 TDD tasks, server → app → loop",
+      "produced_by": "n06@1",
+      "status": "parked"
+    },
+    {
+      "id": "a04",
+      "kind": "docs",
+      "name": "docs/architecture.md + component diagram (standalone SVG, mermaid source in the doc)",
+      "produced_by": "n08@1",
+      "status": "created"
+    },
+    {
+      "id": "a05",
+      "kind": "docs",
+      "name": "persona A: Avery's week — 18 beats, Sunday co-plan to Sunday review",
+      "produced_by": "n09@1",
+      "updated_by": "n10@1",
+      "status": "updated"
+    },
+    {
+      "id": "a06",
+      "kind": "docs",
+      "name": "persona B: Priya's week — a genuinely different life, counterfactuals throughout",
+      "produced_by": "n10@1",
+      "status": "created"
+    },
+    {
+      "id": "a07",
+      "kind": "docs",
+      "name": "personas/README — index + the beat method (Know/Sense/Decide/Say, tiers, counterfactuals)",
+      "produced_by": "n10@1",
+      "status": "created"
+    },
+    {
+      "id": "a08",
+      "kind": "docs",
+      "name": "persona C: Marcus's week — the stress test; 13 beats for someone already at the top of their game",
+      "produced_by": "n11@1",
+      "status": "created"
+    },
+    {
+      "id": "a09",
+      "kind": "docs",
+      "name": "docs/capabilities.md — senses, surfaces, capability tiers, MVP cut; later §6–7 owns-vs-borrows",
+      "produced_by": "n12@1",
+      "updated_by": "n13@1",
+      "status": "updated"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "n01",
+      "version": 1,
+      "type": "topic",
+      "title": "Hailey — from idea to a buildable shape",
+      "summary": "A brainstorming-first session on Hailey, the ambient personal-assistant idea: concept and business framing before any stack talk, with prior research context loaded from the project directory and memory.",
+      "status": "done",
+      "moment": "grind",
+      "parent": null,
+      "line": "SHAPE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [12, 96] }
+      ]
+    },
+    {
+      "id": "n02",
+      "version": 1,
+      "type": "move",
+      "title": "Concept + business diagram rendered; context loaded",
+      "summary": "The high-level diagram Pi asked to see first — device kinds, their roles, how the loop works, and where the end-user value lands — rendered as a mermaid chart, with the existing research corpus surveyed so the goals sat in context before design questions opened.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n01",
+      "line": "SHAPE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [24, 138] }
+      ]
+    },
+    {
+      "id": "n03",
+      "version": 1,
+      "type": "decision",
+      "title": "Native SwiftUI on the phone; a thin cloud brain on the laptop",
+      "summary": "Pi challenged the proposed cloud stack and set the priority order himself: the phone app goes maximally native for feature access, the cloud side gets picked for testability rather than by default, desktop/web is explicitly deprioritized — and the MVP is the loop (capture an intention, get nudged at the right moment), not any surface. A follow-up exchange settled that Hailey's voice is configurable in chat, not fixed.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n01",
+      "line": "SHAPE",
+      "standing": "active",
+      "residuals": [
+        {
+          "label": "Interrupted clarification",
+          "detail": "Pi cut off one answer mid-stream to sharpen his own question ('what I mean by that is - will they be updated, will new ones be written etc. etc.') — the transcript records the interruption; the map records only the settled ruling.",
+          "provenance": [
+            { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [197, 219] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [138, 226] }
+      ],
+      "quote": {
+        "text": "For me, it makes sense to write the lightweight iOS app on the thing that's, like, uh, most native to iOS so that we can get as many features as possible.",
+        "lines": [175, 175]
+      }
+    },
+    {
+      "id": "n04",
+      "version": 1,
+      "type": "decision",
+      "title": "Skip the $99: Developer Mode + free personal-team signing",
+      "summary": "Pi didn't want the annual developer fee, and the free path holds: a free Apple ID with personal-team signing plus Developer Mode runs the app on his own phone. The real cost — the app expires every seven days and needs a re-push — was verified and baked into the design as an architectural consequence rather than discovered later.",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": "n01",
+      "line": "SHAPE",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [229, 272] }
+      ],
+      "quote": {
+        "text": "Uh, my question is if I put my phone in developer mode, can't I just use the app natively? I don't want to play... pay, like, ninety nine dollars a year.",
+        "lines": [229, 229]
+      }
+    },
+    {
+      "id": "n05",
+      "version": 1,
+      "type": "move",
+      "title": "Spec written; repo initialized; first commit",
+      "summary": "The v1 design — morning briefing, right-moment nudges, a single-user scope — revised through the discovery round, written as the spec, and committed as the first commit of a freshly initialized repo alongside the existing research corpus. Session learnings saved to memory before the break.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n01",
+      "line": "SHAPE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [170, 272] }
+      ]
+    },
+    {
+      "id": "n06",
+      "version": 1,
+      "type": "move",
+      "title": "Walking-skeleton plan: 12 TDD tasks — written, then parked",
+      "summary": "After a ~5-hour gap Pi returned, and the phase-1 implementation plan got written with the plan-writing discipline: twelve bite-sized TDD tasks covering server scaffold, task store, the app shell, and the end-to-end loop. It was complete, committed — and the very next user message parked it: this session was ruled a planning-docs session, execution deferred.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n01",
+      "line": "SHAPE",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [283, 337] }
+      ]
+    },
+    {
+      "id": "n07",
+      "version": 1,
+      "type": "decision",
+      "title": "This session makes understanding docs, not code",
+      "summary": "The pivot ruling: high-level plan files and understanding files — what to build, the very-high-level architectures, how data flows between components, scenarios drawn up — with technical implementation explicitly out of scope for the session. The freshly written skeleton plan stays parked; the docs become the deliverable.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": null,
+      "line": "DOSSIER",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [341, 351] }
+      ],
+      "quote": {
+        "text": "the goal of this session is to make a bunch of plan files for the different, like, plan file for the architecture, plan file for the use cases, and then, um, the high level capabilities that we need in this but not actually the technical implementations that is going to be done at a later point.",
+        "lines": [341, 341]
+      }
+    },
+    {
+      "id": "n08",
+      "version": 1,
+      "type": "move",
+      "title": "architecture.md + component diagram, opened for review",
+      "summary": "The system on one page: components, interactions, data flow between the phone and the cloud brain, rendered both as a standalone SVG and as mermaid living in the markdown so it renders on GitHub. Pi liked the presentation and immediately wanted more reasoning and lived examples in it — the ask that forked the persona line.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n07",
+      "line": "DOSSIER",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [351, 391] }
+      ]
+    },
+    {
+      "id": "n09",
+      "version": 1,
+      "type": "move",
+      "title": "A week with Avery: 18 beats, Sunday to Sunday",
+      "summary": "Scenario-driven requirements, ratified as the honest method for an ambient assistant whose value lives in moments, not feature lists: one persona — a hybrid worker with Pi's exact pains — walked through a full week in 18 beats, each grounding a concrete Hailey interaction (the grocery-to-dinner recall, the busy-week preplan, the earned-leisure nudge Pi had sketched).",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": null,
+      "line": "LIVED",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [392, 420] }
+      ]
+    },
+    {
+      "id": "n10",
+      "version": 1,
+      "type": "move",
+      "title": "Counterfactuals on every beat; Priya joins; the files get real names",
+      "summary": "Pi's sharpening pass, all three requests executed: every interaction point gains a 'Without Hailey' counterfactual line (grounded in the validation research where a real quote fits) so each beat states its paycheck; a genuinely different second persona gets her own week; and the vague filename gives way to a personas/ directory with an index that documents the beat method itself.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n09",
+      "line": "LIVED",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [421, 466] }
+      ]
+    },
+    {
+      "id": "n11",
+      "version": 1,
+      "type": "move",
+      "title": "Marcus, the stress test: what does ambient help give someone already winning?",
+      "summary": "Pi picked the hardest case on purpose — a super-organized operator at the top of his game, with an EA owning his calendar and systems already in place. Every beat had to answer a harder question than gap-filling, and the value proposition changed shape: Hailey earns its keep in the seams between the systems, not by replacing them. Thirteen beats.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n09",
+      "line": "LIVED",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [467, 493] }
+      ]
+    },
+    {
+      "id": "n12",
+      "version": 1,
+      "type": "move",
+      "title": "capabilities.md: 28 persona beats consolidated into a requirements doc",
+      "summary": "The merge Pi asked for by name — 'looking at these different perspectives... what are the different features, interaction points, touch points?' — every numbered persona point consolidated into senses (information sources, each with what it feeds and which beats need it), surfaces, capabilities by tier, and an MVP cut stated plainly, with the load-bearing platform permissions verified against what iOS actually allows rather than assumed.",
+      "status": "done",
+      "moment": "breakthrough",
+      "parent": "n07",
+      "line": "DOSSIER",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [494, 559] }
+      ]
+    },
+    {
+      "id": "n13",
+      "version": 1,
+      "type": "decision",
+      "title": "Hailey owns the context store; borrows calendar and to-dos where it can",
+      "summary": "Pi's boundary question — build a calendar and to-do store natively, sync everything with Hailey as source of truth? — answered half-yes after checking the connector ecosystem: Hailey does need its own durable what/when/where/why store, but that store holds context and annotations; the domain stores themselves (calendar, tasks) are borrowed through existing connectors and APIs where the platform allows. Folded into the requirements doc as two new sections.",
+      "status": "done",
+      "moment": "grind",
+      "parent": "n07",
+      "line": "DOSSIER",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [560, 593] }
+      ],
+      "quote": {
+        "text": "We would need to build some sort of a calendar. We would need to build some sort of a, uh, to do list, uh, something that holds information about what, when, where, why, and then we sync that information using HAiley as a source of truth.",
+        "lines": [560, 560]
+      }
+    },
+    {
+      "id": "n14",
+      "version": 1,
+      "type": "decision",
+      "title": "Stop here — the planning stage is complete",
+      "summary": "A deliberate close, not a trailing-off: everything checked committed (clean tree, six commits), memory updated for the next session, task list tidied. The map ends with zero open questions in-session; what remains — building the walking skeleton — lives in the parked phase-1 plan, which is an artifact, not an open thread.",
+      "status": "done",
+      "moment": "pivot",
+      "parent": "n07",
+      "line": "DOSSIER",
+      "standing": "active",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "61722204-3b99-4bea-8955-cf965fb28351.jsonl", "lines": [594, 621] }
+      ],
+      "quote": {
+        "text": "Right? I think that's the end of the planning stage. I think everything till now is documented, clear, contained, and, um, is properly done, and we can stop the session here and, um, call it a day",
+        "lines": [594, 594]
+      }
+    }
+  ]
+}

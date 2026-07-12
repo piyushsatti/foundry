@@ -1,0 +1,307 @@
+{
+  "session": {
+    "surface": "claude.ai",
+    "title": "Three workstreams, one day: mining, consolidation, orchestration",
+    "date": "2026-07-04",
+    "compaction_events": []
+  },
+  "nodes": [
+    {
+      "id": "n01",
+      "version": 1,
+      "type": "topic",
+      "title": "Transcript mining",
+      "summary": "Mined three weeks of session transcripts for recurring friction, distilled 19 raw patterns into 12 themes, and converted them into an approved 7-item buildout with a dependency-ordered build sequence and paste-ready spec files.",
+      "status": "done",
+      "parent": null,
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [5, 22] },
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [23, 334] },
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [643, 928] },
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [1223, 1338] }
+      ]
+    },
+    {
+      "id": "n02",
+      "version": 1,
+      "type": "move",
+      "title": "Scoped the mining corpus",
+      "summary": "Corpus fixed at 21 days of transcripts (2026-06-13 to 2026-07-03): Claude Code JSONL from the personal machine plus claude.ai chat exports. Work-machine material excluded entirely rather than sanitized — cheaper and safer. Unit of analysis is the friction event (a moment Pi repeats himself, re-explains state, or re-does setup), not the session.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [23, 158] }
+      ]
+    },
+    {
+      "id": "n03",
+      "version": 2,
+      "type": "move",
+      "title": "Extracted friction patterns from the corpus",
+      "summary": "Two extraction passes over the full corpus (Claude Code JSONL, then claude.ai exports) surfaced 19 raw friction patterns, deduplicated to 12 themes. Heaviest hitters: re-pasting project state at session start (31 occurrences), permission-prompt interruptions on read-only commands (26), manually summarizing a dead session to seed its successor (14).",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [
+        {
+          "label": "First tally double-counted",
+          "detail": "The first pass reported 23 patterns; the grep that bucketed friction events counted a multi-line match once per line, inflating three buckets. Re-ran with fixed bucketing before anything downstream consumed the numbers.",
+          "provenance": [
+            { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [286, 310] }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "version": 1,
+          "summary": "First pass over the Claude Code JSONL only: 14 raw friction patterns, provisionally bucketed into 9 themes. claude.ai exports not yet included.",
+          "superseded_because": "Second pass added the claude.ai chat exports; 5 new patterns appeared (mostly context-rebuilding after web sessions) and the dedup merged the buckets differently — 19 raw patterns, 12 themes."
+        }
+      ],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [159, 334] },
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [643, 748] }
+      ]
+    },
+    {
+      "id": "n04",
+      "version": 2,
+      "type": "decision",
+      "title": "Approved the 7-item buildout, dependency-ordered",
+      "summary": "Pi approved seven build items from the 12 themes (session-start context loader, permission allowlist sweep, session journaling hooks, filesystem watcher, staleness statusline, memory sweep, daily digest). Build sequence is dependency-derived, not numeric: 0, 1, 3, 6, 2, 5, 4 — one fresh session per item, Pi kicks off each one himself.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [
+        {
+          "version": 1,
+          "summary": "Pi approved the seven items with a plain numeric build order, 0 through 6, on the assumption the items were independent.",
+          "superseded_because": "The dependency pass during orchestration design showed item 3's filesystem watcher is a prerequisite for item 6's digest, and item 2's journaling output feeds item 5's memory sweep. Sequence re-derived from the dependency graph: 0, 1, 3, 6, 2, 5, 4."
+        }
+      ],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [749, 866] },
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [1223, 1258] }
+      ],
+      "quote": {
+        "text": "yes — re-order it. 0 then 1, then 3 before 6, then 2, 5, 4. one session per item, and I kick each one off myself. nothing starts unprompted.",
+        "lines": [1247, 1249]
+      }
+    },
+    {
+      "id": "n05",
+      "version": 1,
+      "type": "move",
+      "title": "Wrote per-item spec files with kickoff prompts",
+      "summary": "Each approved item got its own spec file under a local plans folder: problem statement, transcript evidence (pattern counts and example lines), acceptance criteria, and a paste-ready kickoff prompt so a fresh session can start the item cold. An index README carries the sequence and gate rules.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [867, 928] }
+      ]
+    },
+    {
+      "id": "n06",
+      "version": 1,
+      "type": "decision",
+      "title": "Re-mine cadence: 30 days, gated on item 2 shipping",
+      "summary": "The mining pass repeats in 30 days, but only once item 2 (session journaling hooks) has shipped — item 2 changes what future transcripts contain, so re-mining before it lands would measure the old world.",
+      "status": "done",
+      "parent": "n01",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [1307, 1338] }
+      ],
+      "quote": {
+        "text": "re-run the mining 30 days out, but gate it on item 2 shipping — no point mining transcripts the new hooks haven't touched yet.",
+        "lines": [1318, 1319]
+      }
+    },
+    {
+      "id": "n07",
+      "version": 1,
+      "type": "topic",
+      "title": "File consolidation",
+      "summary": "Inventoried six scattered note-and-scratch locations, decided everything folds into the foundry monorepo (no new repo), and executed the first migration batch — 143 files from the two lowest-risk sources. Batch 2 (old-laptop backup, gists) is mapped but not yet moved.",
+      "status": "active",
+      "parent": null,
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [5, 22] },
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [335, 642] }
+      ]
+    },
+    {
+      "id": "n08",
+      "version": 1,
+      "type": "move",
+      "title": "Inventoried the scattered sources",
+      "summary": "Six source locations catalogued from Pi's pasted directory listings: ~/Desktop note piles, ~/Downloads keepers, an old 'scratch' repo, an iCloud notes export, an old-laptop backup folder, and a set of GitHub gists. Roughly 400 files total; about a third are duplicates of each other.",
+      "status": "done",
+      "parent": "n07",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [335, 414] }
+      ]
+    },
+    {
+      "id": "n10",
+      "version": 1,
+      "type": "move",
+      "title": "session-lens: notes only — no code ever existed",
+      "summary": "Two 2025 notes reference a 'session-lens repo' that appears nowhere. Established it was a design sketch that never reached code: the notes predate any build, and 'repo' was aspirational. The only session-lens artifacts are those two markdown files, both already in the consolidation inventory. Nothing is lost; nothing to migrate.",
+      "status": "false-alarm",
+      "parent": "n07",
+      "residuals": [
+        {
+          "label": "The hunt for a repo that never existed",
+          "detail": "Treated 'see session-lens repo' in the notes as a lost repository. Searched GitHub (public and private, plus org memberships), had Pi run find over two machines' dev directories, and grepped an old external-drive backup index he pasted in. All empty. The tell was the note's own date: it predates every dev-directory snapshot, and its sibling note says 'if I ever build this'. Roughly 40 minutes of chat.",
+          "provenance": [
+            { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [421, 492] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [415, 508] }
+      ]
+    },
+    {
+      "id": "n11",
+      "version": 1,
+      "type": "decision",
+      "title": "Everything folds into the foundry monorepo",
+      "summary": "No new repo. Live material goes to the matching foundry subfolder (docs/, research/, skills/), dead material to archived/, personal scratch to the gitignored area. One place to search was the deciding argument.",
+      "status": "done",
+      "parent": "n07",
+      "residuals": [
+        {
+          "label": "Rejected: a separate 'attic' archive repo",
+          "detail": "A dedicated archive repo was argued for about twenty lines — cleaner history, smaller monorepo. Rejected because a second home reintroduces the exact 'where did I put it' problem the consolidation exists to kill.",
+          "provenance": [
+            { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [548, 570] }
+          ]
+        }
+      ],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [548, 584] }
+      ],
+      "quote": {
+        "text": "no new repo. everything folds into foundry — live stuff to the right subfolder, dead stuff to archived/. one place to search.",
+        "lines": [571, 572]
+      }
+    },
+    {
+      "id": "n09",
+      "version": 1,
+      "type": "move",
+      "title": "Mapped every source to its destination",
+      "summary": "Produced a source-to-destination table covering all six locations: each file class mapped to a foundry path, duplicates resolved newest-wins, and two risk tiers defined — batch 1 (Desktop piles, scratch repo: no ambiguity) and batch 2 (backup folder, gists: needs dedup review before moving).",
+      "status": "done",
+      "parent": "n07",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [509, 598] }
+      ]
+    },
+    {
+      "id": "n12",
+      "version": 1,
+      "type": "move",
+      "title": "Executed batch 1: 143 files moved",
+      "summary": "Generated a shell script implementing the batch-1 mapping (moves plus a manifest log); Pi ran it locally and pasted the output back. 143 files landed in foundry, zero collisions, manifest saved alongside. Batch 2 stays parked until its dedup review.",
+      "status": "done",
+      "parent": "n07",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [599, 642] }
+      ]
+    },
+    {
+      "id": "n13",
+      "version": 1,
+      "type": "topic",
+      "title": "Orchestration design",
+      "summary": "Named the failure mode that kills long-running orchestrator sessions (execution debris), ruled that orchestrators decide while workers execute, and drafted a paste-ready mandate template that boots any project's orchestrator session. How orchestrator state survives session death is still open.",
+      "status": "done",
+      "parent": null,
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [5, 22] },
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [929, 1306] }
+      ]
+    },
+    {
+      "id": "n14",
+      "version": 1,
+      "type": "move",
+      "title": "Named the failure mode: execution debris",
+      "summary": "Walked three recent long sessions that degraded: each one died because tool output, file dumps, and retry noise crowded out the decisions. The diagnosis: sessions that both decide and execute always drown in their own execution. The mining data independently backs this — 'manually summarizing a dead session to seed its successor' was a top-3 friction theme.",
+      "status": "done",
+      "parent": "n13",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [929, 1042] }
+      ]
+    },
+    {
+      "id": "n15",
+      "version": 1,
+      "type": "decision",
+      "title": "Two-tier rule: the orchestrator never executes",
+      "summary": "Standing rule for every future project session: the orchestrator holds decisions, state, and gates; all real work is dispatched to subagents or worker sessions that return results. Applies to design work too, not just code.",
+      "status": "done",
+      "parent": "n13",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [1043, 1118] }
+      ],
+      "quote": {
+        "text": "the orchestrator never executes. it holds decisions, state, and gates — everything else gets dispatched and comes back as a result. if the orchestrator's context fills with execution debris we've already lost.",
+        "lines": [1096, 1098]
+      }
+    },
+    {
+      "id": "n16",
+      "version": 1,
+      "type": "move",
+      "title": "Drafted the orchestrator mandate template",
+      "summary": "A paste-ready kickoff block that turns a fresh session into a project orchestrator: two-tier rule stated up front, scaffold list (project home, external state file, tracking issue), phase/gate structure, and a rule that Pi advances gates explicitly. Applied to the buildout specs the same afternoon — each item's kickoff prompt is an instance of it.",
+      "status": "done",
+      "parent": "n13",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [1119, 1222] }
+      ]
+    },
+    {
+      "id": "n17",
+      "version": 1,
+      "type": "open-question",
+      "title": "How does orchestrator state survive session death?",
+      "summary": "The mandate says state lives on disk (a MISSION.md-style file updated every turn), but two things are unresolved: how a successor session verifies the file is current rather than stale, and whether per-turn disk writes are noise in short sessions. Parked deliberately — the cartographer project will hit this first and its answer becomes the pattern.",
+      "status": "open",
+      "parent": "n13",
+      "residuals": [],
+      "history": [],
+      "provenance": [
+        { "transcript": "claude.ai:2026-07-04-orchestrator-day", "lines": [1259, 1306] }
+      ]
+    }
+  ]
+}
