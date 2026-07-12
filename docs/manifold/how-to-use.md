@@ -2,7 +2,7 @@
 
 Manifold is a **project compass**: a versioned spec graph in SQLite that answers orientation questions for long-horizon work. This guide is for **chat-first use** (agent + skill + MCP). CLI and web are alternates for the same data.
 
-**Proper nouns:** [`glossary.md`](glossary.md) · **Agent skill:** [`../../plugins/manifold/skills/manifold/SKILL.md`](../../plugins/manifold/skills/manifold/SKILL.md)
+**Proper nouns:** [`glossary.md`](glossary.md) · **Agent skill:** [`../../bundles/manifold/skills/manifold/SKILL.md`](../../bundles/manifold/skills/manifold/SKILL.md)
 
 ---
 
@@ -27,7 +27,7 @@ Use these docs by need:
 | Human/API vocabulary | [`glossary.md`](glossary.md#human-terms-vs-api-terms) |
 | HTML, diagrams, status brief surfaces | [`human-presentation.md`](human-presentation.md) |
 | Why the human-readable redesign exists | [`human-comprehension-redesign-plan.md`](human-comprehension-redesign-plan.md) |
-| Full CLI/MCP setup | [`../../plugins/manifold/skills/manifold/references/user-guide.md`](../../plugins/manifold/skills/manifold/references/user-guide.md) |
+| Full CLI/MCP setup | [`../../bundles/manifold/skills/manifold/references/user-guide.md`](../../bundles/manifold/skills/manifold/references/user-guide.md) |
 | Roadmap and locked decisions | [`todo.md`](todo.md) |
 
 ---
@@ -101,8 +101,8 @@ Manifold is **not**:
 
    Or set `$MANIFOLD_DB` / `db_path` in config for a single default file.
 
-3. **MCP** — register [`plugins/manifold/server/mcp_server.py`](../../plugins/manifold/server/mcp_server.py) with `MANIFOLD_DB` set to the idea you're working on. Template: [`plugins/manifold/.mcp.json`](../../plugins/manifold/.mcp.json). Use separate MCP entries per idea if you switch often.
-4. **Skill** — sync [`plugins/manifold/skills/manifold/`](../../plugins/manifold/skills/manifold/) to your host skills directory so the agent knows when and how to call manifold.
+3. **MCP** — register [`bundles/manifold/server/mcp_server.py`](../../bundles/manifold/server/mcp_server.py) with `MANIFOLD_DB` set to the idea you're working on. Template: [`bundles/manifold/.mcp.json`](../../bundles/manifold/.mcp.json). Use separate MCP entries per idea if you switch often.
+4. **Skill** — sync [`bundles/manifold/skills/manifold/`](../../bundles/manifold/skills/manifold/) to your host skills directory so the agent knows when and how to call manifold.
 5. **Projects** — import or register at least one project (`manifold import …` or MCP `register_project`).
 
 **Foundry dogfood:** `manifold init-foundry` resets the **current** DB to the ai-foundry graph. Prefer `init-ideas` for a clean per-idea layout.
@@ -118,7 +118,7 @@ Then open `/projects/chronicler/brief`, `/mindmap?focus=I.1`, `/views/blockers?f
 
 Optional fictional Acme demo: `manifold seed-demo`. See [`human-presentation.md`](human-presentation.md).
 
-Host-specific install paths (Claude, Cursor, …) will live in `install/hosts/` when added; until then see [`plugins/manifold/skills/manifold/references/user-guide.md`](../../plugins/manifold/skills/manifold/references/user-guide.md).
+Host-specific install paths (Claude, Cursor, …) will live in `install/hosts/` when added; until then see [`bundles/manifold/skills/manifold/references/user-guide.md`](../../bundles/manifold/skills/manifold/references/user-guide.md).
 
 ---
 
@@ -189,7 +189,7 @@ packages/manifold/scripts/manifold serve
 - **Portfolio** — optional rollup project `portfolio` with theme layer; seed separately when you need cross-idea bets (not included in `init-ideas`).
 - **Cross-project blocking** — `create_cross_edge` (MCP); `next-leaves` excludes blocked leaves until blockers are `achieved`.
 
-See [`../../plugins/manifold/skills/manifold/references/business-model.md`](../../plugins/manifold/skills/manifold/references/business-model.md).
+See [`../../bundles/manifold/skills/manifold/references/business-model.md`](../../bundles/manifold/skills/manifold/references/business-model.md).
 
 ---
 
@@ -218,7 +218,7 @@ Custom subagents (read-only compass, spec editor only) are optional optimization
 |---|---|
 | [`glossary.md`](glossary.md) | All proper nouns |
 | [`human-comprehension-redesign-plan.md`](human-comprehension-redesign-plan.md) | Human-readable surface plan and evidence caveats |
-| [`../../plugins/manifold/skills/manifold/references/user-guide.md`](../../plugins/manifold/skills/manifold/references/user-guide.md) | Full CLI/MCP setup |
-| [`../../plugins/manifold/skills/manifold/references/why-manifold.md`](../../plugins/manifold/skills/manifold/references/why-manifold.md) | Why vs Spec Kit, tickets, memory |
+| [`../../bundles/manifold/skills/manifold/references/user-guide.md`](../../bundles/manifold/skills/manifold/references/user-guide.md) | Full CLI/MCP setup |
+| [`../../bundles/manifold/skills/manifold/references/why-manifold.md`](../../bundles/manifold/skills/manifold/references/why-manifold.md) | Why vs Spec Kit, tickets, memory |
 | [`orchestrator-contract.md`](orchestrator-contract.md) | Pre-dispatch checklist for orchestrators |
 | [`todo.md`](todo.md) | Roadmap and locked decisions |

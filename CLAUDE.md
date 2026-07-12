@@ -10,10 +10,12 @@ Piyush's agentic-infrastructure monorepo: a Claude Code plugin marketplace, the 
 
 | Path | Role |
 |------|------|
-| `plugins/` | Versioned Claude Code plugins — `meditate`, `manifold`, `plan-orchestrator`, `crucible` |
+| `bundles/` | Versioned plugin SOURCE — `meditate`, `manifold`, `plan-orchestrator`, `crucible` |
+| `plugins/` | Gitignored build output, materialized from `bundles/` by `scripts/build.py` |
+| `library/` | Shared-capability promotion target — a skill/agent moves here only when a second bundle needs it |
 | `packages/manifold/` | `manifold-lib` — the KAOS engine (pip-installable; the manifold MCP imports it) |
 | `apps/manifold-web/` | Browser UI |
-| `skills/` | Authored skills in staging (not yet plugins); registry: `skills/manifest.yaml` |
+| `skills/` | Authored skills in staging (not yet bundles); registry: `skills/manifest.yaml` |
 | `vendor/skills/` | Vendored upstream skills |
 | `home/` | Personal `~/.claude` kit — global `CLAUDE.md`, settings, hooks, commands, memory, statuslines |
 | `docs/` · `research/` · `archived/` | Design docs, studies, deprecated reference |
@@ -32,7 +34,7 @@ DB: `$MANIFOLD_DB` (default: a per-idea file under `~/.claude/`). One DB file pe
 
 ## Plugins
 
-Each plugin is self-contained under `plugins/<name>/` with `.claude-plugin/plugin.json`. MCP servers live inside their plugin (`server/`) and are declared in the plugin's `.mcp.json` via `${CLAUDE_PLUGIN_ROOT}`. The marketplace catalog is `.claude-plugin/marketplace.json`.
+Each plugin is self-contained under `bundles/<name>/` with `.claude-plugin/plugin.json`. MCP servers live inside their bundle (`server/`) and are declared in the plugin's `.mcp.json` via `${CLAUDE_PLUGIN_ROOT}`. `scripts/build.py` materializes each bundle into `plugins/<name>/` (gitignored); the marketplace catalog `.claude-plugin/marketplace.json` points at those build outputs.
 
 ## Skills registry
 

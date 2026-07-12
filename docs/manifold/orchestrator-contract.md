@@ -2,7 +2,7 @@
 
 **Status:** contract for integrators — manifold ships MCP/CLI; **`dispatch-orchestrator`** skill (future) implements dispatch.
 
-**Related:** [`glossary.md`](glossary.md) (intent-broker), [`business-model.md`](../../plugins/manifold/skills/manifold/references/business-model.md), Topics H+I (cross-project blocking), Topic J (trajectory).
+**Related:** [`glossary.md`](glossary.md) (intent-broker), [`business-model.md`](../../bundles/manifold/skills/manifold/references/business-model.md), Topics H+I (cross-project blocking), Topic J (trajectory).
 
 ---
 

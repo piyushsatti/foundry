@@ -47,14 +47,14 @@ revisit on demand). Present under their dirs, not in the active review queue.
 
 ## Promoted to plugins
 
-These graduated out of staging and now live under [`../plugins/`](../plugins/)
-(still registered in `manifest.yaml` by their plugin path):
+These graduated out of staging and now live under [`../bundles/`](../bundles/)
+(still registered in `manifest.yaml` by their bundle path):
 
 | Skill | Home |
 |-------|------|
-| manifold | [`../plugins/manifold/skills/manifold/`](../plugins/manifold/skills/manifold/) |
-| plan-orchestrator, progress-tracker | [`../plugins/plan-orchestrator/skills/`](../plugins/plan-orchestrator/skills/) |
-| wardrobe, consult, hats, red-vs-blue | [`../plugins/crucible/skills/`](../plugins/crucible/skills/) |
+| manifold | [`../bundles/manifold/skills/manifold/`](../bundles/manifold/skills/manifold/) |
+| plan-orchestrator, progress-tracker | [`../bundles/plan-orchestrator/skills/`](../bundles/plan-orchestrator/skills/) |
+| wardrobe, consult, hats, red-vs-blue | [`../bundles/crucible/skills/`](../bundles/crucible/skills/) |
 
 The crucible lens × stance review system (evidence base:
 [`../docs/adversarial-review-methodology.md`](../docs/adversarial-review-methodology.md))
@@ -67,6 +67,6 @@ shipped and was packaged into `plugins/crucible/` on 2026-07-05.
 | Artifact | Location |
 |----------|----------|
 | Vendored skills | [../vendor/skills/](../vendor/skills/) |
-| progress-tracker MCP | bundled in [../plugins/plan-orchestrator/](../plugins/plan-orchestrator/) |
+| progress-tracker MCP | bundled in [../bundles/plan-orchestrator/](../bundles/plan-orchestrator/) |
 | Cursor built-in skills | `~/.cursor/skills-cursor/` (do not copy) |
 | Superpowers plugin skills | Claude plugin cache |

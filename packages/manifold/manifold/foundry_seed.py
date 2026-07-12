@@ -21,7 +21,7 @@ LAYERS = [
 # realization node_id → verdict_check (repo-relative paths)
 VERDICT_WIRES: dict[str, str] = {
     "R.core": "test -f packages/manifold/manifold/queries.py",
-    "R.mcp": "test -f plugins/manifold/server/mcp_server.py",
+    "R.mcp": "test -f bundles/manifold/server/mcp_server.py",
     "R.web": "test -d apps/manifold-web/manifold_web",
     "R.K1": "test -f packages/manifold/manifold/status_brief.py",
     "R.K2": "test -f packages/manifold/manifold/presentation_svg.py",
@@ -110,7 +110,7 @@ def seed_ai_foundry(
 
     reals = [
         ("R.core", "Core library", "packages/manifold", "C.1", "achieved"),
-        ("R.mcp", "Manifold MCP server", "plugins/manifold (46 tools)", "C.1", "achieved"),
+        ("R.mcp", "Manifold MCP server", "bundles/manifold (46 tools)", "C.1", "achieved"),
         ("R.web", "Manifold web UI", "apps/manifold-web", "C.1", "achieved"),
         ("R.traj", "Trajectory v1", "schema + CLI + MCP + HTTP peek", "C.3", "achieved"),
         ("R.j3", "Trajectory web inbox", "J3 — plan/apply UX on web", "C.3", "planned"),

@@ -22,7 +22,7 @@ Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `pytho
 
 > Software projects lose their "why" faster than they lose their code. Manifold holds intent in a queryable graph with spec-audit (revision discipline), drift-report (spec↔code on wired verdicts), and a "what's next" API. Read `references/why-manifold.md` for how this compares to Spec Kit, KAOS tools, and agent memory.
 
-**Store:** SQLite at `$MANIFOLD_DB` (default `~/.claude/manifold.db`). **Runtime:** `packages/manifold/` (library), `plugins/manifold/server/` (MCP), `apps/manifold-web/` (UI).
+**Store:** SQLite at `$MANIFOLD_DB` (default `~/.claude/manifold.db`). **Runtime:** `packages/manifold/` (library), `bundles/manifold/server/` (MCP), `apps/manifold-web/` (UI).
 
 ---
 
@@ -125,7 +125,7 @@ packages/manifold/scripts/manifold import <path> # v0.2 markdown tree
 packages/manifold/scripts/manifold export <project> <out-dir>
 ```
 
-MCP: register `plugins/manifold/server/mcp_server.py` — **42 tools** (23 read + 19 write), including `spec_audit`, `drift_report`, `propose_trajectory`, `peek_trajectory`, `accept_trajectory_leg`, `reject_trajectory`, `portfolio_report`, `link_portfolio`, `create_cross_edge`, `list_cross_blocking_chain`, … Glossary: [`docs/manifold/glossary.md`](../../docs/manifold/glossary.md) · How to use: [`docs/manifold/how-to-use.md`](../../docs/manifold/how-to-use.md).
+MCP: register `bundles/manifold/server/mcp_server.py` — **42 tools** (23 read + 19 write), including `spec_audit`, `drift_report`, `propose_trajectory`, `peek_trajectory`, `accept_trajectory_leg`, `reject_trajectory`, `portfolio_report`, `link_portfolio`, `create_cross_edge`, `list_cross_blocking_chain`, … Glossary: [`docs/manifold/glossary.md`](../../docs/manifold/glossary.md) · How to use: [`docs/manifold/how-to-use.md`](../../docs/manifold/how-to-use.md).
 
 ---
 

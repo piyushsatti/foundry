@@ -114,7 +114,7 @@ python3 scripts/run_skill_evals.py --skill red-vs-blue
 ```
 
 The script resolves each skill's directory via `skills/manifest.yaml`, so it
-works whether a skill lives under `skills/` or, as here, under `plugins/`.
+works whether a skill lives under `skills/` or, as here, under `bundles/`.
 
 ## Status
 

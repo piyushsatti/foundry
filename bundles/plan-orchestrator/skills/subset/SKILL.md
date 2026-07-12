@@ -7,7 +7,7 @@ argument-hint: "The larger goal + what to slice from it"
 <!-- foundry:dependencies:start -->
 ## Dependencies
 
-Registry: [`manifest.yaml`](../manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
+Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
 
 | Kind | Skills | Role |
 |------|--------|------|

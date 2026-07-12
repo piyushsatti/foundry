@@ -4,7 +4,7 @@ Durable design and product documentation. Ephemeral session state (handoffs, pla
 
 ## Manifold
 
-The KAOS project-compass — a spec substrate (`packages/manifold`, a.k.a. `manifold-lib`), an MCP server (`plugins/manifold`), and a web UI (`apps/manifold-web`).
+The KAOS project-compass — a spec substrate (`packages/manifold`, a.k.a. `manifold-lib`), an MCP server (`bundles/manifold`), and a web UI (`apps/manifold-web`).
 
 | Doc | Purpose |
 |---|---|
@@ -25,7 +25,7 @@ Rationale and reference behind this machine's Claude Code configuration — all 
 | [`2026-06-11-config-baseline.md`](2026-06-11-config-baseline.md) | Pre-redesign settings snapshot |
 | [`access-tier-roadmap.md`](access-tier-roadmap.md) | Wishlist for the guard system |
 | [`clipboard-model.md`](clipboard-model.md) · [`permission-pipe-limitation.md`](permission-pipe-limitation.md) · [`worktree-context-loading.md`](worktree-context-loading.md) | Investigated Claude Code behaviors |
-| [`capture-tooling/`](capture-tooling/) | **Legacy** — the pre-plugin config-capture scripts (superseded by `plugins/` + `home/`) |
+| [`capture-tooling/`](capture-tooling/) | **Legacy** — the pre-plugin config-capture scripts (superseded by `bundles/` + `home/`) |
 | [`PROVENANCE.md`](PROVENANCE.md) | Where each consolidated component came from |
 
 ## Archive

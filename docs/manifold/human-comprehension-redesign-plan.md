@@ -50,8 +50,8 @@ All claims in this work should use evidence levels.
 | Claim | Evidence level | Basis |
 |---|---:|---|
 | Manifold has a canonical graph and human projections should not become truth | High | [`human-presentation.md`](human-presentation.md), [`glossary.md`](glossary.md) |
-| Status and verdicts are independent axes | High | [`verdicts.md`](../../plugins/manifold/skills/manifold/references/verdicts.md), [`SKILL.md`](../../plugins/manifold/skills/manifold/SKILL.md) |
-| Trajectory supports preview before graph mutation | High | [`trajectory.md`](../../plugins/manifold/skills/manifold/references/trajectory.md), [`glossary.md`](glossary.md) |
+| Status and verdicts are independent axes | High | [`verdicts.md`](../../bundles/manifold/skills/manifold/references/verdicts.md), [`SKILL.md`](../../bundles/manifold/skills/manifold/SKILL.md) |
+| Trajectory supports preview before graph mutation | High | [`trajectory.md`](../../bundles/manifold/skills/manifold/references/trajectory.md), [`glossary.md`](glossary.md) |
 | Progressive disclosure is appropriate for Manifold's complexity | Medium | NN/g progressive disclosure, existing human-output research |
 | Role-specific summaries should improve human comprehension | Medium | NN/g heuristics, Diataxis, Topic K research |
 | Bounded diagrams can help; whole-graph diagrams are risky | Medium | Topic K human-output research, Mermaid edge-limit findings |
@@ -79,8 +79,8 @@ All claims in this work should use evidence levels.
 | [`human-presentation.md`](human-presentation.md) | Graph is authoritative; diagrams, mindmaps, HTML, chat summaries are projections | Keep one canonical graph and one view-model per surface |
 | [`glossary.md`](glossary.md) | DB-canonical model, trajectory vocabulary, target status, verdict terms | Add human/API terminology crosswalk rather than renaming internals blindly |
 | [`how-to-use.md`](how-to-use.md) | Chat-first compass questions and spec-audit vs drift-report split | First-run docs should start from questions, not commands |
-| [`../../plugins/manifold/skills/manifold/references/verdicts.md`](../../plugins/manifold/skills/manifold/references/verdicts.md) | `violated`, `errored`, `unverified`, `satisfied`; `--repo`/`project_root`; layer and branch caveats | Risk views must show unknowns and broken checks, not only violations |
-| [`../../plugins/manifold/skills/manifold/references/trajectory.md`](../../plugins/manifold/skills/manifold/references/trajectory.md) | `propose` and `show` are non-mutating; `accept` mutates; impact preview includes `next_leaves_after` | Human trajectory view must foreground mutation boundary |
+| [`../../bundles/manifold/skills/manifold/references/verdicts.md`](../../bundles/manifold/skills/manifold/references/verdicts.md) | `violated`, `errored`, `unverified`, `satisfied`; `--repo`/`project_root`; layer and branch caveats | Risk views must show unknowns and broken checks, not only violations |
+| [`../../bundles/manifold/skills/manifold/references/trajectory.md`](../../bundles/manifold/skills/manifold/references/trajectory.md) | `propose` and `show` are non-mutating; `accept` mutates; impact preview includes `next_leaves_after` | Human trajectory view must foreground mutation boundary |
 | [`../../research/manifold/human-output-2026-06/synthesis.md`](../../research/manifold/human-output-2026-06/synthesis.md) | Deterministic `status-brief`, generated timestamps, JSON/HTML/Markdown parity, bounded diagrams | Start with one reliable brief and deepen via links |
 | [`../../research/manifold/landscape-2026-06/synthesis.md`](../../research/manifold/landscape-2026-06/synthesis.md) | Market gap around graph + drift + compass + MCP; provenance caveats | Keep positioning calibrated and avoid overclaiming category ownership |
 | [`todo.md`](todo.md) | Topic K shipped, risk-brief and full timelines deferred | Treat this redesign as the next validation/productization layer |
@@ -403,7 +403,7 @@ All claims in this work should use evidence levels.
 
 | Todo | Output |
 |---|---|
-| P7.1 Update `plugins/manifold/skills/manifold/SKILL.md` routing table | Skill behavior |
+| P7.1 Update `bundles/manifold/skills/manifold/SKILL.md` routing table | Skill behavior |
 | P7.2 Add human summary + URL + caveats response pattern | Chat safety |
 | P7.3 Add eval for status/verdict distinction | Eval |
 | P7.4 Add eval for unverified/errored not all-clear | Eval |

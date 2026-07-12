@@ -13,7 +13,7 @@ config instead, point args at this file:
     "mcpServers": {
       "progress-tracker": {
         "command": "python3",
-        "args": ["/abs/path/to/plugins/plan-orchestrator/server/mcp_server.py"]
+        "args": ["/abs/path/to/bundles/plan-orchestrator/server/mcp_server.py"]
       }
     }
   }

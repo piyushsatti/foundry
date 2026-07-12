@@ -14,25 +14,22 @@ The server imports the `manifold` library and resolves it in this order:
 
 1. a pip-installed copy (`pip install -e packages/manifold`) — the repo dev flow;
 2. the sibling `packages/manifold` tree when running from a repo checkout;
-3. the copy **vendored under [`server/_vendor/`](server/_vendor/)** — used by a
-   marketplace install, which ships only `plugins/manifold/`.
+3. the copy vendored under `server/_vendor/` — present only in the **built**
+   plugin (a marketplace install ships only `plugins/manifold/`).
 
-Because of (3), the plugin works from a clean `/plugin install manifold@foundry`
+Because of (3), the built plugin works from a clean `/plugin install manifold@foundry`
 with **no extra setup** — the library (stdlib-only) and `schema.sql` travel with it.
 
-The vendored copy is generated from `packages/manifold` and must stay in sync:
-
-```bash
-python3 plugins/manifold/scripts/vendor_sync.py   # regenerate after changing the lib
-```
-
-`tests/test_vendor_parity.py` fails the build if the vendored copy drifts.
+`_vendor/` is not tracked in source: `scripts/build.py` (repo root) materializes it
+from `packages/manifold` (package tree + `schema.sql` sidecar, per this bundle's
+`bundle.yaml`), and `tests/test_build_determinism.py` fails if the vendored output
+drifts from the canonical source.
 
 ## Tests
 
 ```bash
 # from the foundry repo root
-python3 -m unittest discover -s plugins/manifold/tests -p 'test_*.py'
+python3 -m unittest discover -s bundles/manifold/tests -p 'test_*.py'
 ```
 
 The library's own suite (372 tests) lives separately under `packages/manifold/tests`.

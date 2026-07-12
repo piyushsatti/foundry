@@ -46,4 +46,4 @@ python3 ~/.claude/skills/progress-tracker/examples/smoke_test.py
 python3 ~/.claude/skills/progress-tracker/server/web_server.py
 ```
 
-Full reference: [`README.md`](README.md) (bundled from `plugins/plan-orchestrator/server` on install).
+Full reference: [`README.md`](README.md) (bundled from `bundles/plan-orchestrator/server` on install).

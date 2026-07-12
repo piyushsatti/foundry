@@ -83,7 +83,7 @@ Per-agent `*.todo.md` files cause context churn (~900 lines of redundant rewrite
 ## Files
 
 ```
-plugins/plan-orchestrator/
+bundles/plan-orchestrator/
   .mcp.json        auto-registration (${CLAUDE_PLUGIN_ROOT})
   README.md
   server/          mcp_server.py, web_server.py, db.py, schema.sql

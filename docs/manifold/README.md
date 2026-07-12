@@ -30,11 +30,11 @@ Ephemeral plans and session notes live in **`.gitignored/`** (local only, not tr
 | Path | Role |
 |---|---|
 | [`../../packages/manifold/`](../../packages/manifold/) | Python library + CLI |
-| [`../../plugins/manifold/server/`](../../plugins/manifold/server/) | MCP server (40+ tools) |
+| [`../../bundles/manifold/server/`](../../bundles/manifold/server/) | MCP server (40+ tools) |
 | [`../../apps/manifold-web/`](../../apps/manifold-web/) | Browser UI |
-| [`../../plugins/manifold/skills/manifold/`](../../plugins/manifold/skills/manifold/) | Agent skill (SKILL.md + references) |
+| [`../../bundles/manifold/skills/manifold/`](../../bundles/manifold/skills/manifold/) | Agent skill (SKILL.md + references) |
 
-**Skill deep dives:** [`../../plugins/manifold/skills/manifold/references/user-guide.md`](../../plugins/manifold/skills/manifold/references/user-guide.md) (setup, MCP registration), [`why-manifold.md`](../../plugins/manifold/skills/manifold/references/why-manifold.md) (positioning).
+**Skill deep dives:** [`../../bundles/manifold/skills/manifold/references/user-guide.md`](../../bundles/manifold/skills/manifold/references/user-guide.md) (setup, MCP registration), [`why-manifold.md`](../../bundles/manifold/skills/manifold/references/why-manifold.md) (positioning).
 
 ---
 

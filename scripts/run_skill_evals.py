@@ -18,7 +18,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 REQUIRED_KEYS = frozenset({"id", "prompt", "expected_output"})
 
-# Reuse manifest path-resolution so skills that moved into plugins/ resolve correctly.
+# Reuse manifest path-resolution so skills that moved into bundles/ resolve correctly.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 try:
     from skills_manifest import load_manifest
@@ -37,7 +37,7 @@ TOOL_KEYWORDS: dict[str, tuple[str, ...]] = {
 
 
 def _skill_dir(skill: str) -> Path:
-    """Resolve a skill's repo-relative dir via the manifest (handles plugins/)."""
+    """Resolve a skill's repo-relative dir via the manifest (handles bundles/)."""
     if load_manifest is not None:
         try:
             meta = load_manifest()["skills"].get(skill)

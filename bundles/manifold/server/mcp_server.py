@@ -2,7 +2,7 @@
 manifold MCP server — stdio JSON-RPC 2.0.
 
 Exposes 46 tools (27 read + 19 write) wrapping the packages/manifold library.
-Run directly: python3 plugins/manifold/server/mcp_server.py
+Run directly: python3 bundles/manifold/server/mcp_server.py
 """
 import importlib.util
 import json

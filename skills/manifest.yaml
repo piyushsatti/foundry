@@ -17,7 +17,7 @@ skills:
   # --- Authored ---
 
   manifold:
-    path: plugins/manifold/skills/manifold
+    path: bundles/manifold/skills/manifold
     origin: authored
     status: shipped
     requires: []
@@ -26,7 +26,7 @@ skills:
     external: []
 
   present:
-    path: skills/present
+    path: bundles/manifold/skills/present
     origin: authored
     status: draft
     requires: []
@@ -35,7 +35,7 @@ skills:
     external: []
 
   plan-orchestrator:
-    path: plugins/plan-orchestrator/skills/plan-orchestrator
+    path: bundles/plan-orchestrator/skills/plan-orchestrator
     origin: authored
     status: shipped
     requires: [progress-tracker]
@@ -53,8 +53,8 @@ skills:
     external: []
 
   progress-tracker:
-    path: plugins/plan-orchestrator/skills/progress-tracker
-    mcp_bundle: plugins/plan-orchestrator
+    path: bundles/plan-orchestrator/skills/progress-tracker
+    mcp_bundle: bundles/plan-orchestrator
     origin: authored
     status: shipped
     requires: []
@@ -63,7 +63,7 @@ skills:
     external: []
 
   brief:
-    path: skills/brief
+    path: bundles/plan-orchestrator/skills/brief
     origin: authored
     status: draft
     requires: []
@@ -72,7 +72,7 @@ skills:
     external: [brainstorming, writing-plans]
 
   audit:
-    path: skills/audit
+    path: bundles/crucible/skills/audit
     origin: authored
     status: draft
     requires: []
@@ -81,7 +81,7 @@ skills:
     external: []
 
   subset:
-    path: skills/subset
+    path: bundles/plan-orchestrator/skills/subset
     origin: authored
     status: draft
     requires: []
@@ -90,7 +90,7 @@ skills:
     external: []
 
   wardrobe:
-    path: plugins/crucible/skills/wardrobe
+    path: bundles/crucible/skills/wardrobe
     origin: authored
     status: shipped
     requires: []
@@ -99,7 +99,7 @@ skills:
     external: []
 
   consult:
-    path: plugins/crucible/skills/consult
+    path: bundles/crucible/skills/consult
     origin: authored
     status: shipped
     requires: [wardrobe]
@@ -108,7 +108,7 @@ skills:
     external: []
 
   hats:
-    path: plugins/crucible/skills/hats
+    path: bundles/crucible/skills/hats
     origin: authored
     status: shipped
     requires: [wardrobe]
@@ -117,7 +117,7 @@ skills:
     external: []
 
   red-vs-blue:
-    path: plugins/crucible/skills/red-vs-blue
+    path: bundles/crucible/skills/red-vs-blue
     origin: authored
     status: shipped
     requires: [wardrobe]
@@ -126,7 +126,7 @@ skills:
     external: []
 
   worktree:
-    path: skills/worktree
+    path: bundles/devtools/skills/worktree
     origin: authored
     status: shipped
     requires: []

@@ -25,7 +25,7 @@ NODE_WIRES: dict[str, dict[str, str]] = {
     nid: {"verdict_mechanism": "automated_check", "verdict_check": check}
     for nid, check in {
         "R.core": "test -f packages/manifold/manifold/queries.py",
-        "R.mcp": "test -f plugins/manifold/server/mcp_server.py",
+        "R.mcp": "test -f bundles/manifold/server/mcp_server.py",
         "R.web": "test -d apps/manifold-web/manifold_web",
         "R.K1": "test -f packages/manifold/manifold/status_brief.py",
         "R.K2": "test -f packages/manifold/manifold/presentation_svg.py",

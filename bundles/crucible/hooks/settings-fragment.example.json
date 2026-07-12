@@ -1,6 +1,6 @@
 {
   "_comment": "PreToolUse hook: nudge toward red-vs-blue before finalizing a high-stakes plan (crucible plugin, EXPERIMENTAL).",
-  "_usage": "Manual-install fallback ONLY — use if the plugin's own hooks/hooks.json does not autoload (unverified in this repo; see plugins/crucible/README.md). Add this object to the hooks.PreToolUse array in .claude/settings.json (or ~/.claude/settings.json). Replace <CRUCIBLE_PLUGIN_ROOT> with the actual installed plugin path (e.g. ~/.claude/plugins/cache/crucible — verify the real path after install; it is NOT guaranteed to match this example).",
+  "_usage": "Manual-install fallback ONLY — use if the plugin's own hooks/hooks.json does not autoload (unverified in this repo; see bundles/crucible/README.md). Add this object to the hooks.PreToolUse array in .claude/settings.json (or ~/.claude/settings.json). Replace <CRUCIBLE_PLUGIN_ROOT> with the actual installed plugin path (e.g. ~/.claude/plugins/cache/crucible — verify the real path after install; it is NOT guaranteed to match this example).",
   "matcher": "ExitPlanMode",
   "hooks": [
     {

@@ -10,10 +10,12 @@ covers the layout and `CLAUDE.md` has the working conventions.
 
 | Path | Role |
 |------|------|
-| `plugins/` | Versioned Claude Code plugins — `meditate`, `manifold`, `plan-orchestrator`, `crucible`. Each is self-contained under `plugins/<name>/` with `.claude-plugin/plugin.json`; MCP servers live in `plugins/<name>/server/` and are declared in the plugin's `.mcp.json`. |
+| `bundles/` | Versioned plugin SOURCE — `meditate`, `manifold`, `plan-orchestrator`, `crucible`. Each is self-contained under `bundles/<name>/` with `.claude-plugin/plugin.json`; MCP servers live in `bundles/<name>/server/` and are declared in the plugin's `.mcp.json`. |
+| `plugins/` | Gitignored build output, materialized from `bundles/` by `scripts/build.py`; this is what the marketplace serves. |
+| `library/` | Shared-capability promotion target — a skill/agent moves here only when a second bundle needs it (Rule of Three); bundles pull it via `compose.skills/agents` in `bundle.yaml`. |
 | `packages/manifold/` | `manifold-lib` — the KAOS engine (pip-installable; the manifold MCP imports it). |
 | `apps/manifold-web/` | Browser UI. |
-| `skills/` | Authored skills in staging (not yet plugins); registry `skills/manifest.yaml`. |
+| `skills/` | Authored skills in staging (not yet bundles); registry `skills/manifest.yaml`. |
 | `vendor/skills/` | Vendored upstream skills (pinned). |
 | `home/` | Personal `~/.claude` kit — global `CLAUDE.md`, settings, hooks, commands, memory, statuslines. |
 | `local/` | Work-sensitive (gitignored). |
