@@ -12,7 +12,7 @@ Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `pytho
 |------|--------|------|
 | **requires** | `progress-tracker` | Must exist in bundle before running |
 | **suggests** | `brief`, `subset` | Soft handoff after this skill — suggest, do not auto-chain |
-| **dispatches** | `audit`, `hats`, `red-vs-blue`, `grill-with-docs`, `handoff`, `design-taste-frontend` | May invoke via Skill tool or subagent prompt |
+| **dispatches** | `audit`, `hats`, `red-vs-blue` | May invoke via Skill tool or subagent prompt |
 | **external** | `brainstorming`, `writing-plans`, `verification-before-completion` | Outside foundry bundle (host plugins) |
 
 **Used by:** `progress-tracker` (suggests)
