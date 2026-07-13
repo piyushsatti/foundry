@@ -1,0 +1,10 @@
+{
+  "name": "devtools",
+  "description": "Dev-environment tooling — worktree-native lifecycle (add/check/archive/revive/reap) with memory and serena wiring.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Piyush Satti"
+  },
+  "license": "MIT",
+  "keywords": ["devtools", "worktree", "git", "dev-environment"]
+}

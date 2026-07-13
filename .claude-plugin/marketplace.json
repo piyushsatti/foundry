@@ -1,0 +1,34 @@
+{
+  "name": "foundry",
+  "owner": {
+    "name": "Piyush Satti"
+  },
+  "description": "Piyush's agentic infrastructure \u2014 memory curation, project-compass, review, orchestration, and dev-environment plugins.",
+  "plugins": [
+    {
+      "name": "crucible",
+      "source": "./plugins/crucible",
+      "description": "Lens x stance review system: consult (partner), audit (neutral single reviewer), hats (blind panel), and red-vs-blue (attack/verify pair) on a shared hat wardrobe."
+    },
+    {
+      "name": "devtools",
+      "source": "./plugins/devtools",
+      "description": "Dev-environment tooling \u2014 worktree-native lifecycle (add/check/archive/revive/reap) with memory and serena wiring."
+    },
+    {
+      "name": "manifold",
+      "source": "./plugins/manifold",
+      "description": "KAOS project compass \u2014 a DB-canonical spec substrate with an MCP server exposing read/write tools over a project's goal graph."
+    },
+    {
+      "name": "meditate",
+      "source": "./plugins/meditate",
+      "description": "Reflective memory curation: pause \u2192 review \u2192 consolidate \u2192 release. Audits Claude memory + CLAUDE.md (+ serena if active), proposes dispositions via a read-only Opus curator agent, gates, and executes approved changes with archive-not-destroy safety."
+    },
+    {
+      "name": "plan-orchestrator",
+      "source": "./plugins/plan-orchestrator",
+      "description": "Orchestrate multi-agent plans with live dispatch telemetry. Bundles the progress-tracker MCP, the brief and subset scoping skills, and the full review capability (audit, hats, red-vs-blue + stance agents) composed from the shared library."
+    }
+  ]
+}

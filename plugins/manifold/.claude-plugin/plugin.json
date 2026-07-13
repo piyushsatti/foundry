@@ -1,0 +1,16 @@
+{
+  "name": "manifold",
+  "description": "KAOS project compass \u2014 a DB-canonical spec substrate with an MCP server exposing read/write tools over a project's goal graph.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Piyush Satti"
+  },
+  "license": "MIT",
+  "keywords": [
+    "manifold",
+    "kaos",
+    "mcp",
+    "project-compass",
+    "spec"
+  ]
+}

@@ -1,0 +1,35 @@
+#!/bin/sh
+# meditate-slug <abs-path> — the Claude Code project-key slug for an absolute path.
+#
+# Canonical rule (meditate decisions log, verified live at Claude Code v2.1.195):
+#   slug = sed 's|[/.]|-|g'   — replace '/' and '.' with '-'.  UNDERSCORES ARE PRESERVED.
+# (An earlier note claimed underscores were replaced too; that was a stale 2026-06-25
+# handoff and is wrong on current Claude Code — do NOT re-derive.)
+#
+# Single source of truth: curate, apply, and migrate_frontmatter.py all resolve keys
+# through this, so the three implementations can no longer drift.
+#
+# Self-verifying (best-effort): if the canonical slug has no directory under
+# ~/.claude/projects/ but the LEGACY underscore-replacing slug does, the store predates
+# the fix — warn and use the legacy dir rather than silently pointing at nothing. A key
+# with no dir yet is legitimate (a fresh scope) and is not an error.
+set -eu
+
+path="${1:?usage: meditate-slug <abs-path>}"
+case "$path" in
+  /*) : ;;
+  *) echo "meditate-slug: path must be absolute: $path" >&2; exit 1 ;;
+esac
+
+slug=$(printf '%s' "$path" | sed 's|[/.]|-|g')
+
+projects="${HOME}/.claude/projects"
+if [ -d "$projects" ] && [ ! -d "$projects/$slug" ]; then
+  legacy=$(printf '%s' "$path" | sed 's|[/._]|-|g')   # the old underscore-replacing rule
+  if [ "$legacy" != "$slug" ] && [ -d "$projects/$legacy" ]; then
+    echo "meditate-slug: WARNING '$slug' has no project dir; using legacy underscore-slug '$legacy'" >&2
+    slug="$legacy"
+  fi
+fi
+
+printf '%s\n' "$slug"
