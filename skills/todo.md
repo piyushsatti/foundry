@@ -37,7 +37,7 @@ All shipped after conformance tests passed (evidence: `research/crucible/test-ap
 - [x] **worktree** — macOS-portable, tests 92/0, installed on Mac; A1 passed → shipped
 - [x] **wardrobe** — 10 v1 hats + HATS.md contract → shipped
 - [x] **consult** — single-lens brainstorm partner; A2 passed → shipped
-- [ ] ~~**brief**~~ / ~~**audit**~~ / ~~**subset**~~ — parked (Pi: can live without for now; revisit on demand)
+- [x] **brief** / **subset** → shipped in plan-orchestrator; **audit** → shipped in library/ (composed into crucible + plan-orchestrator) — un-parked 2026-07-12/13
 
 **crucible phases 1–4 DONE** (2026-07-05) — packaged at `plugins/crucible/`; benchmark + hat-evals run (`research/crucible/`); pins retained. Open follow-ups: adjudicator benchmark (un-benchmarked role), harder corpus v2, non-security overlap fixture. Design: `.gitignored/plans/crucible-plugin-design.md`.
 
@@ -46,7 +46,7 @@ All shipped after conformance tests passed (evidence: `research/crucible/test-ap
 - [x] Multi-host skill sync — `scripts/sync-skills.sh --host cursor|codex|claude|all`
 - [x] Repo skill copies — `scripts/sync-skills.sh --repo` → `.agents/skills/` + `.cursor/skills/`
 - [ ] Toolbox install scripts — rsync from foundry to hosts via sibling `toolbox` repo
-- [ ] **crucible plugin** — lens × stance review system (hat library + consult + stance agents + worthiness gate); design: `.gitignored/plans/crucible-plugin-design.md` (2026-07-05)
+- [x] **crucible plugin** — shipped to the foundry marketplace (v0.3.x); review capability promoted to library/ 2026-07-13
 
 ### After reviews ship
 

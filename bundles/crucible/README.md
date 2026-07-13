@@ -79,18 +79,14 @@ always allows the tool call regardless. `hooks/hooks.json` wires it via
 [hooks](https://code.claude.com/docs/en/hooks.md) and
 [plugins](https://code.claude.com/docs/en/plugins.md) docs):
 
-1. **Plugin-hook autoload — CONFIRMED.** After `claude plugin install`,
-   `claude plugin details crucible@foundry` inventories the hook as
-   `Hooks (1) PreToolUse (harness-only)` — Claude Code parses `hooks.json` and
-   registers the hook with no manual `settings.json` edit. Autoload works.
-2. **`ExitPlanMode` as a `PreToolUse` matcher — still needs a live plan-mode
-   session.** Tool-name matchers are open-ended, but `ExitPlanMode` is **not in
-   the documented matcher example set**, and is elsewhere seen paired with
-   `PostToolUse`, not `PreToolUse` — so this exact matcher may not fire. Confirm
-   by entering plan mode and finalizing a high-stakes plan in a fresh session.
-   If it doesn't fire, the supported swaps are a `PostToolUse` matcher on
-   `ExitPlanMode`, or a `Stop` hook that injects the same `additionalContext` —
-   either is a drop-in edit in `hooks.json`.
+1. **Plugin-hook autoload — CONFIRMED** (2026-07-05, `claude plugin details`
+   inventories `Hooks (1) PreToolUse`; no `settings.json` edit needed).
+2. **`ExitPlanMode` matcher — VERIFIED firing live** (2026-07-12: the nudge
+   fired on plan finalization in a real session, twice).
+
+The hook is still **experimental** in a different sense: it has not been
+through a proper hook design/test pass — that is the dedicated hooks-overhaul
+phase (repo issue #3).
 
 Treat the hook as experimental until confirmed working post-install. If
 autoload doesn't fire, `hooks/settings-fragment.example.json` is a manual

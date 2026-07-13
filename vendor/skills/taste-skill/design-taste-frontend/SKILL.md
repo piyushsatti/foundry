@@ -12,8 +12,6 @@ Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `pytho
 |------|--------|------|
 | — | — | No manifest dependencies |
 
-**Used by:** `plan-orchestrator` (dispatches)
-
 <!-- foundry:dependencies:end -->
 
 # High-Agency Frontend Skill

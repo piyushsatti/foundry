@@ -12,8 +12,6 @@ Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `pytho
 |------|--------|------|
 | **suggests** | `audit`, `hats`, `red-vs-blue` | Soft handoff after this skill — suggest, do not auto-chain |
 
-**Used by:** `plan-orchestrator` (dispatches)
-
 <!-- foundry:dependencies:end -->
 
 <what-to-do>

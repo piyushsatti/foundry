@@ -1,7 +1,7 @@
 {
   "name": "crucible",
-  "description": "Lens x stance adversarial + panel review system: a shared hat wardrobe consumed by consult (partner), hats (neutral panel), and red-vs-blue (attack/verify pair).",
-  "version": "0.3.0",
+  "description": "Lens x stance review system: consult (partner), audit (neutral single reviewer), hats (blind panel), and red-vs-blue (attack/verify pair) on a shared hat wardrobe.",
+  "version": "0.3.1",
   "author": {
     "name": "Piyush Satti"
   },

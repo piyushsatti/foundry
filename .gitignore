@@ -43,3 +43,6 @@ dist/
 
 # Build output — materialized by scripts/build.py; served from the release ref
 /plugins/
+
+# Worktree machinery is machine-local (managed by devtools:worktree)
+/.worktrees/

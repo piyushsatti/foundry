@@ -13,8 +13,6 @@ Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `pytho
 |------|--------|------|
 | — | — | No manifest dependencies |
 
-**Used by:** `plan-orchestrator` (dispatches)
-
 <!-- foundry:dependencies:end -->
 
 Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to the temporary directory of the user's OS - not the current workspace.

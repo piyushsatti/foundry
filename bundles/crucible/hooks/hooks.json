@@ -1,5 +1,5 @@
 {
-  "_comment": "EXPERIMENTAL — first plugin hook in this repo. Two things unverified without a live install (checked 2026-07-05 vs CC docs): (1) plugin-hook autoload is not explicitly documented (skills/monitors are); (2) ExitPlanMode is not in the documented PreToolUse matcher example set and is elsewhere seen with PostToolUse, so this matcher may not fire — if it doesn't, swap to a PostToolUse matcher on ExitPlanMode or a Stop hook with the same additionalContext. Never blocks, so a non-firing hook is inert. See bundles/crucible/README.md.",
+  "_comment": "Plan-review nudge: PreToolUse on ExitPlanMode, advisory-only, never blocks. Matcher VERIFIED firing live 2026-07-12 (plan-mode session; autoload confirmed via plugin details). Hook remains EXPERIMENTAL: it has not yet been through the proper hook design/test pass \u2014 that is the dedicated hooks overhaul phase (repo issue #3). Manual fallback: settings-fragment.example.json.",
   "hooks": {
     "PreToolUse": [
       {
