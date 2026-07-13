@@ -9,6 +9,8 @@ import re
 import sys
 from pathlib import Path
 
+import yaml
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = REPO_ROOT / "skills" / "manifest.yaml"
 
@@ -16,84 +18,23 @@ MARKER_START = "<!-- foundry:dependencies:start -->"
 MARKER_END = "<!-- foundry:dependencies:end -->"
 
 LIST_KEYS = frozenset({"requires", "suggests", "dispatches", "external"})
-SCALAR_KEYS = frozenset({"path", "origin", "bundle", "status", "mcp_bundle"})
-
-
-def _parse_inline_list(value: str) -> list[str]:
-    value = value.strip()
-    if value == "[]":
-        return []
-    if not (value.startswith("[") and value.endswith("]")):
-        raise ValueError(f"expected inline list, got: {value!r}")
-    inner = value[1:-1].strip()
-    if not inner:
-        return []
-    return [part.strip() for part in inner.split(",") if part.strip()]
 
 
 def load_manifest(path: Path = MANIFEST) -> dict:
-    """Minimal YAML parser for our manifest shape (no PyYAML dependency)."""
     if not path.is_file():
         raise FileNotFoundError(path)
 
-    data: dict = {"version": None, "skills": {}, "external_registry": {}}
-    section: str | None = None
-    current_skill: str | None = None
-    current_external: str | None = None
-
-    for raw in path.read_text(encoding="utf-8").splitlines():
-        line = raw.split("#", 1)[0].rstrip()
-        if not line.strip():
-            continue
-
-        if line.startswith("version:"):
-            data["version"] = int(line.split(":", 1)[1].strip())
-            continue
-
-        if line.strip() == "skills:":
-            section = "skills"
-            current_skill = None
-            current_external = None
-            continue
-
-        if line.strip() == "external_registry:":
-            section = "external_registry"
-            current_skill = None
-            current_external = None
-            continue
-
-        if section == "skills":
-            m = re.match(r"^  ([\w-]+):\s*$", line)
-            if m:
-                current_skill = m.group(1)
-                data["skills"][current_skill] = {
-                    "requires": [],
-                    "suggests": [],
-                    "dispatches": [],
-                    "external": [],
-                }
-                continue
-
-            if current_skill:
-                m = re.match(r"^    (\w+):\s*(.+)$", line)
-                if m:
-                    key, value = m.group(1), m.group(2).strip()
-                    if key in LIST_KEYS:
-                        data["skills"][current_skill][key] = _parse_inline_list(value)
-                    elif key in SCALAR_KEYS:
-                        data["skills"][current_skill][key] = value
-                    continue
-
-        if section == "external_registry":
-            m = re.match(r"^  ([\w-]+):\s*$", line)
-            if m:
-                current_external = m.group(1)
-                data["external_registry"][current_external] = {}
-                continue
-            if current_external:
-                m = re.match(r"^    (\w+):\s*(.+)$", line)
-                if m:
-                    data["external_registry"][current_external][m.group(1)] = m.group(2).strip()
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    data: dict = {
+        "version": raw.get("version"),
+        "skills": {},
+        "external_registry": raw.get("external_registry") or {},
+    }
+    for name, meta in (raw.get("skills") or {}).items():
+        meta = meta or {}
+        for key in LIST_KEYS:
+            meta[key] = meta.get(key) or []
+        data["skills"][name] = meta
 
     if data["version"] is None:
         raise ValueError("manifest missing version")
@@ -116,6 +57,20 @@ def validate_manifest(data: dict | None = None) -> list[str]:
         abs_path = REPO_ROOT / rel
         if not abs_path.is_dir():
             errors.append(f"{name}: path not found: {rel}")
+        else:
+            # Exact-case SKILL.md required: CC's loader is case-sensitive and
+            # fails silently on e.g. skill.md; a case-insensitive dev
+            # filesystem masks it, so compare real directory entries.
+            entries = {p.name for p in abs_path.iterdir()}
+            if "SKILL.md" not in entries:
+                wrong = [e for e in entries if e.lower() == "skill.md"]
+                if wrong:
+                    errors.append(
+                        f"{name}: entrypoint must be exactly 'SKILL.md' (found {wrong[0]!r} — "
+                        f"silently ignored by Claude Code on case-sensitive hosts)"
+                    )
+                else:
+                    errors.append(f"{name}: no SKILL.md in {rel}")
 
         mcp_bundle = meta.get("mcp_bundle")
         if mcp_bundle:
@@ -181,12 +136,8 @@ def cmd_reverse(data: dict, skill: str) -> None:
 
 
 def _skill_doc_path(meta: dict) -> Path | None:
-    base = REPO_ROOT / meta["path"]
-    for name in ("SKILL.md", "skill.md"):
-        path = base / name
-        if path.is_file():
-            return path
-    return None
+    path = REPO_ROOT / meta["path"] / "SKILL.md"
+    return path if path.is_file() else None
 
 
 def _format_dep_list(vals: list[str]) -> str:
@@ -278,7 +229,7 @@ def cmd_sync_docs(data: dict, skill: str | None = None) -> int:
         meta = data["skills"][name]
         doc = _skill_doc_path(meta)
         if doc is None:
-            print(f"skip {name}: no SKILL.md or skill.md", file=sys.stderr)
+            print(f"skip {name}: no SKILL.md", file=sys.stderr)
             skipped += 1
             continue
         section = render_dependencies_section(name, meta, data, doc.parent)

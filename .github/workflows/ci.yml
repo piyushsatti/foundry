@@ -14,6 +14,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install tooling deps
+        run: pip install pyyaml
+      - name: Generated catalog + doc blocks fresh
+        run: python3 scripts/build.py --check-sync
       - name: Skill registry valid
         run: python3 scripts/skills_manifest.py validate
       - name: Boundary guard (no bundle -> bundle path reach)

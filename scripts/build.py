@@ -3,16 +3,21 @@
 
 Structure: each bundles/<name>/bundle.yaml declares build (bool), compose
 (skills/agents from library/, packages from packages/ with optional sidecars),
-and exclude globs. Everything else in the bundle dir ships verbatim.
+and exclude globs. Everything else in the bundle dir ships verbatim. Skills
+compose as directories (library/skills/<x>/), agents as single files
+(library/agents/<x>.md).
 
 Why: main holds only DRY source; plugins/ is gitignored build output. CI runs
 this on release and publishes plugins/ to the release ref the marketplace serves.
-Generalizes the old plugins/manifold/scripts/vendor_sync.py (retired).
+bundle.yaml `build:` flags are the SINGLE owner of "what ships": this script
+derives the release catalog, the root marketplace.json (git-subdir sources),
+and the <!-- foundry:bundles --> doc blocks from them — never hand-edit those.
 
 Operate:
     python3 scripts/build.py [--only NAME ...] [--check] [--out DIR]
+    python3 scripts/build.py --sync         # regenerate root marketplace.json + doc blocks only
 --check builds to a temp dir and byte-diffs against the existing output dir
-(release-ref drift gate; on main there is usually no output to compare).
+(release-ref drift gate). CI asserts --sync leaves no diff (catalog/doc freshness).
 Determinism is separately asserted by tests/test_build_determinism.py.
 """
 from __future__ import annotations
@@ -21,112 +26,53 @@ import argparse
 import filecmp
 import fnmatch
 import json
+import re
 import shutil
 import sys
 import tempfile
 from pathlib import Path
+
+import yaml
 
 REPO = Path(__file__).resolve().parents[1]
 BUNDLES = REPO / "bundles"
 PACKAGES = REPO / "packages"
 LIBRARY = REPO / "library"
 DEFAULT_OUT = REPO / "plugins"
-MARKETPLACE_SRC = REPO / ".claude-plugin" / "marketplace.json"
+ROOT_MARKETPLACE = REPO / ".claude-plugin" / "marketplace.json"
+
+# Repo-level catalog fields (the only non-derived marketplace content).
+CATALOG_META = {
+    "name": "foundry",
+    "owner": {"name": "Piyush Satti"},
+    "description": "Piyush's agentic infrastructure — memory curation, project-compass, review, orchestration, and dev-environment plugins.",
+}
+GIT_SUBDIR_URL = "https://github.com/piyushsatti/foundry.git"
+RELEASE_REF = "release"
+
+DOC_BLOCK_FILES = ["README.md", "CLAUDE.md", "AGENTS.md"]
+DOC_BLOCK_RE = re.compile(
+    r"<!-- foundry:bundles:start -->.*?<!-- foundry:bundles:end -->", re.DOTALL
+)
 
 
-# ---------------------------------------------------------------- bundle.yaml
 def load_bundle_yaml(path: Path) -> dict:
-    """Minimal parser for the fixed bundle.yaml shape (no PyYAML dependency).
-
-    Recognizes: build (bool), compose.skills / compose.agents (inline or dash
-    lists of strings), compose.packages (dash list of mappings with package/
-    dest/sidecars), exclude (dash list of strings).
-    """
-    cfg: dict = {"build": False, "compose": {"skills": [], "agents": [], "packages": []}, "exclude": []}
-    lines = path.read_text().splitlines()
-    section = None  # None | 'compose' | 'exclude'
-    subkey = None   # inside compose: 'skills' | 'agents' | 'packages'
-    current_pkg: dict | None = None
-
-    def parse_inline_list(val: str) -> list[str]:
-        val = val.strip()
-        if not (val.startswith("[") and val.endswith("]")):
-            return []
-        inner = val[1:-1].strip()
-        return [x.strip().strip("'\"") for x in inner.split(",") if x.strip()]
-
-    for raw in lines:
-        line = raw.rstrip()
-        if not line or line.lstrip().startswith("#"):
-            continue
-        indent = len(line) - len(line.lstrip())
-        stripped = line.strip()
-
-        if indent == 0:
-            current_pkg = None
-            if stripped.startswith("build:"):
-                cfg["build"] = stripped.split(":", 1)[1].strip().lower() == "true"
-                section = None
-            elif stripped.startswith("compose:"):
-                section = "compose"
-                subkey = None
-            elif stripped.startswith("exclude:"):
-                section = "exclude"
-                rest = stripped.split(":", 1)[1]
-                if rest.strip():
-                    cfg["exclude"] = parse_inline_list(rest)
-            else:
-                section = None
-            continue
-
-        if section == "compose" and indent == 2:
-            current_pkg = None
-            key, _, rest = stripped.partition(":")
-            if key in ("skills", "agents", "packages"):
-                subkey = key
-                if rest.strip() and key != "packages":
-                    cfg["compose"][key] = parse_inline_list(rest)
-            continue
-
-        if section == "compose" and subkey == "packages" and stripped.startswith("- "):
-            current_pkg = {}
-            cfg["compose"]["packages"].append(current_pkg)
-            body = stripped[2:]
-            if body.startswith("{"):  # inline mapping
-                inner = body.strip("{}")
-                for part in inner.split(","):
-                    k, _, v = part.partition(":")
-                    current_pkg[k.strip()] = v.strip().strip("'\"")
-                current_pkg = None
-            elif ":" in body:
-                k, _, v = body.partition(":")
-                current_pkg[k.strip()] = v.strip().strip("'\"")
-            continue
-
-        if section == "compose" and current_pkg is not None and ":" in stripped:
-            k, _, v = stripped.partition(":")
-            v = v.strip()
-            current_pkg[k.strip()] = parse_inline_list(v) if v.startswith("[") else v.strip("'\"")
-            continue
-
-        if section == "compose" and subkey in ("skills", "agents") and stripped.startswith("- "):
-            cfg["compose"][subkey].append(stripped[2:].strip().strip("'\""))
-            continue
-
-        if section == "exclude" and stripped.startswith("- "):
-            cfg["exclude"].append(stripped[2:].strip().strip("'\""))
-            continue
-
-    return cfg
+    cfg = yaml.safe_load(path.read_text()) or {}
+    compose = cfg.get("compose") or {}
+    return {
+        "build": bool(cfg.get("build", False)),
+        "compose": {
+            "skills": compose.get("skills") or [],
+            "agents": compose.get("agents") or [],
+            "packages": compose.get("packages") or [],
+        },
+        "exclude": cfg.get("exclude") or [],
+    }
 
 
-# ------------------------------------------------------------------- copying
 def make_ignore(bundle_root: Path, patterns: list[str]):
-    """shutil.copytree ignore callback honoring the exclude globs.
-
-    Each glob is matched against the path relative to the bundle root, so
-    "**/evals/**" style patterns behave as expected.
-    """
+    """shutil.copytree ignore callback honoring the exclude globs (matched
+    against paths relative to the bundle root)."""
     def _ignore(directory: str, names: list[str]) -> set[str]:
         rel_dir = Path(directory).relative_to(bundle_root)
         ignored = set()
@@ -136,9 +82,10 @@ def make_ignore(bundle_root: Path, patterns: list[str]):
                 if (
                     fnmatch.fnmatch(rel, pat)
                     or fnmatch.fnmatch(name, pat)
-                    # "**/x/**" should also kill the x dir itself
                     or fnmatch.fnmatch(rel + "/", pat.rstrip("*") + "*")
                     or fnmatch.fnmatch(rel, pat.replace("/**", ""))
+                    # "**/x/**" must also kill an x sitting at the copy root
+                    or fnmatch.fnmatch(name, pat.replace("/**", "").replace("**/", ""))
                 ):
                     ignored.add(name)
                     break
@@ -147,8 +94,7 @@ def make_ignore(bundle_root: Path, patterns: list[str]):
     return _ignore
 
 
-def build_bundle(bdir: Path, out_root: Path) -> dict:
-    """Materialize one bundle. Returns its marketplace entry."""
+def build_bundle(bdir: Path, out_root: Path) -> None:
     name = bdir.name
     cfg = load_bundle_yaml(bdir / "bundle.yaml")
     dst = out_root / name
@@ -157,17 +103,24 @@ def build_bundle(bdir: Path, out_root: Path) -> dict:
         shutil.rmtree(dst)
     shutil.copytree(bdir, dst, ignore=make_ignore(bdir, cfg["exclude"]), symlinks=False)
 
-    # compose: promoted library capabilities
+    # compose: promoted library skills (directories) — same excludes as the
+    # verbatim copy, so dev-only files (evals/, __pycache__) never ship
     for skill in cfg["compose"]["skills"]:
         src = LIBRARY / "skills" / skill
         if not src.is_dir():
             sys.exit(f"build: {name}: compose.skills '{skill}' not found in library/skills/")
-        shutil.copytree(src, dst / "skills" / skill, dirs_exist_ok=False)
+        target = dst / "skills" / skill
+        if target.exists():
+            shutil.rmtree(target)  # compose owns its target
+        shutil.copytree(src, target, ignore=make_ignore(src, cfg["exclude"]))
+
+    # compose: promoted library agents (single .md files)
     for agent in cfg["compose"]["agents"]:
-        src = LIBRARY / "agents" / agent
-        if not src.is_dir():
+        src = LIBRARY / "agents" / f"{agent}.md"
+        if not src.is_file():
             sys.exit(f"build: {name}: compose.agents '{agent}' not found in library/agents/")
-        shutil.copytree(src, dst / "agents" / agent, dirs_exist_ok=False)
+        (dst / "agents").mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst / "agents" / f"{agent}.md")
 
     # compose: vendored packages (+ sidecar files beside the package dir)
     for spec in cfg["compose"]["packages"]:
@@ -176,16 +129,13 @@ def build_bundle(bdir: Path, out_root: Path) -> dict:
         src_pkg = PACKAGES / pkg / pkg
         if not src_pkg.is_dir():
             sys.exit(f"build: {name}: package '{pkg}' not found at {src_pkg}")
-        # compose.packages OWNS dest: replace any stale copy the verbatim
-        # bundle copy carried along (e.g. a committed _vendor/ pre-flip).
         if dest.exists():
-            shutil.rmtree(dest)
+            shutil.rmtree(dest)  # compose owns its target
         dest.mkdir(parents=True)
         shutil.copytree(
             src_pkg,
             dest / pkg,
             ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
-            dirs_exist_ok=False,
         )
         sidecars = spec.get("sidecars", [])
         if isinstance(sidecars, str):
@@ -196,9 +146,6 @@ def build_bundle(bdir: Path, out_root: Path) -> dict:
                 sys.exit(f"build: {name}: sidecar '{sc}' not found at {sc_src}")
             shutil.copy2(sc_src, dest / sc)
 
-    pj = json.loads((dst / ".claude-plugin" / "plugin.json").read_text())
-    return {"name": pj["name"], "source": f"./plugins/{name}", "description": pj["description"]}
-
 
 def discover() -> list[Path]:
     return sorted(
@@ -207,38 +154,111 @@ def discover() -> list[Path]:
     )
 
 
-def build(out_root: Path, only: list[str] | None = None) -> list[dict]:
+def plugin_meta(bdir: Path) -> dict:
+    pj = json.loads((bdir / ".claude-plugin" / "plugin.json").read_text())
+    return {"name": pj["name"], "description": pj["description"], "version": pj["version"]}
+
+
+def build(out_root: Path, only: list[str] | None = None) -> None:
     out_root.mkdir(parents=True, exist_ok=True)
-    entries = []
     for bdir in discover():
         if only and bdir.name not in only:
             continue
-        entries.append(build_bundle(bdir, out_root))
+        build_bundle(bdir, out_root)
         print(f"build: {bdir.name} -> {out_root / bdir.name}")
-    return entries
 
 
-# ---------------------------------------------------------------- marketplace
-def write_marketplace(entries: list[dict], out_root: Path) -> None:
-    """Regenerate the release-ref marketplace catalog next to the built plugins.
+# ------------------------------------------------------- generated artifacts
+def release_catalog() -> dict:
+    """Catalog for the release ref: relative ./plugins/<name> sources, no version key."""
+    plugins = [
+        {"name": m["name"], "source": f"./plugins/{m['name']}", "description": m["description"]}
+        for m in (plugin_meta(b) for b in discover())
+    ]
+    return {**CATALOG_META, "plugins": sorted(plugins, key=lambda p: p["name"])}
 
-    Entries carry name/source/description only — never a version key
-    (plugin.json is the sole version source; the docs warn a duplicated
-    version silently masks bumps). Root .claude-plugin/marketplace.json on
-    main is hand-maintained (git-subdir sources); this file serves the
-    release ref where ./plugins/<name> paths exist.
-    """
-    src = json.loads(MARKETPLACE_SRC.read_text())
-    catalog = {
-        "name": src["name"],
-        "owner": src["owner"],
-        "description": src["description"],
-        "plugins": sorted(entries, key=lambda e: e["name"]),
-    }
-    mp_dir = out_root / ".claude-plugin"
-    mp_dir.mkdir(parents=True, exist_ok=True)
-    (mp_dir / "marketplace.json").write_text(json.dumps(catalog, indent=2) + "\n")
-    print(f"build: marketplace catalog -> {mp_dir / 'marketplace.json'}")
+
+def root_catalog() -> dict:
+    """Catalog served on main: git-subdir sources pinned to the release ref, no version key."""
+    plugins = [
+        {
+            "name": m["name"],
+            "source": {
+                "source": "git-subdir",
+                "url": GIT_SUBDIR_URL,
+                "path": f"plugins/{m['name']}",
+                "ref": RELEASE_REF,
+            },
+            "description": m["description"],
+        }
+        for m in (plugin_meta(b) for b in discover())
+    ]
+    return {**CATALOG_META, "plugins": sorted(plugins, key=lambda p: p["name"])}
+
+
+def doc_block() -> str:
+    rows = [
+        f"| `{m['name']}` | {m['version']} | {m['description']} |"
+        for m in sorted((plugin_meta(b) for b in discover()), key=lambda m: m["name"])
+    ]
+    parked = sorted(
+        d.name for d in BUNDLES.iterdir()
+        if d.is_dir() and (d / "bundle.yaml").exists() and not load_bundle_yaml(d / "bundle.yaml")["build"]
+    )
+    lines = [
+        "<!-- foundry:bundles:start -->",
+        "<!-- generated by scripts/build.py --sync from bundles/*/bundle.yaml — do not edit -->",
+        "| Bundle | Version | What it is |",
+        "|--------|---------|------------|",
+        *rows,
+    ]
+    if parked:
+        lines.append(f"\nParked (source only, `build: false`): {', '.join(f'`{p}`' for p in parked)}")
+    lines.append("<!-- foundry:bundles:end -->")
+    return "\n".join(lines)
+
+
+def write_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def sync() -> None:
+    """Regenerate everything derived from bundle.yaml flags on main:
+    the root marketplace.json and the doc bundle-blocks."""
+    write_json(ROOT_MARKETPLACE, root_catalog())
+    print(f"sync: {ROOT_MARKETPLACE}")
+    block = doc_block()
+    for fname in DOC_BLOCK_FILES:
+        f = REPO / fname
+        if not f.is_file():
+            continue
+        text = f.read_text()
+        if DOC_BLOCK_RE.search(text):
+            f.write_text(DOC_BLOCK_RE.sub(lambda _: block, text))
+            print(f"sync: bundle block -> {fname}")
+        else:
+            print(f"sync: WARNING no foundry:bundles markers in {fname} — block not placed")
+
+
+def check_sync() -> int:
+    """0 if root catalog + doc blocks match what --sync would write."""
+    bad = []
+    if json.loads(ROOT_MARKETPLACE.read_text()) != root_catalog():
+        bad.append(str(ROOT_MARKETPLACE))
+    block = doc_block()
+    for fname in DOC_BLOCK_FILES:
+        f = REPO / fname
+        if not f.is_file():
+            continue
+        m = DOC_BLOCK_RE.search(f.read_text())
+        if m is None or m.group(0) != block:
+            bad.append(fname)
+    if bad:
+        print("check-sync: STALE (run scripts/build.py --sync):\n  " + "\n  ".join(bad))
+        return 1
+    print("check-sync: clean")
+    return 0
 
 
 # ---------------------------------------------------------------------- check
@@ -247,17 +267,16 @@ def _rel_files(root: Path) -> set[str]:
 
 
 def check(out_root: Path) -> int:
-    """Rebuild into a temp dir; byte-diff against out_root. 0 = clean."""
+    """Rebuild into a temp dir; byte-diff against out_root (release drift gate)."""
     if not out_root.is_dir():
         print(f"check: nothing at {out_root} to compare against (main has no committed output)")
         return 1
     with tempfile.TemporaryDirectory() as tmp:
         tmp_root = Path(tmp) / "plugins"
-        entries = build(tmp_root)
-        write_marketplace(entries, tmp_root)
+        build(tmp_root)
+        write_json(tmp_root / ".claude-plugin" / "marketplace.json", release_catalog())
         fresh, committed = _rel_files(tmp_root), _rel_files(out_root)
-        bad = []
-        bad += [f"only in fresh build: {p}" for p in sorted(fresh - committed)]
+        bad = [f"only in fresh build: {p}" for p in sorted(fresh - committed)]
         bad += [f"only in committed output: {p}" for p in sorted(committed - fresh)]
         for p in sorted(fresh & committed):
             if not filecmp.cmp(tmp_root / p, out_root / p, shallow=False):
@@ -273,14 +292,22 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     ap.add_argument("--only", nargs="*", help="build only these bundles")
     ap.add_argument("--check", action="store_true", help="drift-gate against existing output")
+    ap.add_argument("--sync", action="store_true", help="regenerate root catalog + doc blocks only")
+    ap.add_argument("--check-sync", action="store_true", help="verify root catalog + doc blocks are fresh")
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT, help="output root (default: plugins/)")
     args = ap.parse_args()
 
     if args.check:
         return check(args.out)
-    entries = build(args.out, args.only)
+    if args.sync:
+        sync()
+        return 0
+    if args.check_sync:
+        return check_sync()
+    build(args.out, args.only)
     if not args.only:  # partial builds don't rewrite the catalog
-        write_marketplace(entries, args.out)
+        write_json(args.out / ".claude-plugin" / "marketplace.json", release_catalog())
+        print(f"build: marketplace catalog -> {args.out / '.claude-plugin' / 'marketplace.json'}")
     return 0
 
 
