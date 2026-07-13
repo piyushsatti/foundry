@@ -7,7 +7,7 @@ argument-hint: "Plan or design to stress-test (+ optional lens, e.g. 'as a secur
 <!-- foundry:dependencies:start -->
 ## Dependencies
 
-Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
+Registry: [`manifest.yaml`](../../../skills/manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
 
 | Kind | Skills | Role |
 |------|--------|------|

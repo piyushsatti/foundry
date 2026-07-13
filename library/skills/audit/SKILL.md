@@ -7,7 +7,7 @@ argument-hint: "What to audit and where (paths, plan file, PR, etc.)"
 <!-- foundry:dependencies:start -->
 ## Dependencies
 
-Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
+Registry: [`manifest.yaml`](../../../skills/manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
 
 | Kind | Skills | Role |
 |------|--------|------|

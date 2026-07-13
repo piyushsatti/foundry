@@ -7,7 +7,7 @@ argument-hint: "Artifact to review + hats to wear (or 'pick hats for me')"
 <!-- foundry:dependencies:start -->
 ## Dependencies
 
-Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
+Registry: [`manifest.yaml`](../../../skills/manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
 
 | Kind | Skills | Role |
 |------|--------|------|

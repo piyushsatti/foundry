@@ -6,7 +6,7 @@ description: Reference library of professional-lens hat files consumed by the co
 <!-- foundry:dependencies:start -->
 ## Dependencies
 
-Registry: [`manifest.yaml`](../../../../skills/manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
+Registry: [`manifest.yaml`](../../../skills/manifest.yaml) · refresh: `python3 scripts/skills_manifest.py sync-docs`
 
 | Kind | Skills | Role |
 |------|--------|------|

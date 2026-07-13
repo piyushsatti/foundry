@@ -1,8 +1,9 @@
-# Build composition: this dir is copied verbatim to plugins/crucible (minus excludes).
+# Build composition: this dir is copied verbatim to plugins/crucible (minus
+# excludes), then the shared review capability is composed in from library/.
 build: true
 compose:
-  skills: []
-  agents: []
+  skills: [wardrobe, audit, hats, red-vs-blue]
+  agents: [panelist, red-attacker, blue-verifier, adjudicator]
   packages: []
 exclude:
   - "**/__pycache__"

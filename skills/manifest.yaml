@@ -40,7 +40,7 @@ skills:
     status: shipped
     requires: [progress-tracker]
     suggests: [brief, subset]
-    dispatches: [audit, hats, red-vs-blue, grill-with-docs, handoff, design-taste-frontend]
+    dispatches: [audit, hats, red-vs-blue]
     external: [brainstorming, writing-plans, verification-before-completion]
 
   os-doctor:
@@ -72,7 +72,7 @@ skills:
     external: [brainstorming, writing-plans]
 
   audit:
-    path: bundles/crucible/skills/audit
+    path: library/skills/audit
     origin: authored
     status: draft
     requires: []
@@ -90,7 +90,7 @@ skills:
     external: []
 
   wardrobe:
-    path: bundles/crucible/skills/wardrobe
+    path: library/skills/wardrobe
     origin: authored
     status: shipped
     requires: []
@@ -108,7 +108,7 @@ skills:
     external: []
 
   hats:
-    path: bundles/crucible/skills/hats
+    path: library/skills/hats
     origin: authored
     status: shipped
     requires: [wardrobe]
@@ -117,7 +117,7 @@ skills:
     external: []
 
   red-vs-blue:
-    path: bundles/crucible/skills/red-vs-blue
+    path: library/skills/red-vs-blue
     origin: authored
     status: shipped
     requires: [wardrobe]

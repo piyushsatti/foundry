@@ -1,8 +1,10 @@
-# Build composition: this dir is copied verbatim to plugins/plan-orchestrator (minus excludes).
+# Build composition: verbatim copy + the shared review capability from library/
+# (bundle-completeness: plan-orchestrator dispatches these skills/agents, so it
+# ships them — no cross-plugin install assumption).
 build: true
 compose:
-  skills: []
-  agents: []
+  skills: [wardrobe, audit, hats, red-vs-blue]
+  agents: [panelist, red-attacker, blue-verifier, adjudicator]
   packages: []
 exclude:
   - "**/__pycache__"
