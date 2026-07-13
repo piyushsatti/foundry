@@ -3,7 +3,7 @@
   "owner": {
     "name": "Piyush Satti"
   },
-  "description": "Piyush's agentic infrastructure — memory curation, project-compass, review, orchestration, and dev-environment plugins.",
+  "description": "Piyush's agentic infrastructure \u2014 memory curation, project-compass, review, orchestration, and dev-environment plugins.",
   "plugins": [
     {
       "name": "crucible",
@@ -13,7 +13,7 @@
         "path": "plugins/crucible",
         "ref": "release"
       },
-      "description": "Lens x stance adversarial + panel review system: consult, hats, red-vs-blue, and audit built on a shared hat wardrobe."
+      "description": "Lens x stance review system: consult (partner), audit (neutral single reviewer), hats (blind panel), and red-vs-blue (attack/verify pair) on a shared hat wardrobe."
     },
     {
       "name": "devtools",
@@ -23,7 +23,7 @@
         "path": "plugins/devtools",
         "ref": "release"
       },
-      "description": "Dev-environment tooling — worktree-native lifecycle with memory and serena wiring."
+      "description": "Dev-environment tooling \u2014 worktree-native lifecycle (add/check/archive/revive/reap) with memory and serena wiring."
     },
     {
       "name": "manifold",
@@ -33,7 +33,7 @@
         "path": "plugins/manifold",
         "ref": "release"
       },
-      "description": "KAOS project compass — DB-canonical spec substrate + MCP tools over a project's goal graph, with the present projection skill."
+      "description": "KAOS project compass \u2014 a DB-canonical spec substrate with an MCP server exposing read/write tools over a project's goal graph."
     },
     {
       "name": "meditate",
@@ -43,7 +43,7 @@
         "path": "plugins/meditate",
         "ref": "release"
       },
-      "description": "Reflective memory curation: pause, review, consolidate, release."
+      "description": "Reflective memory curation: pause \u2192 review \u2192 consolidate \u2192 release. Audits Claude memory + CLAUDE.md (+ serena if active), proposes dispositions via a read-only Opus curator agent, gates, and executes approved changes with archive-not-destroy safety."
     },
     {
       "name": "plan-orchestrator",
@@ -53,7 +53,7 @@
         "path": "plugins/plan-orchestrator",
         "ref": "release"
       },
-      "description": "Multi-agent plan orchestration with live dispatch telemetry, plus the brief and subset scoping skills."
+      "description": "Orchestrate multi-agent plans with live dispatch telemetry. Bundles the progress-tracker MCP, the brief and subset scoping skills, and the full review capability (audit, hats, red-vs-blue + stance agents) composed from the shared library."
     }
   ]
 }
