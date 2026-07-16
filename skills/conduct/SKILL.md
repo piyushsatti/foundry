@@ -20,7 +20,7 @@ The ways of working (locked 2026-07-15, ways-of-working experiment). Load at the
 
 ## The raise block
 
-Your ticket lists Proven · Assumed · Unknown and declared files + signatures. If anything you hit contradicts these, or forces work outside declared scope: STOP writing code. Complete read-only checks on the rest of your plan and bundle all contradictions into one raise report: what broke · evidence (file:line, error, output) · smallest options you see. Do not patch around it. Do not pick an option yourself. You resume only on an amended ticket, never on a verbal ok.
+Your ticket lists Proven · How-proven · Assumed · Unknown and declared files + signatures. If anything you hit contradicts these, or forces work outside declared scope: STOP writing code. Complete read-only checks on the rest of your plan and bundle all contradictions into one raise report: what broke · evidence (file:line, error, output) · smallest options you see. Do not patch around it. Do not pick an option yourself. You resume only on an amended ticket, never on a verbal ok.
 
 Where a failure lives decides what you do: your own PR (gates red, your change broke it): fix in the PR, never file. Epic branch after children merged: new child bug issue, closes before the epic e2e gate. Main: bug ticket always, standalone squash PR, no size exemption. The plan itself: stop and raise. Drive-by ban: broken code your PR did not touch is never fixed silently; file where it lives.
 
