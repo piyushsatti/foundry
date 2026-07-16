@@ -52,6 +52,15 @@ skills:
     dispatches: []
     external: []
 
+  conduct:
+    path: skills/conduct
+    origin: authored
+    status: draft
+    requires: []
+    suggests: []
+    dispatches: []
+    external: []
+
   progress-tracker:
     path: bundles/plan-orchestrator/skills/progress-tracker
     mcp_bundle: bundles/plan-orchestrator
