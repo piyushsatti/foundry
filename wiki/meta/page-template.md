@@ -7,21 +7,40 @@ sources:
 updated: 2026-07-20
 ---
 
-<!-- Copy this file to start a new page. Obey meta/writing.md — keep it short — then delete this comment. -->
+<!-- Copy this to start a page. Obey meta/writing.md and meta/style.md.
+The sections below are the STORY ARC, not a mandatory checklist — small pages
+collapse them into a few sentences, but keep the order: why → how → limits →
+unknowns. Delete this comment. -->
 
 # Page Title
 
-One sentence: what this is.
+One sentence: the problem this addresses and what it does about it.
 
 > **Status:** draft
 
-## Overview
+## The problem
 
-What the reader needs first.
+Why this exists — the problem or question, before any solution.
 
-## Section
+## Approach
 
-Content.
+What we do about it, in brief.
+
+## How it works
+
+The mechanism, disclosed progressively. Numbered steps for procedures; an example under any complex point; a coarse diagram before a detailed one.
+
+## Limits & tradeoffs
+
+Where this doesn't work, and what it costs.
+
+## Open questions
+
+Assumptions, unverified claims, unresolved decisions — nothing swallowed. Delete only if there are genuinely none.
+
+## Appendix
+
+Supporting detail and external links, if any.
 
 ## See also
 
