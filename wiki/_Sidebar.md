@@ -50,10 +50,10 @@
 - cartographer
   - [Overview](plugins/cartographer/overview.md)
 
-**Platform**
+**Claude Code**
 - Guardrails
-  - [Overview](platform/guardrails/overview.md)
-  - [Permission pipe](platform/guardrails/permission-pipe.md)
+  - [Overview](claude-code/guardrails/overview.md)
+  - [Permission pipe](claude-code/guardrails/permission-pipe.md)
 - Field notes
-  - [Clipboard / OSC 52](platform/field-notes/clipboard-osc52.md)
-  - [Worktree context](platform/field-notes/worktree-context.md)
+  - [Clipboard / OSC 52](claude-code/field-notes/clipboard-osc52.md)
+  - [Worktree context](claude-code/field-notes/worktree-context.md)

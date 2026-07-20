@@ -31,9 +31,9 @@ Durable ideas, architecture, and decisions behind foundry — authored in-repo u
 - **[plan-orchestrator](plugins/plan-orchestrator/overview.md)** — contract-DAG multi-agent orchestration.
 - **[cartographer](plugins/cartographer/overview.md)** — state-faithful session mapping (parked).
 
-## Platform — the Claude Code substrate
+## Claude Code — the substrate we build on
 
-- **[Guardrails](platform/guardrails/overview.md)** — security / hardening posture.
-- **[Field notes](platform/field-notes/clipboard-osc52.md)** — investigated Claude Code behavior.
+- **[Guardrails](claude-code/guardrails/overview.md)** — security / hardening posture.
+- **[Field notes](claude-code/field-notes/clipboard-osc52.md)** — investigated Claude Code behavior.
 
 The wiki grows by adding folders. The folder tree is the index — see [organization](meta/organization.md).
