@@ -1,25 +1,32 @@
 # Publishing
 
-**This wiki is the GitHub wiki repo itself, authored as a folder tree with frontmatter and relative links, published as-is.** GitHub's wiki renderer doesn't honor all of that, and we accept the caveats rather than adding a build step — so writers should know what the reader actually sees.
+**The wiki is authored as a folder tree in `wiki/`, but GitHub's wiki has a flat page namespace — so publishing flattens each page to a unique slug and rewrites every link.** You never hand-name wiki pages; the transform does it.
 
 > **Status:** stable
 
-## Known caveats
+## The problem
 
-The raw markdown is the source of truth; the rendered wiki is a lossy view of it.
+GitHub's wiki serves every page by its basename, ignoring folders. Left as-is, `plugins/manifold/overview.md` and `distribution/overview.md` collide to one `/wiki/overview`, and a nested link like `../lifecycle` 302-redirects to raw. The folder structure that makes the source readable is invisible to the wiki.
 
-- **Frontmatter shows as text.** GitHub's wiki does not strip the YAML block — it renders atop each page. We keep it anyway (it's our metadata and provenance); the reader can ignore the header.
-- **Relative `.md` links and nested paths** may not resolve cleanly in the wiki's page namespace. Use [`_Sidebar.md`](../_Sidebar) as the reliable navigation.
-- **The folder tree doesn't render as a browsable sidebar.** `_Sidebar.md` is the hand-maintained index that reproduces the structure.
+## How it works
 
-## Why as-is
+`scripts/publish_wiki.sh` runs `scripts/flatten_wiki.py`, which:
 
-A transform step (strip frontmatter, rewrite links, flatten) would make the rendered wiki prettier but adds machinery to build and keep correct. We chose the simpler path: author cleanly, accept the rough render, keep the source honest.
+1. **Slugs each page** — drop the `plugins/` / `harnesses/` wrapper, title-case the rest, join with `-`. So `plugins/manifold/overview.md` → `Manifold-Overview`, unique across the whole wiki.
+2. **Rewrites every internal link** to the target's slug, so cross-page navigation resolves on the flat wiki.
+3. **Writes the flat pages to the wiki repo root** and pushes.
+
+The source stays folder-structured — and renders natively in the repo tree at `.../tree/main/wiki` — while only the published copy is flat.
+
+## What the reader sees
+
+- **No `_Sidebar`** — GitHub's built-in **Pages** panel lists every page.
+- **No frontmatter** — it renders as literal text, so pages carry status in a `> **Status:**` callout instead (see [style](style)).
 
 ## Open questions
 
-- If the render becomes a real obstacle, add a publish transform (the [docs-context-retrieval](../roadmap/docs-context-retrieval) tool or a small script) — deferred until it hurts.
+- A few slugs read long (e.g. `Claude-Code-Hooks-Guard-Hooks`); the slug rule is a small function in `flatten_wiki.py` and can be tuned or special-cased.
 
 ## See also
 
-- [Style](style) — frontmatter and link conventions.
+- [Style](style) — the page-header and link conventions.

@@ -22,9 +22,10 @@ trap 'rm -rf "$TMP"' EXIT
 echo "Cloning $WIKI_URL"
 git clone --depth 1 "$WIKI_URL" "$TMP"
 
-# Replace all tracked content (keep .git), then copy the source tree in.
+# Replace all tracked content (keep .git), then flatten the folder tree into
+# GitHub-wiki-flat pages (unique slugs + rewritten links) — see flatten_wiki.py.
 ( cd "$TMP" && git rm -rq . >/dev/null 2>&1 || true )
-cp -r "$SRC/." "$TMP/"
+python3 "$REPO_ROOT/scripts/flatten_wiki.py" "$SRC" "$TMP"
 
 cd "$TMP"
 git add -A
