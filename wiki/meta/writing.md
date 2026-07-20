@@ -47,6 +47,18 @@ The failure this prevents: murky content that reads as settled, so nobody asks "
 - **Complex point → example under it.** A concrete example showing what's done and why beats another abstract sentence.
 - **Procedures → numbered steps.** If the reader must *do* or *follow* something, break it into step 1, 2, 3 in text. A step diagram is fine too, but numbered text is often clearer.
 
+## Minimize jargon
+
+Where a human will read it, use **as little jargon as possible** — plain words first. Technical precision rarely requires technical vocabulary.
+
+When a term is unavoidable, **don't gloss it inline term-by-term** — that clutters the body. Collect the vocabulary once, at the end: point to where it's defined (the [glossary](../glossary.md), or the `sources` the page was drawn from). One place for the curious reader, a clean body for everyone else.
+
+## Self-contained
+
+**A doc stands on its own.** Explain the what and the why in the page itself; a reader should never need an external ticket to understand it.
+
+Load-bearing references to issues/tickets *outside the repo's scope* — or a page written as a changelog of ticket #123 — are a **smell**: the repository should be a complete document in itself. Same-repo issue links are fine as *supplementary pointers*, never as the substance.
+
 ## Every page ends with
 
 - **Open questions** — assumptions, unverified claims, unresolved decisions. Omit only if there genuinely are none.

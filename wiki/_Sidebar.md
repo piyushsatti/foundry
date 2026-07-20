@@ -11,6 +11,7 @@
 
 **Conventions**
 - [Code documentation](conventions/code-documentation.md)
+- [Code style](conventions/code-style.md)
 
 **Distribution**
 - [Overview](distribution/overview.md)

@@ -16,7 +16,7 @@ Durable ideas, architecture, and decisions behind foundry — authored in-repo u
 
 - **[Glossary](glossary.md)** — the shared vocabulary (nouns + verbs).
 - **[Meta](meta/organization.md)** — the wiki authoring rulebook: [organization](meta/organization.md) · [style](meta/style.md) · [writing](meta/writing.md) · [page template](meta/page-template.md).
-- **[Conventions](conventions/code-documentation.md)** — engineering standards: [code documentation](conventions/code-documentation.md).
+- **[Conventions](conventions/code-documentation.md)** — engineering standards: [code documentation](conventions/code-documentation.md) · [code style](conventions/code-style.md).
 
 ## Domains
 
