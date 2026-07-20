@@ -30,9 +30,15 @@ updated: 2026-07-20   # YYYY-MM-DD
 ## Headings
 
 - **One H1**, matching `title`.
-- **H2/H3 for structure.**
+- **H2/H3 for structure** — aim for ~2–4 headings on a short page, not one per idea.
 
-**Why stop at H3:** reaching for an H4 usually means the page is holding two topics. That's a signal to split into a sibling page ([organization.md](organization.md)), not to nest deeper. The limit is a symptom check, not an arbitrary cap.
+**A heading promises a section — deliver one.** Put at least a full paragraph (usually several) under every heading. A heading with a single line beneath it, or one stacked directly under another, is the tell-tale sign of over-sectioning: it fragments ideas that belong together and renders as a jagged, hard-to-read list. **The rendered page is the artifact, not the source symbols** — write for how it looks, not how it's marked up.
+
+**One line to say? It's not a section.** Fold it into surrounding prose, or represent it as what it actually is — a **list item**, a **table** row, or a **bold lead-in** (`**Term** — the one line`). "Many short items" is a list, not a stack of headings.
+
+**Make headings descriptive:** a noun phrase ("How bundling works") or a task ("Publish to the release branch") that tells the reader what they'll learn or do — not a bare label.
+
+**Why stop at H3:** reaching for an H4 usually means the page is holding two topics — split into a sibling page ([organization.md](organization.md)) rather than nesting deeper. A symptom check, not an arbitrary cap (see *When to break these rules*).
 
 ## Diagrams
 
@@ -77,3 +83,8 @@ Prefer these patterns; they're not absolute. Optimize for the reader.
 - **Headings:** if a complex, tightly interlinked topic genuinely reads better whole — with H4s — than as several thin pages, keep it whole. The H3 guidance flags *likely* over-stuffing, not every case.
 - **Diagram size:** an inherently connected system may need a denser diagram than ~8 nodes. If decomposing it loses the very relationships that matter, don't.
 - Break a rule on purpose, and note why if it isn't obvious.
+
+## References
+
+- [Headings — Technical Writing Essentials (BCcampus)](https://pressbooks.bccampus.ca/technicalwriting/chapter/headings/)
+- [Headings and titles — Google developer documentation style guide](https://developers.google.com/style/headings)

@@ -8,41 +8,34 @@ updated: 2026-07-20
 ---
 
 <!-- Copy this to start a page. Follow meta/writing.md and meta/style.md.
-The sections below are the STORY ARC, not a mandatory checklist — small pages
-collapse them into a few sentences, but keep the order: why → how → limits →
-unknowns. Break the arc when a page reads better without it (e.g. a pure
-reference or glossary page): these are defaults, not laws — optimize for the
-reader. Delete this comment. -->
+
+The STORY ARC — problem → approach → how → limits → open questions — is the
+LOGIC of a page, NOT a list of required headings. Fold it into prose: the
+opening usually carries the problem + approach; give a heading only to a part
+with real content under it.
+
+Never leave a heading with a single line beneath it — that's not a section
+(make it prose or a list). A small page is mostly prose and lists with 2–3
+headings, not a stack of one-line sections. Delete this comment. -->
 
 # Page Title
 
-One sentence: the problem this addresses and what it does about it.
+Open with the problem and what this does about it — a sentence or two of prose, not a heading. A reader who stops here still knows why the page exists.
 
 > **Status:** draft
 
-## The problem
-
-Why this exists — the problem or question, before any solution.
-
-## Approach
-
-What we do about it, in brief.
-
 ## How it works
 
-The mechanism, disclosed progressively. Numbered steps for procedures; an example under any complex point; a coarse diagram before a detailed one.
+The mechanism, in a real paragraph, disclosed progressively. Use a bulleted list for parallel points, a numbered list for steps, and an example under anything complex. (Architecture pages: state the alternatives you rejected, and why.)
 
 ## Limits & tradeoffs
 
-Where this doesn't work, and what it costs.
+Where this doesn't work, and what it costs — plainly.
 
 ## Open questions
 
-Assumptions, unverified claims, unresolved decisions — nothing swallowed. Delete only if there are genuinely none.
-
-## Appendix
-
-Supporting detail and external links, if any.
+- Assumptions, unverified claims, unresolved decisions — nothing swallowed.
+- Omit this section only if there genuinely are none.
 
 ## See also
 
