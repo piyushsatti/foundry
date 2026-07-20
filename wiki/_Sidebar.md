@@ -9,6 +9,9 @@
 - [Writing](meta/writing.md)
 - [Page template](meta/page-template.md)
 
+**Conventions**
+- [Code documentation](conventions/code-documentation.md)
+
 **Distribution**
 - [Overview](distribution/overview.md)
 - [Bundling](distribution/bundling.md)

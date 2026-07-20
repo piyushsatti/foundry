@@ -21,6 +21,16 @@ updated: 2026-07-20
 
 Small pages compress these into a few sentences; big ones give each its own section. The *order* holds either way: **why before how, how before caveats.**
 
+## Page types carry extra obligations
+
+The arc fits every page, but the type adds a rule:
+
+- **Architecture / design pages** — **state the alternatives you rejected, and why.** "We use X, not Y or Z, because…". A decision with no visible discarded options reads as unconsidered; the *why-not* is as load-bearing as the *why*. Put it beside the approach or in an **Alternatives considered** section.
+- **Reference / catalog / glossary** — definitions and tables over narrative; the arc compresses to a line.
+- **Field notes** — problem observed → mechanism → fix.
+
+(Documenting *code* is a separate discipline — see [conventions](../conventions/code-documentation.md), not this guide.)
+
 ## Progressive disclosure
 
 Reveal detail in layers. Someone skimming the first line of each section should get the whole shape; someone reading deep should find the mechanics. Never front-load a wall of detail the reader can't yet place.
