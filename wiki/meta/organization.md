@@ -14,7 +14,7 @@ updated: 2026-07-20
 
 ## Rules
 
-- **Group by domain.** A domain is a top-level folder (`distribution/`, `manifold/`). Mechanisms are *files* inside it (`distribution/bundling.md`), never top-level folders of their own. *Why:* the top level should read as a list of what foundry is, not a pile of every sub-topic.
+- **Group by domain.** A domain is a top-level folder (`distribution/`, `manifold/`). Mechanisms are usually *files* inside it (`distribution/bundling.md`) rather than top-level folders of their own. *Why:* the top level should read as a list of what foundry is, not a pile of every sub-topic.
 - **Subject-scoped.** Everything about a subject — including its decisions and tradeoffs — lives in that subject's folder. Nothing subject-specific sits at root. *Why:* you find everything about X by opening `X/`, not by hunting.
 - **Grow lazily.** Start topics as `.md` files in a domain folder. Only create structure you're filling now. *Why:* empty scaffolding lies about what exists.
 - **Root stays minimal.** Only genuinely cross-cutting pages (e.g. `glossary.md`) and `meta/` live at root.
@@ -31,3 +31,11 @@ The rule behind the rules — it recurs everywhere. When something gets too big,
 | A paragraph | convolute it | break into steps or add an example ([writing.md](writing.md)) |
 
 Promote only when a topic outgrows its current home. Don't build ahead of content.
+
+## When to break these rules
+
+The rules favor a legible tree; they're defaults, not laws.
+
+- A mechanism can earn its **own top-level folder** if it's big or central enough that burying it as a file would hide it.
+- A complex, interlinked system may be clearer as **one long page or a deeper subtree** than as many fragments. Splitting past the point of readability — pages nobody stitches back together — defeats the purpose.
+- Decompose to help the reader, not to satisfy a count.

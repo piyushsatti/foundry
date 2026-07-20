@@ -33,7 +33,7 @@ The arc fits every page, but the type adds a rule:
 
 ## Progressive disclosure
 
-Reveal detail in layers. Someone skimming the first line of each section should get the whole shape; someone reading deep should find the mechanics. Never front-load a wall of detail the reader can't yet place.
+Reveal detail in layers. Someone skimming the first line of each section should get the whole shape; someone reading deep should find the mechanics. Avoid front-loading a wall of detail the reader can't yet place.
 
 ## Nothing is silently swallowed
 
@@ -55,4 +55,12 @@ The failure this prevents: murky content that reads as settled, so nobody asks "
 
 ## On length
 
-Short is a *result* of clarity, not the goal. Cut filler, hedging, and repetition — **never** cut the why, the limits, or a flagged uncertainty to save space. If a page is long because it genuinely covers a lot, that's a signal to **split it** ([organization.md](organization.md)), not to compress it into something unreadable.
+Short is a *result* of clarity, not the goal. Cut filler, hedging, and repetition — but don't cut the why, the limits, or a flagged uncertainty to save space. If a page is long because it genuinely covers a lot, that's usually a signal to **split it** ([organization.md](organization.md)) — though not always; see below.
+
+## When to bend these rules
+
+These are defaults, not laws — the goal is a page the reader can follow. Break a rule when following it would hurt that, **deliberately, not lazily**.
+
+- A **pure reference or index** page (glossary, catalog) legitimately skips the arc — it's definitions and tables.
+- A tiny page collapses the whole arc into a sentence.
+- Don't split a page just to hit a length target: a genuinely interlinked, complex topic can be one long page. **A topic shattered into fragments nobody reads is worse than a long page someone does.**

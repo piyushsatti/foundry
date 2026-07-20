@@ -7,10 +7,12 @@ sources:
 updated: 2026-07-20
 ---
 
-<!-- Copy this to start a page. Obey meta/writing.md and meta/style.md.
+<!-- Copy this to start a page. Follow meta/writing.md and meta/style.md.
 The sections below are the STORY ARC, not a mandatory checklist — small pages
 collapse them into a few sentences, but keep the order: why → how → limits →
-unknowns. Delete this comment. -->
+unknowns. Break the arc when a page reads better without it (e.g. a pure
+reference or glossary page): these are defaults, not laws — optimize for the
+reader. Delete this comment. -->
 
 # Page Title
 

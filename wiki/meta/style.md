@@ -50,7 +50,7 @@ Same rule as prose: complexity is a signal to break down, never to cram ([organi
 ### Visual conventions
 
 - **Shape carries meaning:** rectangle = step/state, rounded = start/end, diamond = decision. Stay consistent within a page.
-- **Every meaning has two channels — never color alone.** Pair color with a label or shape, so the diagram survives greyscale and colorblind readers.
+- **Prefer two channels — avoid color as the only signal.** Pair color with a label or shape, so the diagram survives greyscale and colorblind readers.
 - **Color is theme-aware by default.** Prefer Mermaid's default theme; it adapts to GitHub's light and dark modes. Add custom color only when it *carries meaning*.
 - **Renders well:** muted blues, teals, greys — legible on both light and dark backgrounds.
 - **Avoid:** anything low-contrast on white *or* black (pale yellow, light-grey text); red+green as the only distinction (colorblind-hostile); saturated fills that wash out labels.
@@ -69,3 +69,11 @@ A sufficiently complex point carries a concrete example right under it — often
 - Links relative (`../distribution/overview.md`).
 - Status callouts and notes go in blockquotes (`> **Status:** …`).
 - Filenames kebab-case, in the subject's folder.
+
+## When to break these rules
+
+Prefer these patterns; they're not absolute. Optimize for the reader.
+
+- **Headings:** if a complex, tightly interlinked topic genuinely reads better whole — with H4s — than as several thin pages, keep it whole. The H3 guidance flags *likely* over-stuffing, not every case.
+- **Diagram size:** an inherently connected system may need a denser diagram than ~8 nodes. If decomposing it loses the very relationships that matter, don't.
+- Break a rule on purpose, and note why if it isn't obvious.
