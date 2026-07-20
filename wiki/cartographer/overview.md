@@ -62,4 +62,4 @@ graph LR
 
 ## See also
 
-- [foundry bundles](../../CLAUDE.md) — cartographer is source-only (`build: false`).
+- [Roadmap](../roadmap/overview.md) — the revive-or-archive decision (issue #5).
