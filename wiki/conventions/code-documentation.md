@@ -23,6 +23,15 @@ A comment is justified only when the code's **intent** — *what it is trying to
 - A nested `map`/`filter`/`reduce` whose **purpose is clear** needs no comment.
 - The same code, where *why* it's shaped that way is non-obvious, gets **one line** of intent.
 
+```python
+# no comment — the shape says it
+active = [u for u in users if u.enabled]
+
+# one line earned — the shape is non-obvious
+# retry newest-first so a flapping job surfaces before stale ones
+jobs = sorted(pending, key=lambda j: -j.created_at)[:MAX_RETRIES]
+```
+
 ## Comments stay short
 
 **A 3–4 line comment is a smell.** It means one of three things:
@@ -43,7 +52,7 @@ Document a function's signature when it sits **outside a modular interface and i
 
 This assumes good naming and a legible directory structure — minimalism fails on code that isn't self-documenting to begin with. When structure can't carry the meaning (a genuinely subtle algorithm, a hard-won workaround), a comment or a dedicated wiki page is the right tool, not a code smell.
 
-## When to break this
+## When to break these rules
 
 Defaults, not laws — add more documentation when the reader genuinely needs it: a published or external API contract, generated code, a teaching example, or a subtle internal algorithm whose intent good naming can't carry. The test is always the reader's understanding, not the rule.
 

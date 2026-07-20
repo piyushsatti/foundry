@@ -38,6 +38,11 @@ A 7-item buildout is approved, sequence **0→1→3→6→2→5→4**, one sessi
 - **[Cartographer](../plugins/cartographer/overview.md)** — parked, Phase 1.
 - **Access-tier roadmap** — guard-capability wishlist (read-only `/mnt`, SSH copy-then-read), none implemented. See `docs/access-tier-roadmap.md`.
 
+## Future tooling & structure
+
+- **[Docs context retrieval](docs-context-retrieval.md)** — an MCP/agent that injects only relevant wiki guidance on demand, so the guides can grow without bloating every prompt.
+- **Repo dir rename (downstream)** — the wiki's canonical nouns are `plugins` (shipped) and `library` (shared). If we want the repo dirs to match, that rename flows top-down from here — not scheduled.
+
 ## See also
 
-- [Distribution](../distribution/overview.md) · [Glossary](../glossary.md)
+- [Distribution](../distribution/overview.md) · [Glossary](../glossary.md) · [Libraries](../libraries/overview.md)

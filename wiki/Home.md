@@ -8,14 +8,14 @@ updated: 2026-07-20
 
 # foundry wiki
 
-Durable ideas, architecture, and decisions behind foundry — authored in-repo under `wiki/`, published to the GitHub wiki as-is.
+Durable ideas, architecture, and decisions behind foundry. Authored as a folder tree with frontmatter and published to the GitHub wiki as-is — see [publishing](meta/publishing.md).
 
-> **New page?** Read `meta/` first. Copy `meta/page-template.md` and keep it short.
+> **New page?** Read `meta/` first. Copy `meta/page-template.md`.
 
 ## Standards & vocabulary
 
 - **[Glossary](glossary.md)** — the shared vocabulary (nouns + verbs).
-- **[Meta](meta/organization.md)** — the wiki authoring rulebook: [organization](meta/organization.md) · [style](meta/style.md) · [writing](meta/writing.md) · [page template](meta/page-template.md).
+- **[Meta](meta/organization.md)** — the wiki authoring rulebook: [organization](meta/organization.md) · [style](meta/style.md) · [writing](meta/writing.md) · [page template](meta/page-template.md) · [publishing](meta/publishing.md).
 - **[Conventions](conventions/code-documentation.md)** — engineering standards: [code documentation](conventions/code-documentation.md) · [code style](conventions/code-style.md).
 
 ## The repo
@@ -30,6 +30,10 @@ Durable ideas, architecture, and decisions behind foundry — authored in-repo u
 - **[meditate](plugins/meditate/overview.md)** — reflective memory curation.
 - **[plan-orchestrator](plugins/plan-orchestrator/overview.md)** — contract-DAG multi-agent orchestration.
 - **[cartographer](plugins/cartographer/overview.md)** — state-faithful session mapping (parked).
+
+## Libraries — shared across plugins
+
+- **[Libraries](libraries/overview.md)** — capabilities reused by more than one plugin, not shipped standalone.
 
 ## Claude Code — the substrate we build on
 

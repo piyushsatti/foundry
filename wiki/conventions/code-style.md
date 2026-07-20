@@ -35,7 +35,7 @@ Names doing their job *is* documentation — structure and naming carry intent s
 
 These are defaults, not law. On adopting the tooling in a repo, **tailor them to the language and record the repo's choices** (in that repo's `CLAUDE.md` or a `CONTRIBUTING`). The central baseline is a skeleton.
 
-## When to break this
+## When to break these rules
 
 Follow the language's own idioms when they conflict — Python privates use `_`, but Go signals visibility by capitalization; Python constants are `UPPER_SNAKE`, Go uses `MixedCaps`. Consistency-within-repo beats the central default every time.
 

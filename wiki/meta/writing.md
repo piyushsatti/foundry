@@ -19,21 +19,27 @@ updated: 2026-07-20
 3. **How it works.** The mechanism, disclosed progressively — simplest framing first, detail layered after.
 4. **Where it doesn't work.** Limits, tradeoffs, failure modes, stated plainly. A solution with no stated cost is under-explained.
 
-Small pages compress these into a few sentences; big ones give each its own section. The *order* holds either way: **why before how, how before caveats.**
+The arc is the *logic*, not a required heading list. Sectioning scales with size: a small page folds the arc into a few sentences; a big one gives each step its own heading. Either way the order holds — **why before how, how before caveats.**
 
 ## Page types carry extra obligations
 
-The arc fits every page, but the type adds a rule:
-
-- **Architecture / design pages** — **state the alternatives you rejected, and why.** "We use X, not Y or Z, because…". A decision with no visible discarded options reads as unconsidered; the *why-not* is as load-bearing as the *why*. Put it beside the approach or in an **Alternatives considered** section.
+- **Architecture / design pages** — **state the alternatives you rejected, and why.** The *why-not* is as load-bearing as the *why*. Make it count:
+  - *Thin (avoid):* "We use SQLite, not Postgres."
+  - *Load-bearing (prefer):* "We use SQLite, not Postgres or a hosted DB, because each idea is a single-user, single-file project — one small DB you can copy, diff, and delete. Postgres adds a server dependency for zero multi-user benefit."
+  - The test: could the reader reconstruct why the rejected option was tempting *and* what killed it? If not, it's decoration.
 - **Reference / catalog / glossary** — definitions and tables over narrative; the arc compresses to a line.
 - **Field notes** — problem observed → mechanism → fix.
 
-(Documenting *code* is a separate discipline — see [conventions](../conventions/code-documentation.md), not this guide.)
+(Documenting *code* is a separate discipline — see [conventions/code-documentation.md](../conventions/code-documentation.md).)
 
 ## Progressive disclosure
 
-Reveal detail in layers. Someone skimming the first line of each section should get the whole shape; someone reading deep should find the mechanics. Avoid front-loading a wall of detail the reader can't yet place.
+Reveal detail in layers. Lead each section with a sentence that stands alone, then add the mechanics below it:
+
+- *Front-loaded (avoid):* "The build script walks `bundles/`, resolves each `plugin.json`, copies `server/` while rewriting `${CLAUDE_PLUGIN_ROOT}`, then writes to `plugins/`."
+- *Layered (prefer):* "The build script materializes each bundle into `plugins/`. **How:** it walks `bundles/`, resolves each `plugin.json`, and rewrites `${CLAUDE_PLUGIN_ROOT}` as it copies."
+
+A reader who stops at the first sentence still knows what the script does.
 
 ## Nothing is silently swallowed
 
@@ -44,14 +50,14 @@ The failure this prevents: murky content that reads as settled, so nobody asks "
 ## Prose that helps the reader
 
 - **No convoluted paragraphs.** Short sentences. Walk the reader through; don't dump on them.
-- **Complex point → example under it.** A concrete example showing what's done and why beats another abstract sentence.
+- **Complex point → example under it.** A concrete example showing what's done and why beats another abstract sentence. (This whole page is the rule in practice.)
 - **Procedures → numbered steps.** If the reader must *do* or *follow* something, break it into step 1, 2, 3 in text. A step diagram is fine too, but numbered text is often clearer.
 
 ## Minimize jargon
 
 Where a human will read it, use **as little jargon as possible** — plain words first. Technical precision rarely requires technical vocabulary.
 
-When a term is unavoidable, **don't gloss it inline term-by-term** — that clutters the body. Collect the vocabulary once, at the end: point to where it's defined (the [glossary](../glossary.md), or the `sources` the page was drawn from). One place for the curious reader, a clean body for everyone else.
+When a term is unavoidable, don't gloss it inline term-by-term. Collect the vocabulary once — a **Terms** pointer in the closing section, linking to the [glossary](../glossary.md) or the page's `sources`. One place for the curious reader, a clean body for everyone else.
 
 ## Self-contained
 
@@ -61,18 +67,28 @@ Load-bearing references to issues/tickets *outside the repo's scope* — or a pa
 
 ## Every page ends with
 
-- **Open questions** — assumptions, unverified claims, unresolved decisions. Omit only if there genuinely are none.
-- **Appendix / references** — necessary supporting detail and external links, collected here rather than stuffed inline.
-- **See also** — related pages.
+Non-tiny pages close with these, in order. They are heading-labelled lists — the deliberate exception to style.md's "paragraph under every heading", and they don't count against its heading budget.
+
+- **Open questions** — assumptions, unverified claims, unresolved decisions. Omit if there genuinely are none.
+- **Appendix / references** — supporting detail, external links, and any **Terms** pointer. Omit if none.
+- **See also** — related pages. Omit if none.
+
+A genuinely tiny page folds even these into its prose.
 
 ## On length
 
 Short is a *result* of clarity, not the goal. Cut filler, hedging, and repetition — but don't cut the why, the limits, or a flagged uncertainty to save space. If a page is long because it genuinely covers a lot, that's usually a signal to **split it** ([organization.md](organization.md)) — though not always; see below.
 
-## When to bend these rules
+## When to break these rules
 
 These are defaults, not laws — the goal is a page the reader can follow. Break a rule when following it would hurt that, **deliberately, not lazily**.
 
 - A **pure reference or index** page (glossary, catalog) legitimately skips the arc — it's definitions and tables.
 - A tiny page collapses the whole arc into a sentence.
 - Don't split a page just to hit a length target: a genuinely interlinked, complex topic can be one long page. **A topic shattered into fragments nobody reads is worse than a long page someone does.**
+
+## See also
+
+- [Style](style.md) — format mechanics.
+- [Organization](organization.md) — where a page lives.
+- [Page template](page-template.md) — the copy-me skeleton.

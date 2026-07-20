@@ -8,6 +8,7 @@
 - [Style](meta/style.md)
 - [Writing](meta/writing.md)
 - [Page template](meta/page-template.md)
+- [Publishing](meta/publishing.md)
 
 **Conventions**
 - [Code documentation](conventions/code-documentation.md)
@@ -21,6 +22,7 @@
 **Roadmap**
 - [Overview](roadmap/overview.md)
 - [Session Message Bus](roadmap/session-message-bus.md)
+- [Docs context retrieval](roadmap/docs-context-retrieval.md)
 
 **Plugins**
 - manifold
@@ -49,6 +51,9 @@
   - [Handoff pattern](plugins/plan-orchestrator/handoff-pattern.md)
 - cartographer
   - [Overview](plugins/cartographer/overview.md)
+
+**Libraries**
+- [Overview](libraries/overview.md)
 
 **Claude Code**
 - Guardrails
