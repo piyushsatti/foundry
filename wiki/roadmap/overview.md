@@ -35,7 +35,7 @@ A 7-item buildout is approved, sequence **0→1→3→6→2→5→4**, one sessi
 ## Parked / shelved
 
 - **[Session Message Bus](session-message-bus.md)** — shelved 2026-07-18.
-- **[Cartographer](../cartographer/overview.md)** — parked, Phase 1.
+- **[Cartographer](../plugins/cartographer/overview.md)** — parked, Phase 1.
 - **Access-tier roadmap** — guard-capability wishlist (read-only `/mnt`, SSH copy-then-read), none implemented. See `docs/access-tier-roadmap.md`.
 
 ## See also

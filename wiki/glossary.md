@@ -44,10 +44,10 @@ updated: 2026-07-20
 
 Deeper terms live with their domain:
 
-- **manifold** — node, goal-graph, verdict, revision, trajectory, spec-audit, drift-report, next-leaves → [manifold/](manifold/overview.md)
-- **crucible** — lens, stance, hat, wardrobe → [crucible/](crucible/overview.md)
-- **meditate** — cell, atom, store, scope tier → [meditate/](meditate/overview.md)
-- **cartographer** — session map, reducer → [cartographer/](cartographer/overview.md)
+- **manifold** — node, goal-graph, verdict, revision, trajectory, spec-audit, drift-report, next-leaves → [manifold/](plugins/manifold/overview.md)
+- **crucible** — lens, stance, hat, wardrobe → [crucible/](plugins/crucible/overview.md)
+- **meditate** — cell, atom, store, scope tier → [meditate/](plugins/meditate/overview.md)
+- **cartographer** — session map, reducer → [cartographer/](plugins/cartographer/overview.md)
 
 ## See also
 

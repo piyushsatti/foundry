@@ -62,4 +62,4 @@ graph LR
 
 ## See also
 
-- [Roadmap](../roadmap/overview.md) — the revive-or-archive decision (issue #5).
+- [Roadmap](../../roadmap/overview.md) — the revive-or-archive decision (issue #5).

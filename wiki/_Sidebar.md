@@ -18,45 +18,42 @@
 - [Bundling](distribution/bundling.md)
 - [Versioning](distribution/versioning.md)
 
-**manifold**
-- [Overview](manifold/overview.md)
-- [Foundations](manifold/foundations.md)
-- [Data model](manifold/data-model.md)
-- [The three checks](manifold/checks.md)
-- [Trajectory](manifold/trajectory.md)
-- [Human comprehension](manifold/human-comprehension.md)
-- [Coordination](manifold/coordination.md)
-- [Positioning](manifold/positioning.md)
-- [Orchestrator boundary](manifold/orchestrator-boundary.md)
-- [Decisions](manifold/decisions.md)
-
-**crucible**
-- [Overview](crucible/overview.md)
-- [Methodology](crucible/methodology.md)
-
-**meditate**
-- [Overview](meditate/overview.md)
-- [Memory model](meditate/memory-model.md)
-- [Operation algebra](meditate/operation-algebra.md)
-- [Execution contract](meditate/execution-contract.md)
-- [Decisions](meditate/decisions.md)
-
-**plan-orchestrator**
-- [Overview](plan-orchestrator/overview.md)
-- [Progress tracker](plan-orchestrator/progress-tracker.md)
-- [Handoff pattern](plan-orchestrator/handoff-pattern.md)
-
-**cartographer**
-- [Overview](cartographer/overview.md)
-
-**Guardrails**
-- [Overview](guardrails/overview.md)
-- [Permission pipe](guardrails/permission-pipe.md)
-
-**Field notes**
-- [Clipboard / OSC 52](field-notes/clipboard-osc52.md)
-- [Worktree context](field-notes/worktree-context.md)
-
 **Roadmap**
 - [Overview](roadmap/overview.md)
 - [Session Message Bus](roadmap/session-message-bus.md)
+
+**Plugins**
+- manifold
+  - [Overview](plugins/manifold/overview.md)
+  - [Foundations](plugins/manifold/foundations.md)
+  - [Data model](plugins/manifold/data-model.md)
+  - [The three checks](plugins/manifold/checks.md)
+  - [Trajectory](plugins/manifold/trajectory.md)
+  - [Human comprehension](plugins/manifold/human-comprehension.md)
+  - [Coordination](plugins/manifold/coordination.md)
+  - [Positioning](plugins/manifold/positioning.md)
+  - [Orchestrator boundary](plugins/manifold/orchestrator-boundary.md)
+  - [Decisions](plugins/manifold/decisions.md)
+- crucible
+  - [Overview](plugins/crucible/overview.md)
+  - [Methodology](plugins/crucible/methodology.md)
+- meditate
+  - [Overview](plugins/meditate/overview.md)
+  - [Memory model](plugins/meditate/memory-model.md)
+  - [Operation algebra](plugins/meditate/operation-algebra.md)
+  - [Execution contract](plugins/meditate/execution-contract.md)
+  - [Decisions](plugins/meditate/decisions.md)
+- plan-orchestrator
+  - [Overview](plugins/plan-orchestrator/overview.md)
+  - [Progress tracker](plugins/plan-orchestrator/progress-tracker.md)
+  - [Handoff pattern](plugins/plan-orchestrator/handoff-pattern.md)
+- cartographer
+  - [Overview](plugins/cartographer/overview.md)
+
+**Platform**
+- Guardrails
+  - [Overview](platform/guardrails/overview.md)
+  - [Permission pipe](platform/guardrails/permission-pipe.md)
+- Field notes
+  - [Clipboard / OSC 52](platform/field-notes/clipboard-osc52.md)
+  - [Worktree context](platform/field-notes/worktree-context.md)

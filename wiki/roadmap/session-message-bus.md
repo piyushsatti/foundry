@@ -40,4 +40,4 @@ Is a genuine mid-turn interrupt actually required, or does "delivered at next to
 
 ## See also
 
-- [Roadmap](overview.md) · [Plan Orchestrator](../plan-orchestrator/overview.md)
+- [Roadmap](overview.md) · [Plan Orchestrator](../plugins/plan-orchestrator/overview.md)
