@@ -10,11 +10,11 @@ One page per class. Each says: purpose · how it works · why this choice, not a
 
 | Class | Fires at | Purpose |
 |---|---|---|
-| **Guard hooks** | PreToolUse, UserPromptSubmit | block dangerous actions (RCE, secret reads, escapes) before they run — see [guardrails](../guardrails/overview) |
-| **[Compaction hooks](compaction-hooks)** | PreCompact / PostCompact / SessionStart | preserve durable memory across the compaction boundary |
-| **Session hooks** | SessionStart, SessionEnd | inject context on start, clean up on end |
-| **Quality hooks** | Stop, PostToolUse | enforce commit hygiene, run checks, tag artifacts at turn boundaries |
-| **Logging hooks** | Notification, Stop | append an audit trail of session activity |
+| **[Guard hooks](guard-hooks)** | PreToolUse | block dangerous actions — RCE, secret reads, escapes — before they run (16 hooks) |
+| **[Session hooks](session-hooks)** | SessionStart | inject durable memory, scope, and pending work into a fresh session (5) |
+| **[Quality hooks](quality-hooks)** | PreToolUse + PostToolUse | commit hygiene, compose validation, authored-file tagging |
+| **[Logging hooks](logging-hooks)** | Pre/PostToolUse + Stop | append a redacted audit trail |
+| **[Compaction hooks](compaction-hooks)** | PreCompact / PostCompact | preserve memory across compaction (none wired yet; `memory-durability` is the intended one) |
 
 ## Why a class, not a hook, per page
 
@@ -23,6 +23,8 @@ Hooks in a class share a lifecycle attachment point and a rationale; documenting
 ## Status of the estate
 
 The `home/hooks` set (~33 scripts) is authored but not yet wired into `settings.json`. Wiring, per-hook verdicts, and a test methodology are tracked as Issue #3; the per-class pages here fill in as that work lands.
+
+A handful of files are **helpers, not event hooks**: `stats.sh` (the shared `deny_hook`/sandbox library), `patterns.sh` (install-path regex), `lib/memkey.sh` (memory-index functions), `stats-report.sh` (a manual CLI), and `auto-open-html.json` (a paste-ready config snippet).
 
 ## See also
 
