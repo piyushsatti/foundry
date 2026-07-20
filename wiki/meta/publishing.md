@@ -20,7 +20,7 @@ The source stays folder-structured — and renders natively in the repo tree at 
 
 ## What the reader sees
 
-- **No `_Sidebar`** — GitHub's built-in **Pages** panel lists every page.
+- **A curated `_Sidebar`** — grouped, human-labeled navigation (GitHub's own flat **Pages** panel still shows below it, but the sidebar is the readable nav). Its links use folder-relative paths in source; the flattener rewrites them to slugs.
 - **No frontmatter** — it renders as literal text, so pages carry status in a `> **Status:**` callout instead (see [style](style)).
 
 ## Open questions
