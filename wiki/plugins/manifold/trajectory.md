@@ -1,14 +1,3 @@
----
-title: Trajectory
-status: stable
-summary: Plan/apply for spec evolution — propose a reviewable path, preview impact, accept to mutate.
-sources:
-  - bundles/manifold/skills/manifold/references/trajectory.md
-  - docs/archive/topics/trajectory.md
-  - docs/manifold/todo.md
-updated: 2026-07-20
----
-
 # Trajectory
 
 **A trajectory is a reviewable proposal to evolve the spec from as-is toward a stated target — Terraform plan/apply for the goal graph.** You draft ordered changes, preview their impact, then accept; nothing mutates until you do.
@@ -64,5 +53,5 @@ Run the real `next-leaves` to pick implementation work; optionally `spec-audit` 
 
 ## See also
 
-- [Checks](checks.md) — the queries you run around a trajectory.
-- [Orchestrator boundary](orchestrator-boundary.md) — evolving spec vs dispatching work.
+- [Checks](checks) — the queries you run around a trajectory.
+- [Orchestrator boundary](orchestrator-boundary) — evolving spec vs dispatching work.

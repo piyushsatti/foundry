@@ -1,12 +1,3 @@
----
-title: Crucible Methodology
-status: stable
-summary: The evidence-graded design basis (D1–D17) behind crucible's review topologies.
-sources:
-  - bundles/crucible/docs/adversarial-review-methodology.md
-updated: 2026-07-20
----
-
 # Crucible Methodology
 
 **Every crucible design choice cites a graded decision (D1–D17) from a verified evidence review**, so topologies rest on findings, not intuition.
@@ -66,4 +57,4 @@ graph LR
 
 ## See also
 
-- [Overview](overview.md) — how these decisions map to the four entry points.
+- [Overview](overview) — how these decisions map to the four entry points.

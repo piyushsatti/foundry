@@ -1,13 +1,3 @@
----
-title: Plan Orchestrator
-status: stable
-summary: The contract-DAG skill that shards oversized work into verifiable phases using contracts as the cut lines.
-sources:
-  - bundles/plan-orchestrator/skills/plan-orchestrator/design-notes.md
-  - bundles/plan-orchestrator/skills/plan-orchestrator/SKILL.md
-updated: 2026-07-20
----
-
 # Plan Orchestrator
 
 **A skill that decomposes multi-component work into a Directed Acyclic Graph of phases wired by explicit contracts, with stage gates and transparency protocols.** The architect owns the wiring; per-phase work is delegated to existing skills.
@@ -80,5 +70,5 @@ The design assumes knobs the Claude Code harness doesn't cleanly give:
 
 ## See also
 
-- [Progress tracker](progress-tracker.md) — the cheap ORIENT-cycle status store.
-- [Handoff pattern](handoff-pattern.md) — the subagent→orchestrator handoff schema.
+- [Progress tracker](progress-tracker) — the cheap ORIENT-cycle status store.
+- [Handoff pattern](handoff-pattern) — the subagent→orchestrator handoff schema.

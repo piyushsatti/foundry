@@ -1,13 +1,3 @@
----
-title: Human Comprehension
-status: draft
-summary: Making manifold readable for humans without letting projections become truth.
-sources:
-  - docs/manifold/human-comprehension-redesign-plan.md
-  - docs/manifold/human-presentation.md
-updated: 2026-07-20
----
-
 # Human Comprehension
 
 **Humans should answer basic questions about a project without learning the graph internals — while the graph stays the only source of truth.** The design principle is projection-first, graph-canonical.
@@ -59,5 +49,5 @@ Human framing must not outrun what the graph proves:
 
 ## See also
 
-- [Checks](checks.md) — the status/evidence/priority axes these views expose.
-- [Data model](data-model.md) — the canonical graph behind every projection.
+- [Checks](checks) — the status/evidence/priority axes these views expose.
+- [Data model](data-model) — the canonical graph behind every projection.

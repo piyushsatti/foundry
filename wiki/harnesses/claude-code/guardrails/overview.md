@@ -1,12 +1,3 @@
----
-title: Guardrails Overview
-status: stable
-summary: foundry's security posture for Claude Code — a layered guard system against a rogue or prompt-injected Claude.
-sources:
-  - docs/design-philosophy.md
-updated: 2026-07-20
----
-
 # Guardrails Overview
 
 **Guardrails are the defense-in-depth layer that keeps a compromised Claude session from escalating.** Claude Code has real file-write, Bash, and settings-edit power; the guards contain it.
@@ -45,7 +36,7 @@ The rule stack, most to least permissive:
 
 ## Why hooks, not just deny rules
 
-**The permission engine splits composite commands on `|`, `&&`, `;`, `||` before matching**, so it cannot reason about pipelines, operator chains, or argument position. Anything needing those must live in a PreToolUse hook that sees the unmodified command string — see [permission-pipe.md](permission-pipe.md). Simple prefix patterns stay as deny rules.
+**The permission engine splits composite commands on `|`, `&&`, `;`, `||` before matching**, so it cannot reason about pipelines, operator chains, or argument position. Anything needing those must live in a PreToolUse hook that sees the unmodified command string — see [permission-pipe.md](permission-pipe). Simple prefix patterns stay as deny rules.
 
 ```mermaid
 graph TD

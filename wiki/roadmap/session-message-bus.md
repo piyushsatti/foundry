@@ -1,11 +1,3 @@
----
-title: Session Message Bus
-status: shelved
-summary: Message passing between running Claude Code sessions — three delivery classes, with the mailbox as a prompt-injection surface. Shelved 2026-07-18.
-sources: []
-updated: 2026-07-20
----
-
 # Session Message Bus
 
 **Tooling to pass messages between running Claude Code sessions** (orchestrators, builders, meta-orchestrators, human relay), delivered by priority into the receiver's agentic lifecycle.
@@ -40,4 +32,4 @@ Is a genuine mid-turn interrupt actually required, or does "delivered at next to
 
 ## See also
 
-- [Roadmap](overview.md) · [Plan Orchestrator](../plugins/plan-orchestrator/overview.md)
+- [Roadmap](overview) · [Plan Orchestrator](../plugins/plan-orchestrator/overview)

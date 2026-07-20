@@ -1,13 +1,3 @@
----
-title: Coordination
-status: stable
-summary: One DB, many projects — portfolio tracks for roll-up vs cross-project edges for blocking.
-sources:
-  - bundles/manifold/skills/manifold/references/business-model.md
-  - docs/archive/topics/portfolio-cross-project.md
-updated: 2026-07-20
----
-
 # Coordination
 
 **Multiple team graphs live as separate projects in one `$MANIFOLD_DB`; cross-team coordination is cross-project, never cross-manifold.** Two patterns sit on top: portfolio tracks for roll-up and cross-project edges for blocking.
@@ -63,5 +53,5 @@ Palimpsest-style parent refinement across projects (`parents: [project:auth@K.3]
 
 ## See also
 
-- [Checks](checks.md) — how blocking affects `next-leaves`.
-- [Orchestrator boundary](orchestrator-boundary.md) — the pre-dispatch cross-blocker check.
+- [Checks](checks) — how blocking affects `next-leaves`.
+- [Orchestrator boundary](orchestrator-boundary) — the pre-dispatch cross-blocker check.

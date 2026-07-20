@@ -1,52 +1,36 @@
----
-title: Style
-status: stable
-summary: Format mechanics — frontmatter, headings, diagrams, and formatting conventions.
-sources: []
-updated: 2026-07-20
----
-
 # Style
 
-**Mechanics for every page.** How content should *read* lives in [writing.md](writing.md); this covers *format*.
+**Mechanics for every page.** How content should *read* lives in [writing](writing); this covers *format*.
 
 > **Status:** stable
 
-## Frontmatter
+## Page header
 
-Every page opens with exactly this set. The `> **Status:**` callout below the H1 mirrors the `status` value.
+**No YAML frontmatter** — GitHub's wiki renders it as literal text atop the page. A page opens with three things:
 
-```yaml
----
-title: Page Title
-status: draft        # see the table below
-summary: One line saying what this page is.
-sources:             # in-repo paths this page consolidates; [] if none
-  - path/to/source.md
-updated: 2026-07-20   # YYYY-MM-DD
----
-```
+1. **`# Title`** — one H1, the page's name.
+2. **One BLUF sentence** — what the page is.
+3. **A status callout** — `> **Status:** stable`, using one of:
 
-| `status` | Meaning | Enter when |
-|---|---|---|
-| `draft` | being written | on creation |
-| `stable` | reviewed, and its subject is settled | after a review pass |
-| `parked` | deliberately deferred; may resume | work paused, intent to return |
-| `shelved` | paused, no plan to resume | idea captured, not scheduled |
-| `archived` | superseded; kept for history | replaced by a newer page |
+| Status | Meaning |
+|---|---|
+| `draft` | being written |
+| `stable` | reviewed, subject settled |
+| `parked` | deliberately deferred; may resume |
+| `shelved` | paused, no plan to resume |
+| `archived` | superseded; kept for history |
 
-- **`sources`** — in-repo paths (design notes, transcripts, prior docs) whose content this page consolidates. Not external URLs (those go in References), not code the page merely mentions. Empty is `sources: []`.
-- **`updated`** — bump by hand on any substantive content change, not typo fixes.
+Provenance — the sources a page consolidates — goes in the page's **Appendix / references**, not a metadata block.
 
 ## Headings
 
 **A heading promises a section — deliver one.** Put at least a paragraph (usually several) under every *prose* heading. A prose heading with a single line beneath it, or one stacked directly under another, is over-sectioning: it fragments ideas that belong together and renders as a jagged, hard-to-read list. **The rendered page is the artifact, not the source symbols.**
 
-- **One H1**, matching `title`.
+- **One H1**, matching the title.
 - **~2–4 body headings on a short page**, not one per idea. The closing sections (Open questions, References, See also) are page furniture — heading-labelled lists by design, and the one exception to the paragraph rule. They don't count against the budget.
 - **One line to say? It's not a section.** Fold it into prose, or make it a **list item**, a **table** row, or a **bold lead-in** (`**Term** — the one line`).
 - **Descriptive headings:** a noun phrase ("How bundling works") or a task ("Publish to the release branch"). Standard arc names (How it works, Limits, Open questions) are fine; the rule targets vague catch-alls like "Other" or "Misc".
-- **H3 is the floor.** Reaching for an H4 usually means the page holds two topics — split into a sibling page ([organization.md](organization.md)) rather than nesting deeper. A default; see *When to break these rules*.
+- **H3 is the floor.** Reaching for an H4 usually means the page holds two topics — split into a sibling page ([organization](organization)) rather than nesting deeper. A default; see *When to break these rules*.
 
 ## Diagrams
 
@@ -65,9 +49,9 @@ For example, a 12-node build-and-release flow becomes one coarse diagram — `bu
 
 ## Formatting
 
-- **Code:** fenced blocks always carry a language tag. Examples usually render as a fenced block — [writing.md](writing.md) covers *when* to add one.
-- **Links:** relative (`../distribution/overview.md`); to repo source, a repo-relative path; within a long page, `#anchor` links to its own headings. External URLs collect in References/Appendix, not inline.
-- **Callouts:** a blockquote with a bold lead-in — `> **Note** — …`, `> **Warning** — …`. Do **not** use `> [!NOTE]` GitHub-alert syntax; it does not render on the published wiki.
+- **Code:** fenced blocks always carry a language tag. Examples usually render as a fenced block — [writing](writing) covers *when* to add one.
+- **Links:** relative, and **without the `.md` extension** — a `.md` link resolves to raw file content, not the rendered wiki page. Within a long page, `#anchor` links to its own headings. External URLs collect in References/Appendix, not inline.
+- **Callouts:** a blockquote with a bold lead-in — `> **Note** — …`, `> **Warning** — …`. Do **not** use `> [!NOTE]` GitHub-alert syntax; it does not render on the wiki.
 - **Tables:** for parallel rows sharing 2–4 attributes; a list for anything else. A too-wide table is a decompose signal like any other.
 - **Images:** prefer Mermaid and prose; use a raster image only for what can't be drawn (e.g. a UI screenshot). Every image needs alt text.
 - **Line wrapping:** one sentence per line (or semantic line breaks) so diffs stay readable.
@@ -88,6 +72,6 @@ Prefer these patterns; they're not absolute. Optimize for the reader.
 
 ## See also
 
-- [Writing](writing.md) — how a page reads.
-- [Organization](organization.md) — where a page lives.
-- [Publishing](publishing.md) — how the wiki renders once published.
+- [Writing](writing) — how a page reads.
+- [Organization](organization) — where a page lives.
+- [Publishing](publishing) — how the wiki renders once published.

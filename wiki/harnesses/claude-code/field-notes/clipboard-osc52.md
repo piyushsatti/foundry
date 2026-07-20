@@ -1,12 +1,3 @@
----
-title: Clipboard and OSC 52
-status: stable
-summary: Why fullscreen Claude Code selections don't middle-click-paste, and the one-line fix.
-sources:
-  - docs/clipboard-model.md
-updated: 2026-07-20
----
-
 # Clipboard and OSC 52
 
 **Claude Code's fullscreen TUI writes mouse selections only to CLIPBOARD via hardcoded OSC 52, never to PRIMARY — so middle-click paste fails everywhere.**

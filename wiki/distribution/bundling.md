@@ -1,14 +1,3 @@
----
-title: Bundling
-status: stable
-summary: Why plugins are self-contained bundles and how shared capabilities are promoted.
-sources:
-  - docs/adr/0001-materialized-plugin-bundles.md
-  - bundles/devtools/README.md
-  - README.md
-updated: 2026-07-20
----
-
 # Bundling
 
 **Each plugin is a self-contained bundle in `bundles/<name>/`** — skills, agents, hooks, server, and `bundle.yaml`. A bundle is one domain (review, spec, orchestration, memory, dev-tooling); it grows by adding skills, not by leaking into others.

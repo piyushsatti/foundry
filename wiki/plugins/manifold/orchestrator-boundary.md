@@ -1,13 +1,3 @@
----
-title: Orchestrator Boundary
-status: draft
-summary: Manifold is the intent-broker; a future dispatch-orchestrator reads it but owns dispatch.
-sources:
-  - docs/manifold/orchestrator-contract.md
-  - docs/archive/orchestrator-2026-05/orchestrator-synthesis-addendum-2026-05-24.md
-updated: 2026-07-20
----
-
 # Orchestrator Boundary
 
 **Manifold holds intent; something else holds execution.** Manifold is the intent-broker — orchestrators read the spec graph before acting and write verdicts back, but manifold never dispatches agents.
@@ -33,7 +23,7 @@ Before assigning work on project `P`, node `N`, the orchestrator should:
 4. **`list_blocking_chain(P, N)`** — same for in-project `blocks` edges.
 5. **`drift_report(P)`** — optional gate; flag `violated` realizations before new work lands on stale code.
 
-Spec evolution (a target brief) goes through [trajectory](trajectory.md) — propose/show/accept — not raw dispatch. Agents write `actor` (`agent:<dispatch-id>`) on every mutation.
+Spec evolution (a target brief) goes through [trajectory](trajectory) — propose/show/accept — not raw dispatch. Agents write `actor` (`agent:<dispatch-id>`) on every mutation.
 
 ## Agent handoff pattern
 
@@ -47,5 +37,5 @@ Downstream: `deliberately_not_done` entries attributed to a human become individ
 
 ## See also
 
-- [Coordination](coordination.md) — cross-project blocking the checklist relies on.
-- [Trajectory](trajectory.md) — spec evolution vs dispatch.
+- [Coordination](coordination) — cross-project blocking the checklist relies on.
+- [Trajectory](trajectory) — spec evolution vs dispatch.

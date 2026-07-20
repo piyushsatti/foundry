@@ -1,11 +1,3 @@
----
-title: Code Documentation
-status: stable
-summary: When code gets a comment and when it doesn't — minimal, intent-only, self-documenting; escalate real complexity to the wiki.
-sources: []
-updated: 2026-07-20
----
-
 # Code Documentation
 
 **Comments rot and add noise, so code carries as few as possible — a comment earns its place only when the code's intent isn't obvious from the code itself.** The default is self-documenting code, not explained code.
@@ -62,4 +54,4 @@ Defaults, not laws — add more documentation when the reader genuinely needs it
 
 ## See also
 
-- [Writing](../meta/writing.md) — the wiki-page equivalent, and where escalated code explanations land.
+- [Writing](../meta/writing) — the wiki-page equivalent, and where escalated code explanations land.

@@ -1,12 +1,3 @@
----
-title: Data Model
-status: stable
-summary: DB-canonical spec — SQLite is the source of truth, three surfaces over one query layer, append-only history.
-sources:
-  - bundles/manifold/skills/manifold/references/architecture.md
-updated: 2026-07-20
----
-
 # Data Model
 
 **The database is the spec; markdown is an export, not the working surface.** Manifold stores the goal graph in one SQLite file and inverts the usual "files + cache DB" arrangement to kill the drift question between two sources of truth.
@@ -33,7 +24,7 @@ Stdlib only — no ORM. Roughly ten tables; `schema.sql` is canonical. Key ones:
 - **`node_edges`** — one row per relationship (`parent` | `depends_on` | `blocks` | …). The audit-mandated choice over JSON-list-of-ID columns; recursive CTEs answer transitive queries.
 - **`revisions`** — append-only, full-state snapshot per write, with `change_reason`, `actor`, `batch_id`.
 - **`validations` / `verdicts`** — append-only verification runs.
-- Plus `portfolio_links` and `cross_project_edges` (see [coordination.md](coordination.md)).
+- Plus `portfolio_links` and `cross_project_edges` (see [coordination.md](coordination)).
 
 ## Three surfaces, one query layer
 
@@ -51,7 +42,7 @@ graph TD
 
 - **Append-only history.** Every write creates a full-state `revisions` row — time-travel is a single query, not a diff.
 - **Optimistic concurrency.** Every write requires `expected_revision_id`; a mismatch returns `StaleRevision`. Load-bearing from day one even while single-process (an audit requirement), so a future Postgres backend needs no contract change.
-- **Typed change reasons.** `update_node` requires an explicit `change_reason` — no silent default (see [checks.md](checks.md)).
+- **Typed change reasons.** `update_node` requires an explicit `change_reason` — no silent default (see [checks.md](checks)).
 
 ## Pluggable verdict engine
 
@@ -68,5 +59,5 @@ Results cache on a stable input hash and propagate up parents to a fixed point.
 
 ## See also
 
-- [Foundations](foundations.md) — the graph the schema encodes.
-- [Checks](checks.md) · [Trajectory](trajectory.md) · [Coordination](coordination.md)
+- [Foundations](foundations) — the graph the schema encodes.
+- [Checks](checks) · [Trajectory](trajectory) · [Coordination](coordination)

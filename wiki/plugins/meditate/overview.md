@@ -1,12 +1,3 @@
----
-title: Meditate Overview
-status: stable
-summary: Reflective memory curation — the curate → review → apply pipeline on three separated parties.
-sources:
-  - bundles/meditate/README.md
-updated: 2026-07-20
----
-
 # Meditate Overview
 
 **Meditate is terraform for memory** — a `plan → show → apply` pipeline that keeps an agent's accreting memory (CLAUDE.md rules, recalled facts, serena code notes) from rotting into staleness, duplication, and mis-scoped leaks.
@@ -49,7 +40,7 @@ Meditate's core safety bet is that **propose, approve, and execute are three dif
 
 ## See also
 
-- [Memory model](memory-model.md) — the two-axis scope × genericity model and three stores.
-- [Operation algebra](operation-algebra.md) — the verbs as a conserved algebra over a knowledge grid.
-- [Execution contract](execution-contract.md) — the dumb-applier spec and frozen interface.
-- [Decisions](decisions.md) — verified environment findings and locked decisions.
+- [Memory model](memory-model) — the two-axis scope × genericity model and three stores.
+- [Operation algebra](operation-algebra) — the verbs as a conserved algebra over a knowledge grid.
+- [Execution contract](execution-contract) — the dumb-applier spec and frozen interface.
+- [Decisions](decisions) — verified environment findings and locked decisions.

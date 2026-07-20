@@ -1,12 +1,3 @@
----
-title: Memory Model
-status: stable
-summary: The two-axis model — scope tier × genericity — over three stores differentiated by loading model.
-sources:
-  - bundles/meditate/docs/2026-06-24-memory-architecture-spec.md
-updated: 2026-07-20
----
-
 # Memory Model
 
 **Every memory item is placed on two axes — its scope tier and its genericity — then stored in whichever of three stores matches its loading model.** This is the substrate meditate curates.
@@ -44,5 +35,5 @@ Memory (off-tree, keyed by cwd) does *not* compose up the tiers — an accepted 
 
 ## See also
 
-- [Operation algebra](operation-algebra.md) — how items move between cells.
-- [Overview](overview.md) — the curation pipeline over this model.
+- [Operation algebra](operation-algebra) — how items move between cells.
+- [Overview](overview) — the curation pipeline over this model.

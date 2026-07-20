@@ -1,14 +1,3 @@
----
-title: Cartographer Overview
-status: parked
-summary: A state-faithful session-visualization tool — a background reducer maintains a consolidated map where rework updates nodes in place instead of appending.
-sources:
-  - bundles/cartographer/MISSION.md
-  - bundles/cartographer/brief.md
-  - bundles/cartographer/decisions.md
-updated: 2026-07-20
----
-
 # Cartographer Overview
 
 **Cartographer maintains a consolidated "session map" where a background reducer updates nodes in place as work is reworked, so the map reads clean top-to-bottom instead of as an append-only log.** Parked in Phase 1 — five rounds of design landed a canvas paradigm Pi likes, but the gate never closed.
@@ -62,4 +51,4 @@ graph LR
 
 ## See also
 
-- [Roadmap](../../roadmap/overview.md) — the revive-or-archive decision (issue #5).
+- [Roadmap](../../roadmap/overview) — the revive-or-archive decision (issue #5).

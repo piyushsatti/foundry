@@ -1,14 +1,3 @@
----
-title: Glossary
-status: draft
-summary: The shared vocabulary — what the core nouns mean, and what the verbs do (and produce).
-sources:
-  - docs/manifold/glossary.md
-  - README.md
-  - docs/adr/0001-materialized-plugin-bundles.md
-updated: 2026-07-20
----
-
 # Glossary
 
 **The high-level taxonomy.** Core nouns and verbs used across foundry. Domain-specific jargon lives in that domain's pages (e.g. manifold's `verdict`, crucible's `lens`).
@@ -27,6 +16,7 @@ updated: 2026-07-20
 | **agent** | A subagent definition with its own tools/model. |
 | **hook** | A script the harness runs on an event (e.g. `PreToolUse`) to enforce or augment behavior. |
 | **MCP server** | A tool/resource server a bundle ships (in `server/`), declared via `.mcp.json`. |
+| **harness** | The runtime that runs the agent — Claude Code is foundry's; hooks attach to its lifecycle. |
 
 ## Verbs — the actions, and what they produce
 
@@ -44,11 +34,11 @@ updated: 2026-07-20
 
 Deeper terms live with their domain:
 
-- **manifold** — node, goal-graph, verdict, revision, trajectory, spec-audit, drift-report, next-leaves → [manifold/](plugins/manifold/overview.md)
-- **crucible** — lens, stance, hat, wardrobe → [crucible/](plugins/crucible/overview.md)
-- **meditate** — cell, atom, store, scope tier → [meditate/](plugins/meditate/overview.md)
-- **cartographer** — session map, reducer → [cartographer/](plugins/cartographer/overview.md)
+- **manifold** — node, goal-graph, verdict, revision, trajectory, spec-audit, drift-report, next-leaves → [manifold/](plugins/manifold/overview)
+- **crucible** — lens, stance, hat, wardrobe → [crucible/](plugins/crucible/overview)
+- **meditate** — cell, atom, store, scope tier → [meditate/](plugins/meditate/overview)
+- **cartographer** — session map, reducer → [cartographer/](plugins/cartographer/overview)
 
 ## See also
 
-- [Distribution](distribution/overview.md) · [Organization](meta/organization.md)
+- [Distribution](distribution/overview) · [Organization](meta/organization)

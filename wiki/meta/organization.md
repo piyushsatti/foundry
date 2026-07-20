@@ -1,18 +1,10 @@
----
-title: Organization
-status: stable
-summary: How the wiki is structured — the folder tree is the index, grouped by domain, decomposed as it grows.
-sources: []
-updated: 2026-07-20
----
-
 # Organization
 
 **The folder tree IS the index.** Reading the tree tells you what exists — the domains, features, and ideas. There is no separate "what lives where" page; the layout answers that. So the structure has to stay legible.
 
 > **Status:** stable
 
-This page covers *where a page lives*. The rest of the rulebook: [style.md](style.md) = how a page is formatted · [writing.md](writing.md) = how it reads · [page-template.md](page-template.md) = the copy-me skeleton.
+This page covers *where a page lives*. The rest of the rulebook: [style.md](style) = how a page is formatted · [writing.md](writing) = how it reads · [page-template.md](page-template) = the copy-me skeleton.
 
 ## Domain vs subject
 
@@ -33,8 +25,8 @@ The rule behind the rules — it recurs everywhere. When something gets too big,
 |---|---|---|
 | A page (2+ topics, wants an H4) | nest deeper / cram | split into a sibling `.md` |
 | A domain (many pages) | one giant folder | promote a topic to its own subfolder |
-| A diagram (> ~8 nodes) | shrink the font | coarse view + per-section diagrams ([style.md](style.md)) |
-| A paragraph | convolute it | break into steps or add an example ([writing.md](writing.md)) |
+| A diagram (> ~8 nodes) | shrink the font | coarse view + per-section diagrams ([style.md](style)) |
+| A paragraph | convolute it | break into steps or add an example ([writing.md](writing)) |
 
 Promote only when a topic outgrows its current home. Don't build ahead of content.
 
@@ -49,4 +41,4 @@ The rules favor a legible tree; they're defaults, not laws.
 
 ## See also
 
-- [Style](style.md) · [Writing](writing.md) · [Page template](page-template.md)
+- [Style](style) · [Writing](writing) · [Page template](page-template)

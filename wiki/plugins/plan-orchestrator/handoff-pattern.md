@@ -1,12 +1,3 @@
----
-title: Handoff Pattern
-status: stable
-summary: The structured subagent→orchestrator handoff — concrete numbers, where-to-look pointers, and an attributed catalog of what was deliberately not done.
-sources:
-  - docs/archive/orchestrator-2026-05/orchestrator-synthesis-addendum-2026-05-24.md
-updated: 2026-07-20
----
-
 # Handoff Pattern
 
 **At session end a subagent returns a structured handoff to the orchestrator: what got done with real numbers, where to look, and what was deliberately left undone — with attribution.** Validated against a real chronicler-session transcript.
@@ -44,5 +35,5 @@ The pattern extends the orchestrator's mandatory output schema with four fields 
 
 ## See also
 
-- [Plan Orchestrator](overview.md) — the orchestration skill.
-- [Progress tracker](progress-tracker.md) — cheap in-flight status between handoffs.
+- [Plan Orchestrator](overview) — the orchestration skill.
+- [Progress tracker](progress-tracker) — cheap in-flight status between handoffs.

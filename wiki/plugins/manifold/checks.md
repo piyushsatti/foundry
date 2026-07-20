@@ -1,14 +1,3 @@
----
-title: Checks
-status: stable
-summary: Three distinct checks — spec-audit, drift-report, validate — plus the independent status/evidence/priority axes.
-sources:
-  - docs/manifold/how-to-use.md
-  - docs/manifold/glossary.md
-  - docs/archive/topics/drift-report-design.md
-updated: 2026-07-20
----
-
 # Checks
 
 **Manifold has three checks that answer three different questions — don't mix them up.** One reviews spec history, one reconciles spec against code, one validates graph structure.
@@ -61,5 +50,5 @@ Exits non-zero on any **violated** (unverified alone is a gap, not confirmed dri
 
 ## See also
 
-- [Data model](data-model.md) — the verdict engine and revision log.
-- [Trajectory](trajectory.md) — evolving the spec safely.
+- [Data model](data-model) — the verdict engine and revision log.
+- [Trajectory](trajectory) — evolving the spec safely.

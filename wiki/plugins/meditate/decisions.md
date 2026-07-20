@@ -1,12 +1,3 @@
----
-title: Decisions & Findings
-status: stable
-summary: Verified environment findings and locked decisions behind meditate's design.
-sources:
-  - bundles/meditate/docs/meditate-decisions-and-findings.md
-updated: 2026-07-20
----
-
 # Decisions & Findings
 
 **The empirical findings and locked decisions that meditate's design rests on** — verified at Claude Code v2.1.195; do not re-derive.
@@ -43,5 +34,5 @@ updated: 2026-07-20
 
 ## See also
 
-- [Execution contract](execution-contract.md) — the applier built on these findings.
-- [Overview](overview.md) — the pipeline these decisions shaped.
+- [Execution contract](execution-contract) — the applier built on these findings.
+- [Overview](overview) — the pipeline these decisions shaped.

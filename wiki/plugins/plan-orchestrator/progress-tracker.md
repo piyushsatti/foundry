@@ -1,13 +1,3 @@
----
-title: Progress Tracker
-status: stable
-summary: A SQLite + MCP status store that gives the architect cheap ORIENT-cycle rollups instead of re-reading agent context.
-sources:
-  - bundles/plan-orchestrator/skills/progress-tracker/README.md
-  - bundles/plan-orchestrator/README.md
-updated: 2026-07-20
----
-
 # Progress Tracker
 
 **An MCP server that reports real-time dispatch progress so the architect can orient without re-reading thousands of tokens of plan content.** Bundled in the plan-orchestrator plugin; auto-registers via `.mcp.json`.
@@ -52,4 +42,4 @@ graph LR
 
 ## See also
 
-- [Plan Orchestrator](overview.md) — the skill that drives this store.
+- [Plan Orchestrator](overview) — the skill that drives this store.

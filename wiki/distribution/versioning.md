@@ -1,13 +1,3 @@
----
-title: Versioning
-status: stable
-summary: Version lives only in plugin.json; per-bundle bumps published via the release branch.
-sources:
-  - docs/adr/0001-materialized-plugin-bundles.md
-  - CLAUDE.md
-updated: 2026-07-20
----
-
 # Versioning
 
 **A plugin's version lives only in its `plugin.json`.** The generated marketplace catalog carries no version key — a duplicate would silently mask bumps (per Claude Code's documented resolution order).

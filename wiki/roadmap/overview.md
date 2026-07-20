@@ -1,13 +1,3 @@
----
-title: Roadmap
-status: draft
-summary: What we want to build — the cleanup epic, the approved buildout, and parked/shelved ideas.
-sources:
-  - CLAUDE.md
-  - docs/access-tier-roadmap.md
-updated: 2026-07-20
----
-
 # Roadmap
 
 **Forward work, in one place.** GitHub issues are canonical for the epic; this is the durable narrative index. Parked/shelved ideas each get their own page here.
@@ -34,15 +24,15 @@ A 7-item buildout is approved, sequence **0→1→3→6→2→5→4**, one sessi
 
 ## Parked / shelved
 
-- **[Session Message Bus](session-message-bus.md)** — shelved 2026-07-18.
-- **[Cartographer](../plugins/cartographer/overview.md)** — parked, Phase 1.
+- **[Session Message Bus](session-message-bus)** — shelved 2026-07-18.
+- **[Cartographer](../plugins/cartographer/overview)** — parked, Phase 1.
 - **Access-tier roadmap** — guard-capability wishlist (read-only `/mnt`, SSH copy-then-read), none implemented. See `docs/access-tier-roadmap.md`.
 
 ## Future tooling & structure
 
-- **[Docs context retrieval](docs-context-retrieval.md)** — an MCP/agent that injects only relevant wiki guidance on demand, so the guides can grow without bloating every prompt.
+- **[Docs context retrieval](docs-context-retrieval)** — an MCP/agent that injects only relevant wiki guidance on demand, so the guides can grow without bloating every prompt.
 - **Repo dir rename (downstream)** — the wiki's canonical nouns are `plugins` (shipped) and `library` (shared). If we want the repo dirs to match, that rename flows top-down from here — not scheduled.
 
 ## See also
 
-- [Distribution](../distribution/overview.md) · [Glossary](../glossary.md) · [Libraries](../libraries/overview.md)
+- [Distribution](../distribution/overview) · [Glossary](../glossary) · [Libraries](../libraries/overview)

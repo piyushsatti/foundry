@@ -1,13 +1,3 @@
----
-title: Execution Contract
-status: stable
-summary: The dumb-applier spec and the frozen interface contract that makes safe, idempotent apply possible.
-sources:
-  - bundles/meditate/docs/mem-arch-applier-design.md
-  - bundles/meditate/docs/mem-arch-interface-contract.md
-updated: 2026-07-20
----
-
 # Execution Contract
 
 **`/meditate:apply` is a dumb executor that makes no semantic decisions — it runs a human-approved manifest against live stores under a frozen interface contract.** Smart-propose / dumb-apply / human-gate.
@@ -46,6 +36,6 @@ The contract is the **fixed boundary** between build workstreams — a shape cha
 
 ## See also
 
-- [Overview](overview.md) — where apply sits in the pipeline.
-- [Operation algebra](operation-algebra.md) — the verbs the applier dispatches.
-- [Decisions](decisions.md) — the environment findings the contract rests on.
+- [Overview](overview) — where apply sits in the pipeline.
+- [Operation algebra](operation-algebra) — the verbs the applier dispatches.
+- [Decisions](decisions) — the environment findings the contract rests on.

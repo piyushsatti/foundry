@@ -1,12 +1,3 @@
----
-title: Crucible Overview
-status: stable
-summary: A lens × stance × model × effort review system built on one shared hat wardrobe.
-sources:
-  - bundles/crucible/README.md
-updated: 2026-07-20
----
-
 # Crucible Overview
 
 **Crucible is a code/artifact review plugin where every reviewer is a tuple `(lens, stance, model, effort)` drawn from one shared hat wardrobe.** Four entry points compose preset tuples so a lens is defined once and consumed everywhere.
@@ -45,4 +36,4 @@ A reviewer is fully described by four coordinates:
 
 ## See also
 
-- [Methodology](methodology.md) — the D1–D17 evidence basis behind these design choices.
+- [Methodology](methodology) — the D1–D17 evidence basis behind these design choices.

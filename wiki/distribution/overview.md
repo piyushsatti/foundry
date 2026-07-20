@@ -1,14 +1,3 @@
----
-title: Distribution Overview
-status: stable
-summary: How foundry plugins are packaged, versioned, and served.
-sources:
-  - docs/adr/0001-materialized-plugin-bundles.md
-  - README.md
-  - CLAUDE.md
-updated: 2026-07-20
----
-
 # Distribution Overview
 
 **Distribution is how plugins go from DRY source to installable artifact.** foundry develops in a modular source tree and ships self-contained bundles built from it.
@@ -17,8 +6,8 @@ updated: 2026-07-20
 
 ## Facets
 
-- **[Bundling](bundling.md)** — self-contained bundle sources and shared-capability promotion.
-- **[Versioning](versioning.md)** — per-bundle version bumps and how the served catalog resolves them.
+- **[Bundling](bundling)** — self-contained bundle sources and shared-capability promotion.
+- **[Versioning](versioning)** — per-bundle version bumps and how the served catalog resolves them.
 - **Release / serve** — publishing built plugins to the `release` branch, cataloged on `main`.
 
 ## The pipeline

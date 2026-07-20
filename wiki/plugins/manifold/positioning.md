@@ -1,12 +1,3 @@
----
-title: Positioning
-status: stable
-summary: The thesis — intent decays faster than code, so make "why" a typed, queryable field.
-sources:
-  - bundles/manifold/skills/manifold/references/why-manifold.md
-updated: 2026-07-20
----
-
 # Positioning
 
 **Software loses its *why* faster than its code, and AI agents make it worse; manifold is typed external memory for intent.** The idea isn't novel — the packaging for long-horizon agent work is.
@@ -48,5 +39,5 @@ Intent-Based Networking (telecom KPIs) and agent-safety goal drift are different
 
 ## See also
 
-- [Overview](overview.md) — the compass identity.
-- [Checks](checks.md) — `spec-audit` and `drift-report` in practice.
+- [Overview](overview) — the compass identity.
+- [Checks](checks) — `spec-audit` and `drift-report` in practice.

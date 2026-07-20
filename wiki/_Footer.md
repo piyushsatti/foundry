@@ -1,2 +1,1 @@
----
-Source of truth: authored in [`wiki/`](https://github.com/piyushsatti/foundry/tree/main/wiki) · published to this wiki as-is.
+Part of the [foundry wiki](Home) · see [meta](meta/organization) before adding a page.

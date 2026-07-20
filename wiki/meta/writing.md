@@ -1,11 +1,3 @@
----
-title: Writing
-status: stable
-summary: How a page reads — tell the story of why something exists and how it works, disclose detail in layers, and hide nothing.
-sources: []
-updated: 2026-07-20
----
-
 # Writing
 
 **A page tells a simple story: what problem exists, how it's solved, how the solution works, and where it doesn't.** A reader should finish knowing not just *what* we built but *why* — and should be able to stop at any depth with a coherent picture.
@@ -30,7 +22,7 @@ The arc is the *logic*, not a required heading list. Sectioning scales with size
 - **Reference / catalog / glossary** — definitions and tables over narrative; the arc compresses to a line.
 - **Field notes** — problem observed → mechanism → fix.
 
-(Documenting *code* is a separate discipline — see [conventions/code-documentation.md](../conventions/code-documentation.md).)
+(Documenting *code* is a separate discipline — see [conventions/code-documentation.md](../conventions/code-documentation).)
 
 ## Progressive disclosure
 
@@ -57,7 +49,7 @@ The failure this prevents: murky content that reads as settled, so nobody asks "
 
 Where a human will read it, use **as little jargon as possible** — plain words first. Technical precision rarely requires technical vocabulary.
 
-When a term is unavoidable, don't gloss it inline term-by-term. Collect the vocabulary once — a **Terms** pointer in the closing section, linking to the [glossary](../glossary.md) or the page's `sources`. One place for the curious reader, a clean body for everyone else.
+When a term is unavoidable, don't gloss it inline term-by-term. Collect the vocabulary once — a **Terms** pointer in the closing section, linking to the [glossary](../glossary) or the page's `sources`. One place for the curious reader, a clean body for everyone else.
 
 ## Self-contained
 
@@ -77,7 +69,7 @@ A genuinely tiny page folds even these into its prose.
 
 ## On length
 
-Short is a *result* of clarity, not the goal. Cut filler, hedging, and repetition — but don't cut the why, the limits, or a flagged uncertainty to save space. If a page is long because it genuinely covers a lot, that's usually a signal to **split it** ([organization.md](organization.md)) — though not always; see below.
+Short is a *result* of clarity, not the goal. Cut filler, hedging, and repetition — but don't cut the why, the limits, or a flagged uncertainty to save space. If a page is long because it genuinely covers a lot, that's usually a signal to **split it** ([organization.md](organization)) — though not always; see below.
 
 ## When to break these rules
 
@@ -89,6 +81,6 @@ These are defaults, not laws — the goal is a page the reader can follow. Break
 
 ## See also
 
-- [Style](style.md) — format mechanics.
-- [Organization](organization.md) — where a page lives.
-- [Page template](page-template.md) — the copy-me skeleton.
+- [Style](style) — format mechanics.
+- [Organization](organization) — where a page lives.
+- [Page template](page-template) — the copy-me skeleton.

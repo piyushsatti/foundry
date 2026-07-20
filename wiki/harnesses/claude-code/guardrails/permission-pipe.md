@@ -1,12 +1,3 @@
----
-title: The Permission Pipe Limitation
-status: stable
-summary: Any deny rule containing a pipe or operator is dead config — pipe-based RCE must be blocked in a PreToolUse hook.
-sources:
-  - docs/permission-pipe-limitation.md
-updated: 2026-07-20
----
-
 # The Permission Pipe Limitation
 
 **Any Claude Code deny rule containing `|`, `&&`, `;`, or `||` is dead config.** The matcher splits composite commands and checks each subcommand independently, so a composite deny pattern never fires.
@@ -48,4 +39,4 @@ When reviewing permission settings:
 
 ## See also
 
-- [Guardrails Overview](overview.md) — permission precedence and the hooks-over-deny-rules principle.
+- [Guardrails Overview](overview) — permission precedence and the hooks-over-deny-rules principle.

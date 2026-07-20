@@ -1,12 +1,3 @@
----
-title: Worktree Context Loading
-status: stable
-summary: Claude Code shares memory across git worktrees but resolves CLAUDE.md strictly per-directory.
-sources:
-  - docs/worktree-context-loading.md
-updated: 2026-07-20
----
-
 # Worktree Context Loading
 
 **Claude Code shares memory across git worktrees but resolves CLAUDE.md strictly by the working directory's path hash — so a worktree sees your memory but not the project CLAUDE.md.**

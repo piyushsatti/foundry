@@ -1,11 +1,3 @@
----
-title: Code Style
-status: stable
-summary: A baseline for naming and shape (constants, private functions, interface validation) that each repo adapts on adoption.
-sources: []
-updated: 2026-07-20
----
-
 # Code Style
 
 **Consistent naming and shape within a file make code scannable — but the specific choices are opinionated and language-bound, so this is a baseline each repo tailors, not a global mandate.** Consistency within a repo matters more than any single rule.
@@ -27,7 +19,7 @@ Keep a **small central baseline**. Each repo adopts it, tailors it to its langua
 | Constants | `UPPER_SNAKE_CASE` |
 | Internal / private functions | prefix with `_` |
 | Public-interface functions | validate parameters at the boundary |
-| Naming | one scheme per file; names convey purpose (see [code-documentation.md](code-documentation.md)) |
+| Naming | one scheme per file; names convey purpose (see [code-documentation.md](code-documentation)) |
 
 Names doing their job *is* documentation — structure and naming carry intent so comments don't have to.
 
@@ -45,4 +37,4 @@ Follow the language's own idioms when they conflict — Python privates use `_`,
 
 ## See also
 
-- [Code documentation](code-documentation.md) — when code earns a comment.
+- [Code documentation](code-documentation) — when code earns a comment.

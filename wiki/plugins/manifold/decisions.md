@@ -1,12 +1,3 @@
----
-title: Decisions
-status: stable
-summary: The locked-decision ledger (L1–L34) — the authoritative "why we chose X".
-sources:
-  - docs/manifold/todo.md
-updated: 2026-07-20
----
-
 # Decisions
 
 **The authoritative index of manifold's locked decisions — do not re-litigate without new evidence.** Each `L#` records a choice that shipped or is committed; `todo.md` holds the full ledger.
@@ -68,4 +59,4 @@ updated: 2026-07-20
 
 ## See also
 
-- [Checks](checks.md) · [Coordination](coordination.md) · [Trajectory](trajectory.md) — the decisions in context.
+- [Checks](checks) · [Coordination](coordination) · [Trajectory](trajectory) — the decisions in context.

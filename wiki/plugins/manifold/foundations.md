@@ -1,14 +1,3 @@
----
-title: Foundations
-status: stable
-summary: Manifold's KAOS lineage — an AND/OR DAG of goals across layers, and what it inherits, drops, and defers.
-sources:
-  - docs/manifold/kaos-lineage.md
-  - bundles/manifold/skills/manifold/references/architecture.md
-  - docs/archive/manifold-v0.1/manifold-design.md
-updated: 2026-07-20
----
-
 # Foundations
 
 **Manifold's primitive is AND-refinement over Boolean satisfaction with layered abstraction — the KAOS goal-oriented requirements-engineering tradition.** A goal is satisfied only when all its refinements are; that maps directly to verdict propagation up the graph.
@@ -29,7 +18,7 @@ updated: 2026-07-20
 
 | Inherits from KAOS | Leaves behind | Defers (additive later) |
 |---|---|---|
-| AND-refinement (Boolean conjunction over children) | LTL semantics → replaced by [pluggable verdicts](data-model.md) | OR-refinement |
+| AND-refinement (Boolean conjunction over children) | LTL semantics → replaced by [pluggable verdicts](data-model) | OR-refinement |
 | AND/OR DAG across layers | Built-in agent assignment → orchestrator's job | Obstacle analysis |
 | Cycle prohibition | Operations layer | Refinement-pattern catalog |
 | Coverage rule (non-leaf, non-constraint → ≥1 child) | | Conflict detection |
@@ -40,5 +29,5 @@ Deferred items sit on top of the substrate and don't require revisiting the core
 
 ## See also
 
-- [Data model](data-model.md) — how the DAG lives in SQLite.
-- [Overview](overview.md) — the compass identity.
+- [Data model](data-model) — how the DAG lives in SQLite.
+- [Overview](overview) — the compass identity.

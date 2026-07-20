@@ -1,11 +1,3 @@
----
-title: Docs Context Retrieval
-status: draft
-summary: A future tool (MCP or agent) that injects only the relevant wiki guidance into Claude's context on demand, so the guides can grow without bloating every prompt.
-sources: []
-updated: 2026-07-20
----
-
 # Docs Context Retrieval
 
 **As the rulebook and the wiki grow, loading all of it into Claude's context every time is wasteful and will eventually overflow — but shrinking the guides to fit is the wrong fix.** The right answer is retrieval: pull only what's relevant, when it's relevant.
@@ -34,8 +26,8 @@ Retrieval quality depends on the wiki being well-structured and the query being 
 
 - MCP server vs agent — which fits the Claude Code loop better?
 - Index/retrieval mechanism (full-text, embeddings, or the frontmatter `summary`/`sources` as a lightweight index?).
-- Does the same tool also power a publish transform (see [publishing](../meta/publishing.md))?
+- Does the same tool also power a publish transform (see [publishing](../meta/publishing))?
 
 ## See also
 
-- [Roadmap](overview.md) · [Meta / writing](../meta/writing.md)
+- [Roadmap](overview) · [Meta / writing](../meta/writing)

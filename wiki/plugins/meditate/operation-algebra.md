@@ -1,12 +1,3 @@
----
-title: Operation Algebra
-status: stable
-summary: The verb set as a conserved algebra over a knowledge grid, with cohesion as a non-transitive tolerance relation.
-sources:
-  - bundles/meditate/docs/meditate-problem-domain-formalization.md
-updated: 2026-07-20
----
-
 # Operation Algebra
 
 **Meditate models curation as an algebra: atoms of meaning are conserved, and every verb is a generator that rearranges them across a grid of cells.** This is the theory behind the verb lexicon.
@@ -57,5 +48,5 @@ Normalizing first makes the **unit of promotion well-defined** (you never promot
 
 ## See also
 
-- [Memory model](memory-model.md) — the axes that define a cell.
-- [Execution contract](execution-contract.md) — how these verbs execute safely.
+- [Memory model](memory-model) — the axes that define a cell.
+- [Execution contract](execution-contract) — how these verbs execute safely.
