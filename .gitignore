@@ -46,3 +46,6 @@ dist/
 
 # Worktree machinery is machine-local (managed by devtools:worktree)
 /.worktrees/
+
+# Agent-owned local context — never tracked
+/CLAUDE.local.md
