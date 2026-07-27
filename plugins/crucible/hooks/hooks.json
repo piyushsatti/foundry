@@ -1,0 +1,18 @@
+{
+  "_comment": "Plan-review nudge: PreToolUse on ExitPlanMode, advisory-only, never blocks. Matcher VERIFIED firing live 2026-07-12 (plan-mode session; autoload confirmed via plugin details). Hook remains EXPERIMENTAL: it has not yet been through the proper hook design/test pass \u2014 that is the dedicated hooks overhaul phase (repo issue #3). Manual fallback: settings-fragment.example.json.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/plan-review-nudge.sh",
+            "timeout": 5,
+            "statusMessage": "Checking plan stakes..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+# meditate curate targets — OPT-IN template. Copy to config/targets.yaml and edit for THIS machine.
+# config/targets.yaml is gitignored (per-machine); this .example file is the tracked template.
+#
+# NEVER list a worktree (*/.worktrees/*) or tmp key — the curate guard refuses them, but the opt-in
+# list is the primary safety: only add stable, long-lived scopes.
+#
+# `key` is an ABSOLUTE PATH. curate slugifies it (bin/meditate-slug) to resolve the memory dir at
+# $HOME/.claude/projects/<slug>/memory. The home key must equal your actual $HOME.
+targets:
+  - key: /home/you                   # <- set to your $HOME (e.g. /Users/alice on macOS, /home/alice on Linux)
+    rulebook:
+      - ~/.claude/CLAUDE.md          # included when present; skipped if absent
+      - ~/.claude/CLAUDE.local.md    # included when present; skipped if absent
+    serena_project: null

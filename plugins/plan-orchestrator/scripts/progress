@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+"""
+progress — CLI shim for the progress-tracker DB.
+
+Same surface as the MCP server, accessible from any shell. Useful when the MCP
+server isn't running (e.g. from a non-Claude environment) or when you just want
+a quick scan.
+
+Usage:
+    progress list                          # all projects, one line each
+    progress peek <project>                # project rollup
+    progress peek-phase <project> <phase>  # phase rollup
+    progress peek-dispatch <dispatch-id>   # full dispatch detail
+    progress events [--limit N] [--project P]
+    progress init-db                       # create the DB if absent
+
+    # Write side (for testing / scripting; agents use MCP):
+    progress mark-start <dispatch-id> <item-idx>
+    progress mark-done  <dispatch-id> <item-idx>
+    progress mark-block <dispatch-id> <one-line>
+    progress mark-halt  <dispatch-id> <reason>
+    progress mark-finish <dispatch-id>
+
+Stdlib only.
+"""
+import argparse
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "server"))
+import db
+
+
+def _print(obj):
+    print(json.dumps(obj, indent=2, default=str))
+
+
+def cmd_list(args, conn):
+    projects = db.peek_all(conn)
+    if not projects:
+        print("(no projects)")
+        return
+    print(f"{'project':<30} {'status':<13} {'progress':<10} {'last update'}")
+    print(f"{'-' * 30} {'-' * 13} {'-' * 10} {'-' * 20}")
+    for p in projects:
+        prog = f"{p['progress_done']}/{p['progress_total']}" if p["progress_total"] else "—"
+        print(f"{p['project_id']:<30} [{p['status']:<11}] {prog:<10} {p['last_update']}")
+
+
+def cmd_peek(args, conn):
+    p = db.peek_project(conn, args.project)
+    if not p:
+        print(f"project '{args.project}' not found", file=sys.stderr); return 1
+    _print(p)
+
+
+def cmd_peek_phase(args, conn):
+    ph = db.peek_phase(conn, args.project, args.phase)
+    if not ph:
+        print(f"phase '{args.project}/{args.phase}' not found", file=sys.stderr); return 1
+    _print(ph)
+
+
+def cmd_peek_dispatch(args, conn):
+    d = db.peek_dispatch(conn, args.dispatch_id)
+    if not d:
+        print(f"dispatch '{args.dispatch_id}' not found", file=sys.stderr); return 1
+    _print(d)
+
+
+def cmd_events(args, conn):
+    _print(db.recent_events(conn, limit=args.limit, project_id=args.project))
+
+
+def cmd_init_db(args, conn):
+    print(f"OK: db ready at {db.DEFAULT_DB}")
+
+
+def cmd_mark_start(args, conn):
+    db.start_item(conn, args.dispatch_id, args.item_idx)
+
+
+def cmd_mark_done(args, conn):
+    db.done_item(conn, args.dispatch_id, args.item_idx)
+
+
+def cmd_mark_block(args, conn):
+    db.block_dispatch(conn, args.dispatch_id, args.blocker)
+
+
+def cmd_mark_halt(args, conn):
+    db.halt_dispatch(conn, args.dispatch_id, args.reason)
+
+
+def cmd_mark_finish(args, conn):
+    db.finish_dispatch(conn, args.dispatch_id)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="progress-tracker CLI")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("list", help="list all projects").set_defaults(func=cmd_list)
+
+    p = sub.add_parser("peek", help="project rollup"); p.add_argument("project"); p.set_defaults(func=cmd_peek)
+    p = sub.add_parser("peek-phase", help="phase rollup"); p.add_argument("project"); p.add_argument("phase"); p.set_defaults(func=cmd_peek_phase)
+    p = sub.add_parser("peek-dispatch", help="dispatch detail"); p.add_argument("dispatch_id"); p.set_defaults(func=cmd_peek_dispatch)
+
+    p = sub.add_parser("events"); p.add_argument("--limit", type=int, default=50); p.add_argument("--project"); p.set_defaults(func=cmd_events)
+    sub.add_parser("init-db").set_defaults(func=cmd_init_db)
+
+    p = sub.add_parser("mark-start"); p.add_argument("dispatch_id"); p.add_argument("item_idx", type=int); p.set_defaults(func=cmd_mark_start)
+    p = sub.add_parser("mark-done");  p.add_argument("dispatch_id"); p.add_argument("item_idx", type=int); p.set_defaults(func=cmd_mark_done)
+    p = sub.add_parser("mark-block"); p.add_argument("dispatch_id"); p.add_argument("blocker"); p.set_defaults(func=cmd_mark_block)
+    p = sub.add_parser("mark-halt");  p.add_argument("dispatch_id"); p.add_argument("reason"); p.set_defaults(func=cmd_mark_halt)
+    p = sub.add_parser("mark-finish"); p.add_argument("dispatch_id"); p.set_defaults(func=cmd_mark_finish)
+
+    args = parser.parse_args()
+    conn = db.connect()
+    rc = args.func(args, conn) or 0
+    return rc
+
+
+if __name__ == "__main__":
+    sys.exit(main())

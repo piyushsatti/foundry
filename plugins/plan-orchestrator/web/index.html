@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>progress-tracker</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --ink-faint: #8a8a8a;
+    --rule: #d4d4d4;
+    --rule-soft: #ececea;
+    --ok: #2f7a3a; --ok-bg: #e8f4e9;
+    --bad: #b1342a; --bad-bg: #faeae8;
+    --warn: #a8741a; --warn-bg: #f8efd9;
+    --info: #2a4a8a; --info-bg: #eaeef8;
+    --muted: #888; --muted-bg: #f1f1ee;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+    --serif: 'Charter', 'Iowan Old Style', Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  header { background: var(--paper); border-bottom: 1px solid var(--rule); padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
+  header h1 { font-family: var(--serif); font-weight: 400; font-size: 20px; letter-spacing: -0.01em; margin: 0; }
+  header .meta { color: var(--ink-faint); font-size: 12px; font-family: var(--mono); margin-left: auto; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  .crumbs { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); margin-bottom: 18px; }
+  .crumbs a { color: var(--info); text-decoration: none; cursor: pointer; }
+  .crumbs a:hover { text-decoration: underline; }
+  .crumbs .sep { color: var(--ink-faint); margin: 0 6px; }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 26px; letter-spacing: -0.015em; margin: 0 0 12px; }
+  h2 .sub { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); margin-left: 12px; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--rule-soft); font-size: 13px; vertical-align: middle; }
+  th { background: #f5f4ef; font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+  tr:last-child td { border-bottom: 0; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover { background: #fdfdfb; }
+
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-family: var(--mono); border: 1px solid var(--rule); background: #fff; color: var(--ink-soft); white-space: nowrap; }
+  .tag.DONE { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+  .tag.IN_PROGRESS { background: var(--info-bg); border-color: var(--info); color: var(--info); }
+  .tag.BLOCKED { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+  .tag.HALTED { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+  .tag.PENDING { background: var(--muted-bg); border-color: var(--rule); color: var(--muted); }
+
+  .progress { display: inline-block; vertical-align: middle; width: 120px; height: 6px; background: var(--rule-soft); border-radius: 3px; overflow: hidden; }
+  .progress > div { height: 100%; background: var(--info); transition: width 320ms ease; }
+  .progress.DONE > div { background: var(--ok); }
+  .progress.BLOCKED > div { background: var(--bad); }
+  .progress.HALTED > div { background: var(--warn); }
+  .progress-text { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); margin-left: 10px; vertical-align: middle; }
+
+  .id { font-family: var(--mono); }
+  .label { color: var(--ink); font-weight: 500; }
+  .faint { color: var(--ink-faint); }
+  .blocker { color: var(--bad); font-style: italic; font-size: 12px; }
+  .halt { color: var(--warn); font-style: italic; font-size: 12px; }
+
+  .items { background: var(--paper); border: 1px solid var(--rule); border-radius: 3px; padding: 18px 22px; }
+  .items .item { display: flex; align-items: flex-start; gap: 12px; padding: 6px 0; font-size: 14px; }
+  .items .item .box { font-family: var(--mono); font-size: 13px; color: var(--ink-faint); min-width: 28px; }
+  .items .item.done .box { color: var(--ok); }
+  .items .item.in_progress .box { color: var(--info); }
+  .items .item.done .desc { color: var(--ink-faint); text-decoration: line-through; }
+  .items .item.in_progress .desc { color: var(--ink); font-weight: 500; }
+
+  .empty { color: var(--ink-faint); font-style: italic; padding: 18px; background: var(--paper); border: 1px dashed var(--rule); border-radius: 3px; }
+  .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+  .toolbar button { font-family: var(--sans); font-size: 12px; padding: 5px 11px; background: var(--paper); border: 1px solid var(--rule); border-radius: 3px; color: var(--ink); cursor: pointer; }
+  .toolbar button:hover { border-color: var(--ink-soft); }
+  .pulse { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--info); margin-right: 6px; animation: pulse 2s infinite; vertical-align: middle; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .events { background: var(--paper); border: 1px solid var(--rule); border-radius: 3px; padding: 12px 18px; font-family: var(--mono); font-size: 12px; max-height: 320px; overflow-y: auto; }
+  .events .event { padding: 4px 0; border-bottom: 1px solid var(--rule-soft); color: var(--ink-soft); }
+  .events .event:last-child { border-bottom: 0; }
+  .events .event .ts { color: var(--ink-faint); margin-right: 10px; }
+  .events .event .type { display: inline-block; min-width: 60px; color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>progress-tracker</h1>
+  <span class="meta"><span class="pulse"></span>auto-refresh 2s · last: <span id="last-refresh">—</span></span>
+</header>
+
+<main>
+  <div class="crumbs" id="crumbs"></div>
+  <div class="toolbar">
+    <button id="refresh-btn">Refresh now</button>
+    <button id="toggle-events">Toggle event log</button>
+  </div>
+  <div id="content"></div>
+  <div id="events-panel" style="display:none; margin-top: 22px">
+    <h2>Recent events <span class="sub">last 50</span></h2>
+    <div class="events" id="events"></div>
+  </div>
+</main>
+
+<script>
+'use strict';
+
+const state = {
+  view: { kind: 'projects' },
+  pollHandle: null,
+  showEvents: false,
+};
+
+function setLastRefresh() {
+  document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString();
+}
+
+function relativeTime(iso) {
+  if (!iso) return '—';
+  const dt = new Date(iso);
+  const sec = Math.floor((Date.now() - dt.getTime()) / 1000);
+  if (sec < 60) return sec + 's ago';
+  if (sec < 3600) return Math.floor(sec / 60) + 'm ago';
+  if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
+  return Math.floor(sec / 86400) + 'd ago';
+}
+
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (k === 'dataset') for (const dk in attrs[k]) e.dataset[dk] = attrs[k][dk];
+    else if (k === 'style') e.setAttribute('style', attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  for (const c of children) {
+    if (c == null || c === false) continue;
+    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+  return e;
+}
+
+function statusTag(status) {
+  return el('span', { class: 'tag ' + (status || 'PENDING') }, (status || 'PENDING').toLowerCase());
+}
+
+function progressBar(done, total, status) {
+  const pct = total ? Math.floor((done * 100) / total) : 0;
+  const bar = el('span', { class: 'progress ' + (status || '') }, el('div', { style: 'width:' + pct + '%' }));
+  const text = el('span', { class: 'progress-text' }, done + '/' + total + ' (' + pct + '%)');
+  return el('span', null, bar, text);
+}
+
+function setCrumbs(parts) {
+  const c = document.getElementById('crumbs');
+  c.replaceChildren();
+  parts.forEach((p, i) => {
+    if (i > 0) c.appendChild(el('span', { class: 'sep' }, '›'));
+    if (p.href) c.appendChild(el('a', { onclick: () => navigate(p.href) }, p.label));
+    else c.appendChild(document.createTextNode(p.label));
+  });
+}
+
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(url + ' -> ' + r.status);
+  return r.json();
+}
+
+function buildTable(headers, rows) {
+  const table = el('table');
+  const thead = el('thead');
+  const trh = el('tr');
+  for (const h of headers) trh.appendChild(el('th', null, h));
+  thead.appendChild(trh);
+  table.appendChild(thead);
+  const tbody = el('tbody');
+  for (const r of rows) tbody.appendChild(r);
+  table.appendChild(tbody);
+  return table;
+}
+
+async function renderProjects() {
+  setCrumbs([{ label: 'Projects' }]);
+  const projects = await fetchJSON('/api/all');
+  const content = document.getElementById('content');
+  content.replaceChildren();
+  content.appendChild(el('h2', null, 'Projects', el('span', { class: 'sub' }, projects.length + ' total')));
+  if (!projects.length) {
+    content.appendChild(el('div', { class: 'empty' }, 'No projects tracked yet. Dispatch an agent via the MCP server.'));
+    return;
+  }
+  const rows = projects.map(p => {
+    const tr = el('tr', { class: 'clickable', onclick: () => navigate({ kind: 'project', project_id: p.project_id }) });
+    tr.appendChild(el('td', null,
+      el('div', { class: 'label' }, p.label || p.project_id),
+      el('div', { class: 'faint', style: 'font-size:11px;font-family:var(--mono)' }, p.project_id)));
+    tr.appendChild(el('td', null, statusTag(p.status)));
+    tr.appendChild(el('td', null, progressBar(p.progress_done, p.progress_total, p.status)));
+    tr.appendChild(el('td', { class: 'faint' }, relativeTime(p.last_update)));
+    tr.appendChild(el('td', { class: 'id faint' }, String((p.phases || []).length)));
+    return tr;
+  });
+  content.appendChild(buildTable(['project', 'status', 'progress', 'last update', 'phases'], rows));
+}
+
+async function renderProject(project_id) {
+  setCrumbs([{ label: 'Projects', href: { kind: 'projects' } }, { label: project_id }]);
+  const p = await fetchJSON('/api/project/' + encodeURIComponent(project_id));
+  const content = document.getElementById('content');
+  content.replaceChildren();
+  const h2 = el('h2', null, p.label || p.project_id, el('span', { class: 'sub' }, p.project_id));
+  content.appendChild(h2);
+  content.appendChild(el('div', { class: 'faint', style: 'font-size:12px;margin-bottom:14px;font-family:var(--mono)' },
+    'started ' + relativeTime(p.started_at) + ' · last update ' + relativeTime(p.last_update) +
+    (p.work_dir ? ' · ' + p.work_dir : '')));
+  if (!p.phases.length) {
+    content.appendChild(el('div', { class: 'empty' }, 'No phases yet.'));
+    return;
+  }
+  const rows = p.phases.map(ph => {
+    const tr = el('tr', { class: 'clickable', onclick: () => navigate({ kind: 'phase', project_id: p.project_id, phase_id: ph.phase_id }) });
+    tr.appendChild(el('td', null, el('span', { class: 'id label' }, ph.phase_id)));
+    tr.appendChild(el('td', null, ph.name || ''));
+    tr.appendChild(el('td', null, statusTag(ph.status)));
+    tr.appendChild(el('td', null, progressBar(ph.progress_done, ph.progress_total, ph.status)));
+    tr.appendChild(el('td', { class: 'id faint' }, String(ph.dispatch_count)));
+    tr.appendChild(el('td', { class: 'faint' }, relativeTime(ph.last_update)));
+    tr.appendChild(el('td', { class: 'blocker' }, ph.blockers && ph.blockers.length ? ph.blockers[0] : ''));
+    return tr;
+  });
+  content.appendChild(buildTable(['phase', 'name', 'status', 'progress', 'agents', 'last update', 'notes'], rows));
+}
+
+async function renderPhase(project_id, phase_id) {
+  setCrumbs([
+    { label: 'Projects', href: { kind: 'projects' } },
+    { label: project_id, href: { kind: 'project', project_id } },
+    { label: phase_id },
+  ]);
+  const ph = await fetchJSON('/api/phase/' + encodeURIComponent(project_id) + '/' + encodeURIComponent(phase_id));
+  const content = document.getElementById('content');
+  content.replaceChildren();
+  content.appendChild(el('h2', null, phase_id + (ph.name ? ' — ' + ph.name : '')));
+  content.appendChild(el('div', { class: 'faint', style: 'font-size:12px;margin-bottom:14px;font-family:var(--mono)' },
+    ph.dispatch_count + ' dispatch(es) · progress ' + ph.progress_done + '/' + ph.progress_total +
+    ' · last update ' + relativeTime(ph.last_update)));
+  if (!ph.dispatches.length) {
+    content.appendChild(el('div', { class: 'empty' }, 'No dispatches yet.'));
+    return;
+  }
+  const rows = ph.dispatches.map(d => {
+    const tr = el('tr', { class: 'clickable', onclick: () => navigate({ kind: 'dispatch', dispatch_id: d.dispatch_id }) });
+    tr.appendChild(el('td', null, el('span', { class: 'id label' }, d.dispatch_id)));
+    tr.appendChild(el('td', { class: 'faint' }, d.role || ''));
+    tr.appendChild(el('td', { class: 'faint' }, d.agent_model || ''));
+    tr.appendChild(el('td', null, statusTag(d.status)));
+    tr.appendChild(el('td', null, progressBar(d.progress_done, d.progress_total, d.status)));
+    tr.appendChild(el('td', { class: 'faint' }, relativeTime(d.last_update)));
+    let detail = '';
+    if (d.status === 'BLOCKED' && d.blocker) detail = d.blocker;
+    else if (d.status === 'HALTED' && d.halt_reason) detail = d.halt_reason;
+    tr.appendChild(el('td', { class: d.status === 'BLOCKED' ? 'blocker' : 'halt' }, detail));
+    return tr;
+  });
+  content.appendChild(buildTable(['dispatch', 'role', 'agent', 'status', 'progress', 'last update', 'detail'], rows));
+}
+
+async function renderDispatch(dispatch_id) {
+  const d = await fetchJSON('/api/dispatch/' + encodeURIComponent(dispatch_id));
+  setCrumbs([
+    { label: 'Projects', href: { kind: 'projects' } },
+    { label: d.project_id, href: { kind: 'project', project_id: d.project_id } },
+    { label: d.phase_id, href: { kind: 'phase', project_id: d.project_id, phase_id: d.phase_id } },
+    { label: dispatch_id },
+  ]);
+  const content = document.getElementById('content');
+  content.replaceChildren();
+  content.appendChild(el('h2', null, dispatch_id));
+  content.appendChild(el('div', { class: 'faint', style: 'font-size:12px;margin-bottom:14px;font-family:var(--mono)' },
+    (d.role || '?') + ' · ' + (d.agent_model || '?') +
+    ' · started ' + relativeTime(d.started_at) +
+    ' · last update ' + relativeTime(d.last_update)));
+  const statusBlock = el('div', { style: 'margin-bottom:14px' },
+    statusTag(d.status), ' ',
+    progressBar(d.progress_done, d.progress_total, d.status));
+  if (d.status === 'BLOCKED' && d.blocker) {
+    statusBlock.appendChild(el('div', { class: 'blocker', style: 'margin-top:8px' }, 'Blocker: ' + d.blocker));
+  }
+  if (d.status === 'HALTED' && d.halt_reason) {
+    statusBlock.appendChild(el('div', { class: 'halt', style: 'margin-top:8px' }, 'Halt reason: ' + d.halt_reason));
+  }
+  content.appendChild(statusBlock);
+  content.appendChild(el('h2', { style: 'font-size:18px;margin-top:24px' }, 'Items',
+    el('span', { class: 'sub' }, d.progress_done + '/' + d.progress_total)));
+  const itemsBox = el('div', { class: 'items' });
+  for (const it of d.items) {
+    const box = it.state === 'done' ? '[x]' : it.state === 'in_progress' ? '[-]' : '[ ]';
+    itemsBox.appendChild(el('div', { class: 'item ' + it.state },
+      el('span', { class: 'box' }, box),
+      el('span', { class: 'desc' }, it.description),
+    ));
+  }
+  content.appendChild(itemsBox);
+}
+
+async function renderEvents() {
+  if (!state.showEvents) return;
+  const events = await fetchJSON('/api/events?limit=50');
+  const box = document.getElementById('events');
+  box.replaceChildren();
+  if (!events.length) {
+    box.appendChild(el('div', { class: 'faint' }, '(no events)'));
+    return;
+  }
+  for (const e of events) {
+    box.appendChild(el('div', { class: 'event' },
+      el('span', { class: 'ts' }, (e.ts || '').slice(11, 19)),
+      el('span', { class: 'type' }, e.event_type),
+      e.dispatch_id ? el('span', null, e.dispatch_id) : null,
+      e.detail ? el('span', { class: 'faint' }, ' · ' + e.detail) : null,
+    ));
+  }
+}
+
+async function refresh() {
+  try {
+    if (state.view.kind === 'projects') await renderProjects();
+    else if (state.view.kind === 'project') await renderProject(state.view.project_id);
+    else if (state.view.kind === 'phase') await renderPhase(state.view.project_id, state.view.phase_id);
+    else if (state.view.kind === 'dispatch') await renderDispatch(state.view.dispatch_id);
+    await renderEvents();
+    setLastRefresh();
+  } catch (err) {
+    const content = document.getElementById('content');
+    content.replaceChildren(el('div', { class: 'empty' }, 'Error: ' + (err && err.message || err)));
+  }
+}
+
+function navigate(view) {
+  state.view = view;
+  refresh();
+}
+
+function startPolling() {
+  if (state.pollHandle) clearInterval(state.pollHandle);
+  state.pollHandle = setInterval(refresh, 2000);
+}
+
+document.getElementById('refresh-btn').addEventListener('click', refresh);
+document.getElementById('toggle-events').addEventListener('click', () => {
+  state.showEvents = !state.showEvents;
+  document.getElementById('events-panel').style.display = state.showEvents ? 'block' : 'none';
+  if (state.showEvents) renderEvents();
+});
+
+refresh();
+startPolling();
+</script>
+</body>
+</html>

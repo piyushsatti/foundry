@@ -1,0 +1,32 @@
+#!/bin/sh
+# meditate-lock <file> — emit the optimistic-lock fields for a memory file, portably.
+#
+# Prints two YAML-injectable lines:
+#   content_hash: <sha256-hex>
+#   mtime: <epoch-seconds>
+#
+# Portable across GNU coreutils (Linux) and BSD userland (macOS). This is the single
+# source for the lock recipe the curate skill post-attaches per candidate — the inline
+# `sha256sum` / `stat --format=%Y` recipes it replaced were GNU-only and broke on macOS.
+set -eu
+
+f="${1:?usage: meditate-lock <file>}"
+[ -f "$f" ] || { echo "meditate-lock: not a file: $f" >&2; exit 1; }
+
+# sha256: prefer sha256sum (Linux, macOS-with-coreutils); fall back to shasum (stock macOS).
+if command -v sha256sum >/dev/null 2>&1; then
+  hash=$(sha256sum "$f" | awk '{print $1}')
+elif command -v shasum >/dev/null 2>&1; then
+  hash=$(shasum -a 256 "$f" | awk '{print $1}')
+else
+  echo "meditate-lock: no sha256sum or shasum on PATH" >&2
+  exit 1
+fi
+
+# mtime epoch seconds: BSD stat uses -f %m; GNU stat uses --format=%Y.
+mtime=$(stat -f %m "$f" 2>/dev/null || stat --format=%Y "$f" 2>/dev/null) || {
+  echo "meditate-lock: could not stat $f" >&2
+  exit 1
+}
+
+printf 'content_hash: %s\nmtime: %s\n' "$hash" "$mtime"

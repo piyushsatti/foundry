@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "views": {
+    "blockers": {
+      "kind": "diagram",
+      "diagram_type": "blockers",
+      "description": "Blocker subgraph — cross-project and intra-project edges into focus node",
+      "max_nodes": 12
+    },
+    "decomposition": {
+      "kind": "diagram",
+      "diagram_type": "decomposition",
+      "description": "Parent → child decomposition tree from focus node",
+      "max_nodes": 12
+    },
+    "trajectory": {
+      "kind": "diagram",
+      "diagram_type": "trajectory",
+      "description": "Trajectory legs in order (requires trajectory_id)",
+      "max_nodes": 12
+    },
+    "mindmap-flow": {
+      "kind": "mindmap",
+      "mindmap_type": "flow",
+      "description": "Hierarchical mindmap from focus node (children walk)",
+      "max_nodes": 64,
+      "max_depth": 5
+    },
+    "mindmap-decomposition": {
+      "kind": "mindmap",
+      "mindmap_type": "decomposition",
+      "description": "Decomposition mindmap (same walk, alternate label)",
+      "max_nodes": 64,
+      "max_depth": 5
+    }
+  }
+}
