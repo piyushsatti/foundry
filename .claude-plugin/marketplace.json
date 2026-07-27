@@ -23,7 +23,7 @@
         "path": "plugins/devtools",
         "ref": "release"
       },
-      "description": "Dev-environment tooling \u2014 worktree-native lifecycle (add/check/archive/revive/reap) with memory and serena wiring."
+      "description": "Dev-environment tooling: worktree-native lifecycle (add/check/archive/revive/reap) with memory wiring."
     },
     {
       "name": "manifold",

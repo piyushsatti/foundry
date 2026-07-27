@@ -27,7 +27,7 @@ covers the layout and `CLAUDE.md` has the working conventions.
 | Bundle | Version | What it is |
 |--------|---------|------------|
 | `crucible` | 0.3.1 | Lens x stance review system: consult (partner), audit (neutral single reviewer), hats (blind panel), and red-vs-blue (attack/verify pair) on a shared hat wardrobe. |
-| `devtools` | 0.1.0 | Dev-environment tooling — worktree-native lifecycle (add/check/archive/revive/reap) with memory and serena wiring. |
+| `devtools` | 0.2.0 | Dev-environment tooling: worktree-native lifecycle (add/check/archive/revive/reap) with memory wiring. |
 | `manifold` | 0.2.0 | KAOS project compass — a DB-canonical spec substrate with an MCP server exposing read/write tools over a project's goal graph. |
 | `meditate` | 0.1.1 | Reflective memory curation: pause → review → consolidate → release. Audits Claude memory + CLAUDE.md (+ serena if active), proposes dispositions via a read-only Opus curator agent, gates, and executes approved changes with archive-not-destroy safety. |
 | `plan-orchestrator` | 0.3.0 | Orchestrate multi-agent plans with live dispatch telemetry. Bundles the progress-tracker MCP, the brief and subset scoping skills, and the full review capability (audit, hats, red-vs-blue + stance agents) composed from the shared library. |
