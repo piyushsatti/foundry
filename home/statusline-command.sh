@@ -210,10 +210,15 @@ else
     weekly_color="${green}"
 fi
 
+# BSD date (macOS) has no -d; GNU date has no -r. Try both.
+fmt_epoch() {
+  date -r "$1" +"$2" 2>/dev/null || date -d "@$1" +"$2" 2>/dev/null
+}
+
 reset_5h_str=""
-[ -n "$rate_reset_5h" ] && reset_5h_str=$(date -d "@${rate_reset_5h}" +%H:%M 2>/dev/null)
+[ -n "$rate_reset_5h" ] && reset_5h_str=$(fmt_epoch "$rate_reset_5h" %H:%M)
 reset_7d_str=""
-[ -n "$weekly_reset_7d" ] && reset_7d_str=$(date -d "@${weekly_reset_7d}" +%a 2>/dev/null)
+[ -n "$weekly_reset_7d" ] && reset_7d_str=$(fmt_epoch "$weekly_reset_7d" %a)
 
 line3=""
 if [ -n "$rate_pct" ]; then
