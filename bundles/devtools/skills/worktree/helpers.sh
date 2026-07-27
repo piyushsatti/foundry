@@ -57,10 +57,14 @@ wt_wire() {
   printf 'wt_wire: main = %s\n' "$main"
   printf 'wt_wire: canon= %s\n' "$canon"
   # 1. Project pair (scaffold if absent) + empty work-unit stub in the worktree.
-  #    No @import bridge: with in-repo nesting, native CLAUDE.md walk-up from
-  #    <repo>/.worktrees/<branch> reaches <repo>/CLAUDE.md automatically. The
-  #    worktree's own CLAUDE.local.md is the Work-unit layer (branch-local notes).
+  #    The worktree's own CLAUDE.local.md is the Work-unit layer (branch-local notes).
   #    Both <repo>/CLAUDE.md and <repo>/CLAUDE.local.md are gitignored by the global gate.
+  #    KNOWN GAP (sibling layout): worktrees now live at <project>/worktrees/<branch>, so
+  #    <project>/<repo>/CLAUDE.md is NO LONGER an ancestor of the worktree and native
+  #    CLAUDE.md walk-up cannot reach it (walk-up climbs to <project>/ and out). Walk-up
+  #    still picks up <project>/CLAUDE.md and ~/.claude/CLAUDE.md. The `bridge:` check below
+  #    still forbids an @import, so repo-level context is NOT loaded inside a worktree.
+  #    Resolving this needs a design call: project-level CLAUDE.md vs re-introducing @import.
   [ -f "$main/CLAUDE.md" ]       || : > "$main/CLAUDE.md"
   [ -f "$main/CLAUDE.local.md" ] || : > "$main/CLAUDE.local.md"
   if [ -n "${WT_TICKET:-}" ] || [ -n "${WT_PURPOSE:-}" ] || [ -n "${WT_HANDOFF:-}" ]; then
@@ -80,7 +84,7 @@ wt_wire() {
   # 3. project .claude as a REAL dir copied from main — NEVER a symlink. A symlinked .claude
   #    breaks the bwrap sandbox: bwrap binds a file at the .claude path, follows the link into
   #    the dir target, and dies with EISDIR → all Bash in the worktree is blocked. (Shared
-  #    brain/memory ride CLAUDE.local.md + the memory symlink above, not .claude.)
+  #    brain/memory ride CLAUDE.local.md + the memory bucket above, not .claude.)
   if [ -L "$wt/.claude" ]; then rm "$wt/.claude"; fi          # retire any legacy symlink
   mkdir -p "$wt/.claude"
   [ -d "$main/.claude" ] && cp -a "$main/.claude/." "$wt/.claude/" 2>/dev/null
@@ -97,48 +101,18 @@ wt_wire() {
     fi
   fi
   printf 'wt_wire: [3/4] .claude dir copied\n'
-  # 4. artifacts (absolute-target symlinks). Derive from $main with ONE dirname.
-  local art; art="${4:-$(dirname "$main")/artifacts/$(basename "$main")}"
-  if [ -d "$art" ] && [ -n "$(ls -A "$art" 2>/dev/null)" ]; then
-    # Absolutize (defensive — callers may pass a relative 4th arg).
-    art="$(cd "$art" && pwd)"
-    # F2: use 'artifacts/' as dest dir unless the repo already tracks that path (collision probe).
-    local dest_dir
-    if git -C "$wt" ls-files --error-unmatch artifacts >/dev/null 2>&1; then
-      printf 'wt_wire: WARN repo tracks artifacts/ — linking into .gitignored/ instead\n'
-      dest_dir=".gitignored"
-    else
-      dest_dir="artifacts"
-      # Append /artifacts/ to git common-dir info/exclude (idempotent)
-      local gitcommon; gitcommon="$(git -C "$wt" rev-parse --git-common-dir 2>/dev/null)"
-      if [ -n "$gitcommon" ]; then
-        local exclude="$gitcommon/info/exclude"
-        # fix5: exact whole-line match (read line-by-line); append only if no line equals exactly '/artifacts/'
-        local _found_art=0 _excline
-        if [ -f "$exclude" ]; then
-          while IFS= read -r _excline; do
-            [ "$_excline" = '/artifacts/' ] && { _found_art=1; break; }
-          done < "$exclude"
-        fi
-        [ "$_found_art" = 0 ] && printf '/artifacts/\n' >> "$exclude"
-      fi
-    fi
-    mkdir -p "$wt/$dest_dir"
-    # ABSOLUTE symlink targets, on purpose: BSD/macOS ln has no -r (GNU-only), and absolute
-    # links also survive `git worktree move` on archive/revive — the artifacts store lives
-    # OUTSIDE the worktree, so a relative link's ../ depth breaks when the worktree moves.
-    # find (not "$art"/*/ glob): a no-subdir store must be a clean no-op — bash would pass the
-    # literal unmatched glob through, and zsh's default nomatch would abort the function.
-    local a
-    while IFS= read -r a; do
-      [ -n "$a" ] && ln -sfn "$a" "$wt/$dest_dir/$(basename "$a")"
-    done < <(find "$art" -mindepth 1 -maxdepth 1 -type d ! -name '.*' 2>/dev/null)
-    printf 'wt_wire: [4/4] artifacts linked from %s into %s/\n' "$art" "$dest_dir"
+  # 4. artifacts — NOTHING to wire. The sibling layout puts the store at <project>/artifacts,
+  #    a plain relative path away from both the repo (../artifacts) and every worktree
+  #    (../../artifacts, one more ../ per slash in the branch name). No symlinks are created,
+  #    so there is nothing inside the worktree for git to see and no info/exclude bookkeeping.
+  #    This step only reports reachability; wt_check verifies it. 4th arg overrides the store.
+  local art; art="${4:-$(dirname "$main")/artifacts}"
+  if [ -d "$art" ]; then
+    art="$(cd "$art" && pwd)"   # absolutize (defensive — callers may pass a relative 4th arg)
+    printf 'wt_wire: [4/4] artifacts reachable at %s (relative path, no links)\n' "$art"
   else
-    printf 'wt_wire: [4/4] artifacts: none (dir absent or empty)\n'
+    printf 'wt_wire: [4/4] artifacts: none (%s absent)\n' "$art"
   fi
-  # 5. serena pre-staging: register wt as a serena project (copies main's config on first create).
-  wt_serena_prestage "$wt" "$main"
   # Post-wire self-check — surface wiring failures immediately rather than silently.
   printf 'wt_wire: --- verify ---\n'
   wt_check "$wt" "$canon"
@@ -154,23 +128,29 @@ wt_check() {
     echo "brain: OK (project pair at $mainclone)"
   else echo "brain: FAIL (project pair <repo>/CLAUDE.md+CLAUDE.local.md missing)"; rc=1; fi
   if [ -f "$stub" ] && grep -q '^@' "$stub"; then echo "bridge: FAIL (@import present — must be dropped for native walk-up)"; rc=1; else echo "bridge: OK (no @import)"; fi
-  case "$wt" in */.worktrees/*) echo "nest: OK" ;; *) echo "nest: FAIL (worktree not under <repo>/.worktrees/)"; rc=1 ;; esac
+  # Worktrees sit BESIDE the repo at <project>/worktrees/<branch>, never inside it. The glob
+  # needs a literal '/worktrees/' component, so a legacy in-repo '<repo>/.worktrees/<branch>'
+  # correctly FAILs ('.worktrees' has no '/' before 'worktrees').
+  case "$wt" in */worktrees/*) echo "nest: OK" ;; *) echo "nest: FAIL (worktree not under <project>/worktrees/)"; rc=1 ;; esac
   local memk="$HOME/.claude/projects/$(wt_key "$wt")/memory"
   if [ -d "$memk" ] && [ ! -L "$memk" ]; then echo "memory: OK (own bucket)"; else echo "memory: FAIL (key memory/ must be a real dir, not a symlink)"; rc=1; fi
   if [ -L "$wt/.claude" ]; then echo "settings: FAIL (.claude is a symlink — breaks bwrap sandbox; must be a real dir)"; rc=1
   elif [ -d "$wt/.claude" ]; then echo "settings: OK"
   else echo "settings: FAIL (.claude missing — should be a real dir copied from main)"; rc=1; fi
-  # artifacts: prefer $wt/artifacts (new default), fallback $wt/.gitignored, else NA
-  local _art_dir=""
-  [ -d "$wt/artifacts" ] && _art_dir="$wt/artifacts"
-  [ -z "$_art_dir" ] && [ -d "$wt/.gitignored" ] && _art_dir="$wt/.gitignored"
-  if [ -n "$_art_dir" ]; then
-    # fix7 + portability: probe with find alone — no empty-glob false positive, and no
-    # `read -d ''` (bash-only NUL-delimiter idiom; zsh's read does not treat '' as NUL).
-    # Broken entry == a symlink whose target fails `test -e`; plain files/dirs always pass.
-    local broken
-    broken=$(find "$_art_dir" -maxdepth 1 -mindepth 1 -type l ! -exec test -e {} \; -print 2>/dev/null)
-    [ -z "$broken" ] && echo "artifacts: OK" || { echo "artifacts: FAIL (broken symlink in $_art_dir)"; rc=1; }
+  # artifacts: the shared store is <project>/artifacts, a sibling of the repo. No symlinks
+  # exist any more, so the check is "does a plain relative walk-up from $wt reach it".
+  # Climb $wt's parents looking for an 'artifacts' dir that IS the store (-ef compares inode,
+  # so a symlinked or /private-prefixed path still matches). Absent store = NA, not FAIL.
+  local _art=""
+  [ -n "$mainclone" ] && _art="$(dirname "$mainclone")/artifacts"
+  if [ -n "$_art" ] && [ -d "$_art" ]; then
+    local _p="$wt" _reached=0
+    while [ -n "$_p" ] && [ "$_p" != / ]; do
+      _p="$(dirname "$_p")"
+      if [ -d "$_p/artifacts" ] && [ "$_p/artifacts" -ef "$_art" ]; then _reached=1; break; fi
+    done
+    if [ "$_reached" = 1 ]; then echo "artifacts: OK ($_art)"
+    else echo "artifacts: FAIL ($_art exists but is not reachable by relative path from $wt)"; rc=1; fi
   else echo "artifacts: NA"; fi
   local br; br=$(git -C "$wt" rev-parse --abbrev-ref HEAD 2>/dev/null)
   if [ -n "$br" ] && [ "$br" != HEAD ] && [ "$br" != main ] && [ "$br" != master ]; then echo "branch: OK ($br)"; else echo "branch: FAIL (on '${br:-none}')"; rc=1; fi
@@ -180,95 +160,7 @@ wt_check() {
     node)   [ -d "$wt/node_modules" ] && echo "env: OK (node_modules)" || echo "env: NA (node_modules absent)" ;;
     *)      echo "env: NA" ;;
   esac
-  # serena: check if wt abs path is in ~/.serena/serena_config.yml projects: list
-  local _ser_cfg="$HOME/.serena/serena_config.yml"
-  if [ -f "$_ser_cfg" ] && python3 - "$_ser_cfg" "$wt" <<'PYEOF' 2>/dev/null
-import sys
-cfg, wt_path = sys.argv[1], sys.argv[2]
-with open(cfg) as f:
-    content = f.read()
-entry = '- ' + wt_path
-for line in content.splitlines():
-    if line.strip() == entry:
-        sys.exit(0)
-sys.exit(1)
-PYEOF
-  then
-    echo "serena: OK"
-  else
-    echo "serena: NA"
-  fi
   return $rc
-}
-
-# wt_serena_prestage <wt> <main>: pre-stage a serena project for the worktree branch.
-# Keys storage by wt basename (= branch). Copies main's project.yml on first creation;
-# worktree serena memories/ starts EMPTY (pure-new — no copy from parent, no drift).
-# Skips project.yml copy if project dir already exists (revive case — memories preserved).
-# Always registers the wt abs path in serena_config.yml (idempotent, via python).
-wt_serena_prestage() {
-  local wt="$1" main="$2"
-  local name; name=$(basename "$wt")
-  local proj="$HOME/.serena/projects/$name"
-  local mainproj="$HOME/.serena/projects/$(basename "$main")"
-  if [ ! -d "$proj" ]; then
-    mkdir -p "$proj"
-    if [ -f "$mainproj/project.yml" ]; then
-      cp "$mainproj/project.yml" "$proj/project.yml"
-      # Portable in-place edit: BSD/macOS sed -i requires an explicit suffix arg ('' vs GNU's
-      # bare -i), so `sed -i "s/…/"` is a GNU-ism — write to a temp file and move it back.
-      local _tmp; _tmp=$(mktemp)
-      if sed "s/^project_name:.*$/project_name: \"$name\"/" "$proj/project.yml" > "$_tmp"; then
-        mv "$_tmp" "$proj/project.yml"
-      else
-        rm -f "$_tmp"
-      fi
-    fi
-    # D1: memories/ starts EMPTY — no copy from parent. Parent knowledge comes from
-    # ~/.serena/memories/global/ + live LSP. No copy → no drift → reap harvest is pure-add.
-  fi
-  # Register the worktree abs path in serena_config.yml (idempotent, python)
-  local cfg="$HOME/.serena/serena_config.yml"
-  local _py_rc=0
-  if [ -f "$cfg" ]; then
-    python3 - "$cfg" "$wt" <<'PYEOF'
-import sys, os
-cfg_path, wt_path = sys.argv[1], sys.argv[2]
-with open(cfg_path, 'r') as f:
-    content = f.read()
-lines = content.splitlines(keepends=True)
-entry = '- ' + wt_path
-# Check if already present
-for line in lines:
-    if line.strip() == entry:
-        sys.exit(0)
-# Find projects: key and insert after the last existing list item under it
-in_projects = False
-insert_at = None
-for i, line in enumerate(lines):
-    if line.rstrip() == 'projects:':
-        in_projects = True
-        insert_at = i + 1
-        continue
-    if in_projects:
-        stripped = line.strip()
-        if stripped.startswith('- ') or stripped == '':
-            if stripped.startswith('- '):
-                insert_at = i + 1
-        else:
-            break
-if insert_at is not None:
-    lines.insert(insert_at, entry + '\n')
-with open(cfg_path, 'w') as f:
-    f.writelines(lines)
-PYEOF
-    _py_rc=$?
-  fi
-  if [ "$_py_rc" = "0" ]; then
-    printf 'wt_wire: [serena] registered %s\n' "$name"
-  else
-    printf 'wt_serena_prestage: WARN python registry update failed for %s\n' "$name" >&2
-  fi
 }
 
 # wt_setup_env <worktree>: run the stack's env command unconditionally for 'auto'-weight stacks.
@@ -290,7 +182,7 @@ wt_setup_env() {
 # wt_add [--ticket X] [--purpose Y] [--handoff Z] <main-clone> <branch> <base> [new-branch=1]:
 # the single correct entrypoint for worktree creation. Flags are set as WT_TICKET/PURPOSE/HANDOFF
 # so wt_wire's F3 context template picks them up. Positional behavior preserved.
-# Runs git worktree add → wt_wire (brain/memory/.claude/artifacts/serena) → wt_setup_env.
+# Runs git worktree add → wt_wire (brain/memory/.claude/artifacts) → wt_setup_env.
 wt_add() {
   local _ticket="" _purpose="" _handoff=""
   # Positionals go into plain scalars, NOT an array: zsh indexes arrays from 1 while bash
@@ -319,7 +211,9 @@ wt_add() {
   local main; main="$(cd "$_main_arg" 2>/dev/null && pwd)" \
     || { unset WT_TICKET WT_PURPOSE WT_HANDOFF; printf 'wt_add: ERROR: main "%s" not accessible\n' "$_main_arg" >&2; return 1; }
   local branch="$_branch" base="$_base" newb="${_newb:-1}"
-  local wt="$main/.worktrees/$branch"
+  # Worktrees live BESIDE the repo: <project>/worktrees/<branch>, where <project> is the repo's
+  # parent dir. Nothing is created inside the repo, so a worktree can never dirty its git status.
+  local wt="$(dirname "$main")/worktrees/$branch"
   # Slashed branches (e.g. hotfix/x) nest: $wt's parent dir must exist before `git worktree add`,
   # else git fails. Mirrors the mkdir -p guard in wt_archive/wt_revive.
   mkdir -p "$(dirname "$wt")"
@@ -330,42 +224,16 @@ wt_add() {
     git -C "$main" worktree add "$wt" "$base" || rc=1
   fi
   if [ "$rc" = 0 ]; then
-    wt_wire "$wt" "$main"    # brain stub + memory symlink + .claude real dir + artifacts + serena
+    wt_wire "$wt" "$main"    # brain stub + memory bucket + .claude real dir + artifacts check
     wt_setup_env "$wt"       # auto env runs deterministically here
   fi
   unset WT_TICKET WT_PURPOSE WT_HANDOFF
   return "$rc"
 }
 
-# wt_serena_deregister <wt> [--purge]: remove wt abs path from ~/.serena/serena_config.yml projects: list
-# (idempotent — no error if absent). With --purge, also deletes ~/.serena/projects/<basename wt>.
-wt_serena_deregister() {
-  local wt="$1" purge=0
-  [ "${2:-}" = "--purge" ] && purge=1
-  local cfg="$HOME/.serena/serena_config.yml"
-  if [ -f "$cfg" ]; then
-    python3 - "$cfg" "$wt" <<'PYEOF'
-import sys
-cfg_path, wt_path = sys.argv[1], sys.argv[2]
-with open(cfg_path, 'r') as f:
-    lines = f.readlines()
-entry = '- ' + wt_path
-new_lines = [l for l in lines if l.strip() != entry]
-with open(cfg_path, 'w') as f:
-    f.writelines(new_lines)
-PYEOF
-    printf 'wt_serena_deregister: removed %s from serena_config.yml (if present)\n' "$wt"
-  else
-    printf 'wt_serena_deregister: serena_config.yml not found — skipping\n'
-  fi
-  if [ "$purge" = 1 ]; then
-    local proj_dir="$HOME/.serena/projects/$(basename "$wt")"
-    rm -rf "$proj_dir"
-    printf 'wt_serena_deregister: purged serena project dir %s\n' "$proj_dir"
-  fi
-}
-
-# wt_archive <main> <wt>: move wt to _archive/<branch>, lock it, deregister from serena.
+# wt_archive <main> <wt>: move wt to <project>/worktrees/_archive/<branch> and lock it.
+# _archive sits under the worktrees root so every git-registered worktree (live or parked)
+# stays in one subtree; <project>/ itself keeps only the dirs the layout defines.
 # Records branch/orig_path/date/ticket in _archive/index.tsv.
 wt_archive() {
   local main; main="$(cd "$1" 2>/dev/null && pwd)" \
@@ -376,7 +244,7 @@ wt_archive() {
   [ "$wt" = "$main" ] && { printf 'wt_archive: ERROR: refusing to archive the main clone (%s)\n' "$main" >&2; return 1; }
   local br; br=$(git -C "$wt" rev-parse --abbrev-ref HEAD 2>/dev/null)
   [ -z "$br" ] && { printf 'wt_archive: ERROR: cannot resolve branch in %s\n' "$wt" >&2; return 1; }
-  local tgt="$main/.worktrees/_archive/$br"
+  local tgt="$(dirname "$main")/worktrees/_archive/$br"
   if [ -e "$tgt" ]; then
     printf 'wt_archive: ERROR target exists: %s\n' "$tgt" >&2
     return 1
@@ -384,9 +252,8 @@ wt_archive() {
   mkdir -p "$(dirname "$tgt")"
   git -C "$main" worktree move "$wt" "$tgt" || return 1
   git -C "$main" worktree lock "$tgt" --reason "archived $(date +%F)"
-  wt_serena_deregister "$wt"  # keep project folder — revivable
   # append TSV row to index.tsv (create with header if absent)
-  local idx="$main/.worktrees/_archive/index.tsv"
+  local idx="$(dirname "$main")/worktrees/_archive/index.tsv"
   if [ ! -f "$idx" ]; then
     printf 'branch\torig_path\tdate\tticket\n' > "$idx"
   fi
@@ -394,12 +261,12 @@ wt_archive() {
   printf 'wt_archive: archived %s → %s (locked)\n' "$wt" "$tgt"
 }
 
-# wt_revive <main> <branch>: move archived worktree back to .worktrees/<branch>, re-register serena.
+# wt_revive <main> <branch>: move an archived worktree back to <project>/worktrees/<branch>.
 wt_revive() {
   local main; main="$(cd "$1" 2>/dev/null && pwd)" \
     || { printf 'wt_revive: ERROR: main "%s" not accessible\n' "$1" >&2; return 1; }
   local branch="$2"
-  local arch="$main/.worktrees/_archive/$branch"
+  local arch="$(dirname "$main")/worktrees/_archive/$branch"
   # Verify the archive path exists (may need to query porcelain for non-standard cases)
   if [ ! -d "$arch" ]; then
     printf 'wt_revive: ERROR: archive path not found: %s\n' "$arch" >&2
@@ -407,17 +274,15 @@ wt_revive() {
   fi
   # Unlock the archive location before moving
   git -C "$main" worktree unlock "$arch" 2>/dev/null || true
-  local dst="$main/.worktrees/$branch"
+  local dst="$(dirname "$main")/worktrees/$branch"
   if [ -e "$dst" ]; then
     printf 'wt_revive: ERROR dst exists: %s\n' "$dst" >&2
     return 1
   fi
   mkdir -p "$(dirname "$dst")"
   git -C "$main" worktree move "$arch" "$dst" || return 1
-  # Re-register with serena (project dir already exists → memories PRESERVED)
-  wt_serena_prestage "$dst" "$main"
   # Remove the branch row from index.tsv
-  local idx="$main/.worktrees/_archive/index.tsv"
+  local idx="$(dirname "$main")/worktrees/_archive/index.tsv"
   if [ -f "$idx" ]; then
     python3 - "$idx" "$branch" <<'PYEOF'
 import sys
@@ -434,8 +299,9 @@ PYEOF
 }
 
 # wt_reap_promote <wt> <main>: write a .reap-manifest.md with a YAML candidates: document
-# harvesting from BOTH stores (serena + claude). No file moves; manifest is written to
-# $wt/.reap-manifest.md for memory-curator review.
+# harvesting the worktree's claude memory bucket. No file moves; manifest is written to
+# $wt/.reap-manifest.md for memory-curator review. Entries keep their `store:` field (always
+# 'claude') so the manifest schema is unchanged for consumers.
 wt_reap_promote() {
   local wt="$1" main="$2"
   local br; br=$(git -C "$wt" rev-parse --abbrev-ref HEAD 2>/dev/null)
@@ -446,13 +312,9 @@ wt_reap_promote() {
     ticket=$(grep -i '^Ticket:' "$wt/CLAUDE.local.md" 2>/dev/null | head -1 | sed 's/^[Tt]icket: *//')
   fi
   local manifest="$wt/.reap-manifest.md"
-  # Candidate stores
-  local wt_name; wt_name=$(basename "$wt")
-  local main_name; main_name=$(basename "$main")
-  local serena_src="$HOME/.serena/projects/$wt_name/memories"
+  # Candidate store: the worktree's own claude memory bucket.
   local claude_src="$HOME/.claude/projects/$(wt_key "$wt")/memory"
   # Parent-dest for collision checks
-  local serena_parent_dest="$HOME/.serena/projects/$main_name/memories"
   local canon="$HOME/.claude/projects/$(wt_key "$main")"
   local claude_parent_dest="$canon/memory"
   # D2: build the candidates YAML via python (safe YAML, block scalar for body)
@@ -465,7 +327,7 @@ wt_reap_promote() {
     printf 'date: %s\n' "$(date +%F)"
     printf '%s\n' '---'
     printf '\n'
-    python3 - "$serena_src" "$claude_src" "$serena_parent_dest" "$claude_parent_dest" <<'PYEOF'
+    python3 - "$claude_src" "$claude_parent_dest" <<'PYEOF'
 import sys, os
 
 def read_type(path):
@@ -526,8 +388,8 @@ def collect(dirpath, store, parent_dest):
         })
     return candidates
 
-serena_src, claude_src, serena_dest, claude_dest = sys.argv[1:]
-candidates = collect(serena_src, 'serena', serena_dest) + collect(claude_src, 'claude', claude_dest)
+claude_src, claude_dest = sys.argv[1:]
+candidates = collect(claude_src, 'claude', claude_dest)
 
 print('candidates:')
 if not candidates:
@@ -610,20 +472,19 @@ wt_reap() {
 
   wt_reap_promote "$wt" "$main"
   # Preserve manifest outside the worktree before removal (it lives inside $wt, which we delete).
-  local manifest_dst="$main/.worktrees/_reaped/$br.reap-manifest.md"
+  # Reaped manifests are residue of finished work, so they land in <project>/history/reaped/
+  # (the layout's home for reaped residue) rather than under the live worktrees root.
+  local manifest_dst="$(dirname "$main")/history/reaped/$br.reap-manifest.md"
   mkdir -p "$(dirname "$manifest_dst")"
   if [ -f "$wt/.reap-manifest.md" ]; then
     cp "$wt/.reap-manifest.md" "$manifest_dst"
   fi
   local _rm_rc=0
   wt_remove "$main" "$wt"; _rm_rc=$?
-  # fix1: purge serena project ONLY if wt_remove succeeded; on failure keep memories so they survive.
   if [ "$_rm_rc" = 0 ]; then
-    wt_serena_deregister "$wt" --purge
     printf 'reap: done — branch %s reaped from %s\n' "$br" "$wt"
   else
-    wt_serena_deregister "$wt"    # deregister (no --purge) so memories survive the failed removal
-    printf 'reap: ERROR wt_remove failed (rc=%s) — serena memories preserved for recovery\n' "$_rm_rc" >&2
+    printf 'reap: ERROR wt_remove failed (rc=%s) — worktree and its memory bucket left in place\n' "$_rm_rc" >&2
   fi
   if [ -f "$manifest_dst" ]; then
     printf 'reap: manifest preserved at %s\n' "$manifest_dst"

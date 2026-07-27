@@ -6,7 +6,7 @@ Dev-environment tooling bundle.
 
 | Skill | Job |
 |-------|-----|
-| `worktree` | Worktree-native lifecycle for any repo — add/check/archive/revive/reap, with memory + serena wiring and per-stack env setup |
+| `worktree` | Worktree-native lifecycle for any repo — add/check/archive/revive/reap, with memory wiring and per-stack env setup |
 
 ## Why
 
