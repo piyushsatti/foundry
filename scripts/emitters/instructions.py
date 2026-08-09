@@ -48,10 +48,15 @@ top of theirs, and a skill directory holding no SKILL.md would land there as a
 directory nobody put there and nothing points at.
 
 Taking something out is a change to what the author ships, so every path this
-folder leaves behind is printed. The lock file's `dropped` list records the
-kinds a harness cannot carry, and these are not kinds: they are files the
-author wrote, so nothing else in the build would ever mention them and the
-folder would arrive short with no line anywhere saying why.
+folder leaves behind is both printed and put on the record. The lock file's
+`dropped` list is for a kind a harness cannot carry, and these are not kinds:
+they are files the author wrote that this folder's own generated index does
+not name. They land in this same lock file's `left_behind` list instead, read
+back from a private file the emitter leaves in the tree for `write_lock` in
+`scripts/build.py` to find, because printing reaches whoever is watching the
+build run and not whoever downloads this folder afterwards, and this is the
+one folder that lands inside somebody else's repository where nobody ever
+sees that log.
 
 A folder that names nothing is refused. Three files carrying a title and one
 description line install cleanly, report success and change nothing about how
@@ -61,6 +66,7 @@ exists to avoid rather than to produce.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -96,6 +102,18 @@ FILENAMES = (AGENTS_NAME, *POINTERS)
 # `allowed-tools` is a field inside a skill rather than a path, so it is absent
 # here on purpose: a capability carrying it leaves nothing extra at the top.
 AT_TOP = {**{kind: kind for kind in CONTENT_KINDS}, "mcp": MCP_NAME}
+
+# A private handoff to write_lock in scripts/build.py, the only other place
+# this name is read. Printing what this folder left behind, which report()
+# below already does, reaches whoever is watching the build run. It does not
+# reach whoever downloads this folder afterwards and never sees that output,
+# and this is the one folder that lands inside somebody else's repository
+# rather than being installed, so a person reading it later than the build
+# has no other way to find out. write_lock reads this file back into this
+# folder's own lock file and deletes it before the folder is fingerprinted,
+# so nothing written here ships and nothing written here moves a `contents`
+# fingerprint: it is read and gone before either is decided.
+LEFT_BEHIND_NAME = ".foundry-left-behind.json"
 
 CAPABILITIES = {
     "instructions": Capability(
@@ -150,7 +168,9 @@ def emit(target: str, manifest: dict, tree: Path) -> None:
     for name, because in POINTERS.items():
         (tree / name).write_text(pointer_file(manifest, name, because))
 
-    report(target, keep_only_what_is_named(target, tree, skills, commands))
+    left_behind = keep_only_what_is_named(target, tree, skills, commands)
+    report(target, left_behind)
+    record_left_behind(tree, left_behind)
 
 
 # ------------------------------------------------------------- what is refused
@@ -460,10 +480,10 @@ def named(path: Path, tree: Path) -> str:
 def report(target: str, left_behind: list[str]) -> None:
     """Print what was taken out: a deletion nobody sees is one nobody can review.
 
-    The lock file's `dropped` list is for kinds a harness cannot carry, and
-    these are not kinds. They are files the author wrote and this folder has no
-    room for, so nothing else in the build would say a word about them and the
-    author would have to diff two folders to find out.
+    Reaches whoever is watching this build run. `record_left_behind`, called
+    right after this in `emit`, is what reaches whoever downloads the folder
+    afterwards: the same list, put on this folder's own lock file rather than
+    only the terminal.
     """
     if not left_behind:
         return
@@ -477,3 +497,23 @@ def report(target: str, left_behind: list[str]) -> None:
         print(f"  {line}")
     for name in left_behind:
         print(f"    {name}")
+
+
+def record_left_behind(tree: Path, left_behind: list[str]) -> None:
+    """Leave what this folder dropped where write_lock in scripts/build.py will look.
+
+    A line printed by report() reaches the build log and nothing else. This
+    folder is the one that lands in somebody else's repository, where nobody
+    ever sees that log, so the loss also has to be on the record inside the
+    folder itself, the same as a kind a harness cannot carry already is.
+    Nothing here is content this folder ships: write_lock reads it back into
+    this folder's own lock file and removes it before the folder is
+    fingerprinted, so nothing written here ships and nothing here moves a
+    `contents` fingerprint.
+
+    Written only when there is something to say, the same as every other loss
+    this build records only when it is real.
+    """
+    if not left_behind:
+        return
+    (tree / LEFT_BEHIND_NAME).write_text(json.dumps(left_behind, indent=2) + "\n")

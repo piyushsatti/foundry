@@ -712,7 +712,7 @@ class ALossIsRefusedOrWrittenDown(RepoCase):
         message = str(refusal.exception)
         self.assertIn("CANNOT SHIP THIS TO OPENCODE.", message)
         self.assertIn("hooks/hooks.yaml", message)
-        self.assertIn("OpenCode has no declarative hook surface", message)
+        self.assertIn("no OpenCode hook event vocabulary has been read from source", message)
         self.assertIn(str(plugin / "foundry.plugin.yaml"), message)
         self.assertIn("degrade.opencode.drop: [hooks]", message)
 
@@ -727,7 +727,7 @@ class ALossIsRefusedOrWrittenDown(RepoCase):
                 message = str(refusal.exception)
                 self.assertIn(f"CANNOT SHIP THIS TO {target.upper()}.", message)
                 self.assertIn("hooks/hooks.yaml", message)
-                self.assertIn("no declarative hook surface", message)
+                self.assertIn("hook event vocabulary has been read from source", message)
 
     def test_an_mcp_server_is_refused_on_pi(self):
         """For many plugins the server is the whole product, and Pi has no
@@ -764,7 +764,7 @@ class ALossIsRefusedOrWrittenDown(RepoCase):
         self.assertTrue((out / "claude-code/hooks/hooks.json").is_file())
         self.assertEqual(
             read_json(out / "opencode" / LOCK_NAME)["dropped"],
-            [{"kind": "hooks", "why": "OpenCode has no declarative hook surface"}],
+            [{"kind": "hooks", "why": "no OpenCode hook event vocabulary has been read from source"}],
         )
         self.assertEqual(read_json(out / "claude-code" / LOCK_NAME)["dropped"], [])
 
@@ -785,7 +785,7 @@ class ALossIsRefusedOrWrittenDown(RepoCase):
             printed = self.printed_by(build.main)
 
         self.assertIn("dropped hooks from opencode", printed)
-        self.assertIn("OpenCode has no declarative hook surface", printed)
+        self.assertIn("no OpenCode hook event vocabulary has been read from source", printed)
 
     def test_when_every_named_harness_drops_everything_the_build_refuses(self):
         """Every folder in the release would be an empty wrapper, and a release

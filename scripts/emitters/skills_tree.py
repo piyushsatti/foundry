@@ -86,7 +86,7 @@ CAPABILITIES = {
         carries=("skills", "agents"),
         cannot={
             "commands": Cannot("Foundry does not emit OpenCode's own command format"),
-            "hooks": Cannot("OpenCode has no declarative hook surface"),
+            "hooks": Cannot("no OpenCode hook event vocabulary has been read from source"),
             "mcp": Cannot(
                 "OpenCode reads MCP servers from the user's own opencode.json, "
                 "which no shipped folder can write"
@@ -100,7 +100,7 @@ CAPABILITIES = {
             "agents": Cannot(
                 "Pi has no agent surface: its packages carry skills, prompt templates, themes and extensions"
             ),
-            "hooks": Cannot("Pi has no declarative hook surface"),
+            "hooks": Cannot("no Pi hook event vocabulary has been read from source"),
             "mcp": Cannot("Pi has no MCP surface"),
         },
     ),

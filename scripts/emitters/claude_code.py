@@ -233,9 +233,67 @@ def translate_hooks(target: str, tree: Path) -> None:
         write_json(tree / HOOKS_READS, {"hooks": events})
 
 
+def refuse_to_overwrite_theirs(target: str, manifest: dict, tree: Path) -> None:
+    """A file the author wrote is not a file this folder may replace.
+
+    Every top-level file ships unless 'exclude' names it, so a plugin repository
+    that keeps its own `.claude-plugin/plugin.json` has already copied it into
+    the neutral tree, inside the fingerprint its own pin names. `emit` writes
+    that exact path on every build with no guard at all, the same fault
+    `agent_plugins.refuse_to_overwrite_theirs` and
+    `instructions.refuse_to_overwrite_theirs` already close for their own
+    manifests. `.claude` is in `NEVER_SHIP`, but `.claude-plugin` is a plugin's
+    own directory name and is not, so the author's file reaches this tree.
+
+    `hooks/hooks.json` is not the same shape, and is not checked the same way.
+    `translate_hooks` writes to that path only when at least one rule survives
+    for this target: a plugin whose `hooks/hooks.yaml` is empty, or whose every
+    rule names an `only` that excludes claude-code, leaves `events` empty and
+    never opens `hooks/hooks.json` at all, let alone overwrites it. So the
+    check here reruns that same filter rather than only asking whether the
+    neutral file exists: the file existing is not enough, since the build it
+    guards might never have written to that path regardless. The collision is
+    real only when a rule would actually be written there, because that is the
+    one case where the plugin is also asking Foundry to translate hooks into
+    the exact path the author's own file already occupies, and that is an
+    unambiguous conflict rather than a maybe.
+
+    Both are the build picking a winner if it proceeds, so it refuses instead.
+    """
+    theirs = []
+    if (tree / METADATA_DIR / METADATA_NAME).exists():
+        theirs.append(f"{METADATA_DIR}/{METADATA_NAME}")
+    kept, _ = rules_for(hook_rules(tree), target)
+    if kept and (tree / HOOKS_READS).exists():
+        theirs.append(HOOKS_READS)
+    if not theirs:
+        return
+
+    subject = "That name is" if len(theirs) == 1 else "Each name above is"
+    raise refuse(
+        [
+            *theirs,
+            "",
+            f"{subject} both a file this plugin already holds and a file this",
+            "folder writes. Overwriting yours would swap what you wrote for a",
+            "generated one, and keeping yours would ship a folder where a file",
+            "Claude Code reads is not the one you wrote.",
+            "",
+            "Every top-level file ships unless 'exclude' names it.",
+            "",
+            f"Declared by {manifest['manifest_path']}.",
+        ],
+        [
+            "Either add each name above to 'exclude', so it stays a file of this",
+            "repository and ships nowhere, or drop claude-code from 'targets'.",
+        ],
+    )
+
+
 # ------------------------------------------------------------------- emitting
 def emit(target: str, manifest: dict, tree: Path) -> None:
-    """The manifest Claude Code reads, then the two files it reads instead of the neutral ones."""
+    """Refuse a collision first, then the manifest, then the two translations."""
+    refuse_to_overwrite_theirs(target, manifest, tree)
     write_json(tree / METADATA_DIR / METADATA_NAME, metadata(manifest))
     translate_mcp(manifest, tree)
     translate_hooks(target, tree)

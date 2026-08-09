@@ -54,6 +54,30 @@ MANIFEST_NAME = "foundry.plugin.yaml"
 # carried through untouched and land in the plugin metadata the build writes.
 METADATA_KEYS = ("description", "author", "homepage", "license", "keywords")
 
+# Every top-level key any consumer of this manifest reads. `read_manifest`
+# below reads all but one of them itself; the exception is `foundry_source`,
+# read only by `template/scripts/foundry.py`'s own regex, before this module
+# or anything else under `scripts/` has run, because it names where to fetch
+# the very tool this module belongs to. It stays recognised here so the
+# documented way to build against a local Foundry checkout, commented out in
+# the template's own manifest, is not refused by a rule that has never read
+# it. A key belongs on this list because something in the repository reads
+# it, never because `read_manifest` happens to be the thing that does.
+RECOGNIZED_KEYS = frozenset(
+    {
+        "id",
+        "version",
+        "foundry",
+        "foundry_source",
+        "requires",
+        "targets",
+        "degrade",
+        "provides",
+        "exclude",
+    }
+    | set(METADATA_KEYS)
+)
+
 # The four content directories a plugin repository holds, and the four a
 # dependency may hand over. Named here rather than in `build.py` because both
 # halves of the tool need the same list from the same place: the build fences a
@@ -73,7 +97,18 @@ KINDS = CONTENT_KINDS + ("mcp", "allowed-tools")
 DEFAULT_TARGETS = ("claude-code",)
 
 SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
-NAME_RE = re.compile(r"^[a-z0-9._-]+$")
+
+# What `name_fault` in `scripts/emitters/agent_plugins.py` already demands of a
+# name Agent Plugins 1.0.0 will accept: the same character set with the
+# underscore taken out, no leading or trailing character outside it, no
+# doubled hyphen or dot, and a 64 character cap. `id` used to have its own,
+# looser rule, so `id: my_plugin` passed here, a claude-code folder got built,
+# and only then did the whole release stop, the moment `agent-plugins` or
+# `codex` was named in `targets`, deep inside that harness's own emitter,
+# refusing a name Foundry itself had already accepted. One vocabulary, the
+# strictest one, checked once, here, before any folder is built: every `id`
+# Foundry accepts is an `id` every harness it can build for accepts too.
+NAME_RE = re.compile(r"^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]{0,62}[a-z0-9])?$")
 MOVING_TARGETS = {"latest", "current", "head", "*", "main", "master"}
 
 # Never part of what a plugin ships, so never part of its fingerprint.
@@ -124,6 +159,16 @@ def fingerprint(root: Path) -> str:
 
     Sorted file paths and their bytes, hashed together, so a rename counts as a
     change and file order never does. Same method Go uses for module contents.
+
+    The path goes in as `as_posix()` rather than `str()`, so the separator
+    hashed is always `/`, never whatever the local platform happens to use.
+    On macOS and Linux `Path` already prints with `/`, so the two expressions
+    produce identical bytes and no fingerprint anyone has already published
+    moves. Foundry makes no promise about building on Windows, and this line
+    does not manufacture one: a checkout with different line endings still
+    hashes different bytes, because the bytes really did change and no path
+    encoding can paper over that. `.gitattributes` is the plugin author's fix
+    for that, not this function's.
     """
     digest = hashlib.sha256()
     for path in sorted(p for p in root.rglob("*") if p.is_file()):
@@ -132,7 +177,7 @@ def fingerprint(root: Path) -> str:
             continue
         if path.suffix in SKIP_SUFFIXES or path.name in SKIP_NAMES:
             continue
-        digest.update(str(relative).encode())
+        digest.update(relative.as_posix().encode())
         digest.update(b"\0")
         digest.update(path.read_bytes())
         digest.update(b"\0")
@@ -223,6 +268,34 @@ def read_degrade(raw: dict, targets: list[str], path: Path) -> dict[str, list[st
     return degrade
 
 
+def check_unknown_keys(raw: dict, path: Path) -> None:
+    """A key nothing reads is a rule that looks written and does nothing.
+
+    Checked before anything else in the manifest, because it is a fact about
+    the whole file rather than about any one field: `target:` for `targets:`
+    used to build the default folder in total silence, and the author had no
+    way to find out the harness they named was never read. An ignored key
+    always costs exactly this, whatever its name, so it is refused by the
+    same rule rather than caught one typo at a time.
+    """
+    unknown = sorted(key for key in raw if key not in RECOGNIZED_KEYS)
+    if not unknown:
+        return
+    listed = ", ".join(repr(key) for key in unknown)
+    plural = len(unknown) > 1
+    verb = "are" if plural else "is"
+    noun = "keys" if plural else "a key"
+    raise ResolveError(
+        f"{path}: {listed} {verb} not {noun} this manifest reads.\n\n"
+        f"  An unrecognised key used to be silently ignored, which read to whoever\n"
+        f"  wrote it as a line that took effect. 'target:' for 'targets:' was\n"
+        f"  exactly this mistake: the default folder got built, the harness that\n"
+        f"  was actually named never did, and nothing said why.\n\n"
+        f"  Recognised keys: {', '.join(sorted(RECOGNIZED_KEYS))}.\n\n"
+        f"  Fix the name, or remove the line."
+    )
+
+
 def read_manifest(plugin_dir: Path) -> dict:
     path = plugin_dir / MANIFEST_NAME
     if not path.is_file():
@@ -232,14 +305,18 @@ def read_manifest(plugin_dir: Path) -> dict:
             f"  Foundry template if this repository does not."
         )
     raw = yaml.safe_load(path.read_text()) or {}
+    check_unknown_keys(raw, path)
 
     name = str(raw.get("id", "")).strip()
     if not name:
         raise ResolveError(f"{path}: needs an 'id'.")
     if not NAME_RE.match(name):
         raise ResolveError(
-            f"{path}: id '{name}' has characters that are not allowed.\n"
-            f"  Use lowercase letters, numbers, dots, dashes and underscores only."
+            f"{path}: id '{name}' is not a name every harness Foundry can build for\n"
+            f"  will accept.\n"
+            f"  Use lowercase letters, numbers, dots and hyphens, 1 to 64 characters,\n"
+            f"  starting and ending on a letter or a digit, with no doubled hyphen\n"
+            f"  and no doubled dot."
         )
 
     if "foundry" not in raw:
@@ -247,6 +324,14 @@ def read_manifest(plugin_dir: Path) -> dict:
             f"{path}: needs a 'foundry' version.\n"
             f"  This is the oldest Foundry the plugin works with. A plugin takes\n"
             f"  all of Foundry or none of it, so one version is the whole answer."
+        )
+
+    if raw.get("version") is None:
+        raise ResolveError(
+            f"{path}: needs a 'version'.\n"
+            f"  This is the plugin's own version, owned by this repository. It used\n"
+            f"  to default to 0.0.0 and ship that into every harness manifest and\n"
+            f"  lock file without saying so, which is not a version anyone chose."
         )
 
     requires = raw.get("requires") or {}
@@ -280,7 +365,7 @@ def read_manifest(plugin_dir: Path) -> dict:
 
     manifest = {
         "id": name,
-        "version": str(raw.get("version", "0.0.0")),
+        "version": str(raw["version"]),
         "foundry_minimum": str(raw["foundry"]).strip(),
         "dependencies": dependencies,
         "provides": raw.get("provides") or {},

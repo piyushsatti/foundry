@@ -21,9 +21,14 @@ the only difference the folders may carry is the two lines of record that name
 the harness. Anything else means opting in changed what ships, which is the one
 thing opting in must never do.
 
-The manifest is edited by renaming two keys rather than by rewriting the file,
-so every other byte of it is the byte the author wrote. An unknown top-level
-key is ignored by `read_manifest`, which is what makes the rename enough.
+The manifest is edited by deleting the `targets` and `degrade` blocks outright
+rather than by rewriting the file, so every other byte of it is the byte the
+author wrote. A rename used to be enough, because an unrecognised top-level key
+was silently ignored by `read_manifest` and the renamed block was never read.
+`read_manifest` now refuses an unrecognised key instead, so a rename would stop
+this check rather than prove anything. Deleting the block goes straight at what
+the check actually needs, a manifest that truly names no `targets` and waives
+no `degrade`, rather than one that names it under a name nothing reads.
 
 Operate:
     python3 .github/checks/defaults.py PLUGIN_DIR
@@ -132,12 +137,37 @@ def check_same(default: Path, named: Path, absent: dict, declared: dict, report:
         )
 
 
+def without_top_level_key(text: str, key: str) -> str:
+    """`text` with one top-level YAML key deleted, header line and every line nested under it.
+
+    A line-based deletion rather than a parse-and-redump, so every byte of
+    every other line stays exactly what the author wrote: comments, blank
+    lines, key order, everything. `(?m)^{key}:` anchors on the key starting a
+    line, so an indented line elsewhere that happens to read the same, `pi:`
+    nested inside `degrade:` for instance, is never touched. What follows is
+    every line indented under it, `[ \\t].*\\n`, stopping at the first line
+    that is not indented, a blank line included, because a blank line marks
+    the end of the block the same way a next key at column zero would.
+
+    Only deleting the header line, the way `defaults.py` used to rename it,
+    would leave the nested lines behind with no key above them, and that is
+    not a manifest with no `targets`, it is a manifest `yaml.safe_load` cannot
+    parse at all. The block has to go as one piece for the same reason the key
+    was renamed as one piece before: cutting it in half proves nothing.
+    """
+    return re.sub(rf"(?m)^{re.escape(key)}:[^\n]*\n(?:[ \t].*\n)*", "", text)
+
+
 def main() -> int:
     plugin = Path(sys.argv[1]).resolve()
     written = (plugin / MANIFEST_NAME).read_text()
-    # An unknown top-level key is ignored, so renaming these two is the whole
-    # edit and every other byte stays as the author wrote it.
-    silent = re.sub(r"(?m)^(targets|degrade):", r"unused-\1:", written)
+    # Deleted outright rather than renamed. An unrecognised top-level key used
+    # to be silently ignored, which was what let a rename stand in for
+    # absence; `read_manifest` now refuses one, so the only way left to build
+    # 'a manifest that names no targets' is to hand it a manifest that truly
+    # does not, and deleting the block does that directly.
+    silent = without_top_level_key(written, "targets")
+    silent = without_top_level_key(silent, "degrade")
     if silent == written:
         print(f"{plugin / MANIFEST_NAME} names no 'targets', so both builds would be the same build.")
 

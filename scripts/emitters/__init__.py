@@ -346,15 +346,40 @@ def assess(
     a guard that fails open or a matcher that matches everything, and those
     depend on what is inside a file rather than on its kind. The emitter raises
     those itself, while it is looking at the content.
+
+    A waiver is checked before any of that, against what this harness carries
+    rather than against what the plugin holds. Naming a kind the harness
+    carries is not a smaller version of the ordinary case, it is a different
+    fault: that waiver can never produce a drop no matter what the plugin later
+    holds, so it is a false statement about the build and is refused outright,
+    the same way `read_degrade` in `scripts/resolve.py` already refuses a
+    waiver naming a harness outside `targets`. Naming a kind the harness
+    genuinely cannot carry, but this plugin does not hold yet, is not a fault
+    at all: it does nothing today and becomes a real, recorded drop the day
+    content arrives, so it is printed as unused rather than refused. That
+    only says this particular waiver is not what stops the build; a
+    manifest can still hold a separate, genuine refusal elsewhere, on a
+    different target or a different kind, and this one printing as unused
+    says nothing about whether that other one does.
     """
     answer = capability(target)
+
+    impossible = [kind for kind in KINDS if kind in waived and kind in answer.carries]
+    if impossible:
+        raise EmitError(impossible_waiver(target, manifest_path, impossible, answer))
+
     refused: list[tuple[str, list[str], str]] = []
     dropped: list[Drop] = []
+    unused: list[str] = []
 
     for kind in KINDS:
-        if kind not in declared or kind not in answer.cannot:
+        if kind not in answer.cannot:
             continue
         why = answer.cannot[kind].why
+        if kind not in declared:
+            if kind in waived:
+                unused.append(kind)
+            continue
         if kind in waived:
             dropped.append(Drop(kind=kind, why=why))
         else:
@@ -362,6 +387,9 @@ def assess(
 
     if refused:
         raise EmitError(refusal(target, manifest_path, refused))
+
+    if unused:
+        print(unused_waiver(target, manifest_path, unused))
 
     # A waived `hooks` takes every rule with it, and that loss is already on the
     # record as the kind. Assessing rules under it would print the same loss a
@@ -404,6 +432,59 @@ def refusal(target: str, manifest_path: Path, refused: list[tuple[str, list[str]
         f"  'degrade.{target}.drop: [{kinds}]' so the loss is on the record.",
     ]
     return "\n".join(lines)
+
+
+def impossible_waiver(target: str, manifest_path: Path, kinds: list[str], answer: Capability) -> str:
+    """A waiver naming a kind this harness carries can never be true.
+
+    Matches the shape of `read_degrade`'s refusal in `scripts/resolve.py`,
+    which already refuses the sibling case one step earlier: a waiver naming a
+    harness that is not even in `targets`. That one names the block and the
+    fact, says why a waiver nobody reads does nothing, and names the fix. This
+    one does the same for a waiver that is read, on a harness that is built,
+    naming a kind that harness ships regardless of what the waiver claims.
+    """
+    named = ", ".join(kinds)
+    verb = "carries" if len(kinds) == 1 else "carry"
+    lines = [
+        f"{manifest_path}: 'degrade.{target}.drop' names {named}, and {target} {verb} "
+        f"{'it' if len(kinds) == 1 else 'them'}.",
+        "",
+        f"  {target} carries: {', '.join(answer.carries)}.",
+        "",
+        "  A waiver only records a loss that is really going to happen. Naming a kind",
+        f"  {target} carries can never produce a drop, however this plugin's content",
+        "  changes, so the waiver is a false statement about the build rather than an",
+        "  early one.",
+        "",
+        f"  Remove {named} from 'degrade.{target}.drop'.",
+    ]
+    return "\n".join(lines)
+
+
+def unused_waiver(target: str, manifest_path: Path, kinds: list[str]) -> str:
+    """A waiver for a kind this harness cannot carry, but does not hold yet.
+
+    Not a fault: `target` really cannot carry these kinds, and the day this
+    plugin gains one of them the waiver stops being unused and becomes a
+    recorded drop, the ordinary case `refusal` and `Drop` already cover.
+    Refusing it today would refuse Foundry's own template, whose `degrade`
+    blocks are written before the plugin has anything to drop. Printed rather
+    than silent for the same reason a drop already agreed to is still printed
+    on every build: a line an author cannot see is a line they cannot check.
+
+    The line says only that this one waiver is not what stops the build. A
+    manifest can carry a genuine refusal somewhere else entirely, on another
+    target or another kind, and this one printing as unused says nothing
+    about whether the build as a whole went through.
+    """
+    named = ", ".join(kinds)
+    return (
+        f"{manifest_path}: 'degrade.{target}.drop' names {named}, which {target} cannot carry "
+        f"and this plugin does not hold yet.\n"
+        f"  This declaration is not what stops the build. It takes effect the day\n"
+        f"  this plugin holds {named}."
+    )
 
 
 def check_rules_reach_a_harness(
