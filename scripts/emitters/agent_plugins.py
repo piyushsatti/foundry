@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """The portable Agent Plugins 1.0.0 package, and the Codex folder built on it.
 
-Agent Plugins 1.0.0 was published on 2026-08-06 by a steering committee of
-Amazon, Cursor, Microsoft, OpenAI and Vercel, with Google joining. It is the
-one package shape more than one vendor agreed to, so Foundry adopts it rather
-than inventing a neutral form of its own.
+Agent Plugins 1.0.0 was published on 2026-07-27, the day the commit publishing
+the specification reached `main` in the specification repository. That
+repository carries no tags and no releases, so reaching `main` is the only
+publication event there is. Its steering committee is the five people
+`MAINTAINERS.md` names, from Amazon, Cursor, Microsoft, OpenAI and Vercel. It is
+the one package shape more than one vendor agreed to, so Foundry adopts it
+rather than inventing a neutral form of its own.
 
 It standardises exactly two component types, skills and MCP servers. Its own
 text says commands, hooks, agents, rules and LSP servers remain too

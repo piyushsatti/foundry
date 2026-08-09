@@ -55,7 +55,7 @@ at it. Foundry has no opinion and no involvement.
 | `VERSION` | Foundry's own version, currently 0.1.1 |
 | `ruff.toml` | The lint and format gate, pinned so it means the same thing on any machine. Development tooling only: nothing under `scripts/` imports it |
 | `tests/` | Fixture plumbing in `repos.py` that writes throwaway plugin repos, plus the rule tests under `tests/scripts/`. Run with `python3 -m unittest discover -s tests` |
-| `docs/adr/` | The decisions. `0002-foundry-as-template-and-dependency.md` says what Foundry is; `0003-multi-harness-emitters.md` says what it emits; `0004-two-more-moments-and-a-rule-level-waiver.md` says why a per-harness override lives on a rule and not on a kind. `0005-templating-binds-at-build-time-and-at-runtime.md` says that Stencil, the template language for the markdown a plugin ships, binds at build time and again on the user's machine, and narrows two invariants below. All four current. `0001` is superseded history |
+| the wiki | Every decision, and the architecture they add up to. `Decisions` indexes them and says which are built. `D1-Foundry-holds-no-plugins` says what Foundry is, `D2-One-source-one-release-one-folder-per-harness` says what it emits, `D3-Six-hook-moments-and-a-waiver-on-the-rule` says why a per-harness override lives on a rule and not on a kind, and `D4-Stencil-binds-at-build-time-and-on-the-users-machine` narrows two invariants below. `docs/adr/` held these and is gone |
 | `docs/plans/` | The order of work for something not built yet, and its blast radius. A plan is deleted once its work has landed, unlike an ADR |
 | `.github/workflows/` | Foundry's own CI. Currently stale, see below |
 
@@ -284,7 +284,7 @@ at the top. Meanwhile, make a new plugin by copying `template/`.
 | File | What is wrong |
 |---|---|
 | `.claude-plugin/marketplace.json` | Lists five plugins served from this repository. None of them are here. Kept on purpose, and `.claude-plugin/README.md` says why: the entries resolve from the untouched `release` branch, so deleting them would break people who already installed one. Whether a catalog of consumers belongs in the base at all is still open |
-| `docs/adr/0001-materialized-plugin-bundles.md` | Describes `bundles/`, `library/`, `packages/` and `scripts/check_boundaries.py`, none of which exist. Superseded by 0002 and kept as history, which is what an ADR is for. Do not follow it |
+| the superseded monorepo decision | Described `bundles/`, `library/`, `packages/` and `scripts/check_boundaries.py`, none of which exist. It has no wiki page: `Decisions` records it as superseded history and says what survived of it |
 
 Five files were on this list and are no longer. `template/foundry.plugin.yaml`'s pin comment now
 says the pin is the fingerprint of the dependency's source checkout. `.github/workflows/ci.yml` and

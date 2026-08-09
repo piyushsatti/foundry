@@ -22,7 +22,7 @@ reported, never quietly left out.
 | `template/` | The starting shape of a plugin repository |
 | `template/scripts/foundry.py` | The bootstrap stub each plugin repo carries: reads the declared Foundry version, fetches that release, hands over to the build tool |
 | `VERSION` | Foundry's own version |
-| `docs/adr/` | The decisions and the reasoning behind them |
+| [the wiki](https://github.com/piyushsatti/foundry/wiki) | The architecture, the decisions, and what every harness can carry |
 
 ## Anyone can build on it
 

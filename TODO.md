@@ -34,8 +34,9 @@ all five layouts back.
 
 ## Build Stencil
 
-The decision landed and is accepted: `docs/adr/0005-templating-binds-at-build-time-and-at-runtime.md`.
-The order of work is `docs/plans/stencil.md`. Nothing is blocked any more.
+The decision landed and is accepted: `D4-Stencil-binds-at-build-time-and-on-the-users-machine` in
+the wiki, and `Stencil` there carries the whole shape. The order of work is `docs/plans/stencil.md`.
+Nothing is blocked any more.
 
 - the language is **Stencil**
 - a plugin author writes **`SKILL.stencil.md`**, and **`SKILL.md`** is rendered beside it. Both live
@@ -75,3 +76,13 @@ into the tree.
 
 review-library, crucible, plan-orchestrator, devtools, meditate and manifold are converted, clean,
 and local only. None has CI. Foundry still carries their wiki pages and their issues.
+
+## `docs/migrations/` does not exist, and a live refusal already names a file inside it
+
+`check_foundry_major` in `resolve.py` refuses a build across a change to Foundry's first number and
+sends the reader to `docs/migrations/foundry-<older>-to-<newer>.md`. That directory has never been
+written, so the one refusal that cannot be worked around is also the one whose next step points at
+nothing. A refusal with no next step is a bug by Foundry's own rule.
+
+The first change to the first number creates the directory and that document, in the same change
+that moves the number.

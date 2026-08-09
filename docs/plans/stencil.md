@@ -1,7 +1,8 @@
 # Plan: templating in Foundry
 
-The decision and its reasoning are in `docs/adr/0005-templating-binds-at-build-time-and-at-runtime.md`.
-This file is the order of work and the blast radius. Nothing here restates the argument.
+The decision and its reasoning are in the wiki, at `D4-Stencil-binds-at-build-time-and-on-the-users-machine`,
+and the whole shape is on the `Stencil` page beside it. This file is the order of work and the blast
+radius. Nothing here restates the argument.
 
 ## What is being built
 
@@ -35,11 +36,11 @@ Each phase has a gate. A phase does not start until the gate above it is green.
 | # | Phase | Gate |
 |---|---|---|
 | 1 | Port the lab resolver into `scripts/`, build stage only, with its tests | `python3 -m unittest discover -s tests` green, `uvx ruff check` clean |
-| 2 | Attach the build stage in `build.py` at the one position the ADR fixes | `python3 scripts/build.py template --check` prints the same five fingerprints it prints today, because the template holds no templates |
+| 2 | Attach the build stage in `build.py` at the one position the wiki's `Stencil` page fixes, after `copy_dependency_content` and before `check_provides` | `python3 scripts/build.py template --check` prints the same five fingerprints it prints today, because the template holds no templates |
 | 3 | Prove a template that resolves at build time and a plain file produce the same bytes when the template has no constructs | A test asserting byte-identity, so adopting the source extension on a file with no holes moves no fingerprint |
 | 4 | Runtime stage: the resolver's second entry point, and the script a plugin ships | Tested against a fixture plugin repo written by `tests/repos.py` |
-| 5 | The two hook rules in `template/`, and the loss policy for the two harnesses with no hook surface | The build refuses, or degrades, and says which. Test by message text |
-| 6 | Documentation: `CLAUDE.md` invariant narrowed, `README.md` given the two-stage story | Both read correctly to someone who has not read the ADR |
+| 5 | The two hook rules in `template/`, and the loss policy for the five harnesses with no `hooks` entry | The build refuses, or degrades, and says which. Test by message text |
+| 6 | Documentation: `CLAUDE.md` invariant narrowed, `README.md` given the two-stage story | Both read correctly to someone who has not read the wiki's decision page |
 
 Phase 3 is the one worth not skipping. If adopting the source extension moves a `contents`
 fingerprint on a file that has no template constructs in it, every existing plugin's pin breaks for
@@ -54,7 +55,7 @@ a rename.
 | `tests/scripts/` | New test file, plus fixture additions | Yes |
 | `template/` | Two hook rules, one shipped script, possibly two renamed placeholder files | Yes, but a plugin repository already created from the template does not receive the change. That is the starting-shape rule and it is why anything fixable belongs in `scripts/` |
 | `CLAUDE.md` | One invariant narrowed, one row added to the layout table | Yes |
-| `docs/adr/0002` | Untouched. 0004 amends it by reference rather than editing it | n/a |
+| `D1-Foundry-holds-no-plugins` in the wiki | Untouched. The Stencil decision amends it by reference rather than editing it | n/a |
 | A plugin adopting this | Every templated file renamed, its `contents` fingerprint moves, its dependents' pins break | Yes for that plugin, at the cost of a version bump |
 | A plugin not adopting this | Nothing | n/a |
 
