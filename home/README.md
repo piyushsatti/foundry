@@ -15,7 +15,7 @@ truth (evicted 2026-07-12). Machine-bound or work-sensitive content stays out
 |------|-----------|
 | `hooks/` | 32 guard/logging/nudge hooks (secret-scan, sandbox guards, conventional-commit, audit trail, …) + `lib/` |
 | `commands/` | Slash commands (`primer`, …) |
-| `agents/` | User-level subagents (`scrutineer` — research-rigor auditor) |
+| `agents/` | User-level subagents (`scrutineer` — research-rigor auditor, `warden` — ways-of-working scope gate) |
 | `bin/` | Helper executables (`bless`) |
 | `statuslines/` | Statusline scripts + `statusline-command.sh` dispatcher |
 
