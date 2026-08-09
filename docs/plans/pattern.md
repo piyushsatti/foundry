@@ -1,6 +1,6 @@
 # Plan: templating in Foundry
 
-The decision and its reasoning are in `docs/adr/0004-templating-binds-at-build-time-and-at-runtime.md`.
+The decision and its reasoning are in `docs/adr/0005-templating-binds-at-build-time-and-at-runtime.md`.
 This file is the order of work and the blast radius. Nothing here restates the argument.
 
 ## What is being built

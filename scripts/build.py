@@ -268,9 +268,17 @@ def write_lock(answer: dict, taken: list[dict], tree: Path, target: str, loss, n
     if name_the_target:
         lock["target"] = target
         lock["dropped"] = [{"kind": drop.kind, "why": drop.why} for drop in loss.dropped]
+        # Written only when there is one. A folder built from a plugin with no
+        # `only` on any rule keeps the bytes it produced before the key existed,
+        # and those bytes are inside every pin anyone has already written.
+        if loss.rules:
+            lock["rules"] = [{"at": rule.at, "run": rule.run, "why": rule.why} for rule in loss.rules]
     lock["contents"] = fingerprint(tree)
     (tree / LOCK_NAME).write_text(json.dumps(lock, indent=2) + "\n")
-    return {"target": target, "contents": lock["contents"], "dropped": lock.get("dropped", [])}
+    record = {"target": target, "contents": lock["contents"], "dropped": lock.get("dropped", [])}
+    if lock.get("rules"):
+        record["rules"] = lock["rules"]
+    return record
 
 
 def write_release(answer: dict, records: list[dict], out: Path) -> None:
@@ -338,9 +346,11 @@ def build(plugin_dir: Path, out: Path) -> dict:
         taken = copy_dependency_content(manifest, neutral, placed)
         check_provides(manifest, neutral)
         emitters.check_skills_are_one_level_deep(neutral, manifest["manifest_path"])
+        emitters.check_rules(neutral, manifest["manifest_path"], tuple(targets))
 
         declared = emitters.declared_kinds(neutral)
-        losses = emitters.plan(targets, declared, manifest["degrade"], manifest["manifest_path"])
+        rules = emitters.hook_rules(neutral)
+        losses = emitters.plan(targets, declared, manifest["degrade"], manifest["manifest_path"], rules)
 
         records = []
         for target in targets:
@@ -410,6 +420,8 @@ def main() -> int:
     for record in records:
         for drop in record["dropped"]:
             print(f"  dropped {drop['kind']} from {record['target']}: {drop['why']}")
+        for rule in record.get("rules", []):
+            print(f"  dropped the hook at {rule['at']} from {record['target']}: {rule['why']}")
     if not args.check:
         print(f"  written to: {destination}")
     return 0

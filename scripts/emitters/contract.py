@@ -45,6 +45,39 @@ HOOKS_NAME = "hooks/hooks.yaml"
 
 SKILL_NAME = "SKILL.md"
 
+# Every moment a rule may name, in the order an emitter writes them out. Order
+# is fixed here rather than left to a dictionary somewhere, because a folder's
+# bytes are inside its own `contents` fingerprint and a map that reordered
+# itself would move that number for nobody.
+#
+# The first three and the last are what every harness with a hook surface has
+# in common, and any harness carrying hooks at all expresses all four. The two
+# in the middle are not universal: a harness may carry hooks and still have no
+# event for them, which is why a rule can name the harnesses it is for. That is
+# the whole reason `only` exists.
+MOMENTS = (
+    "session-start",
+    "before-tool",
+    "after-tool",
+    "turn-end",
+    "before-compact",
+    "session-end",
+)
+
+# The four every hook-carrying harness expresses. A capability naming hooks
+# without these is a Foundry defect, checked when the framework dispatches.
+COMMON_MOMENTS = ("session-start", "before-tool", "after-tool", "session-end")
+
+# What a rule may name and nothing else. An unknown key is refused rather than
+# ignored, because an ignored key in a guard is a guard that does less than it
+# appears to.
+RULE_KEYS = ("at", "run", "match", "only", "timeout")
+
+# What YAML 1.1 turns a bare `on` key into. Named here so that a rule written
+# the old way is refused by that name instead of being reported as a rule
+# holding a key called True, which sends the author looking for a typo.
+COERCED = True
+
 
 class EmitError(Exception):
     """This harness's folder could not be written. The message is the report."""
@@ -75,6 +108,10 @@ class Capability:
 
     carries: tuple[str, ...]
     cannot: dict[str, Cannot]
+    moments: tuple[str, ...] = ()
+
+    def expresses(self, moment: str) -> bool:
+        return moment in self.moments
 
     def missing(self) -> tuple[str, ...]:
         """Kinds this capability answers for neither way."""
@@ -168,6 +205,195 @@ def hook_rules(tree: Path) -> list[dict]:
     return loaded if isinstance(loaded, list) else []
 
 
+def refuse_rule(problem: list[str], fix: list[str]) -> EmitError:
+    """A fault in the neutral rule itself, which no harness could read.
+
+    Headed differently from a harness refusal on purpose. `CANNOT SHIP THIS TO
+    <harness>` says the plugin is fine and that one folder cannot carry it.
+    This says the file is not a hook file yet, and no choice of `targets`
+    changes that.
+    """
+    lines = ["CANNOT BUILD THIS PLUGIN.", ""]
+    lines += [f"  {line}" if line else "" for line in problem]
+    lines.append("")
+    lines += [f"  {line}" if line else "" for line in fix]
+    return EmitError("\n".join(lines))
+
+
+def check_rule(rule: object, index: int, where: Path, tree: Path, targets: tuple[str, ...]) -> None:
+    """One neutral rule, against the five keys a rule has.
+
+    Every fault here is silent at the user's end. A harness does not report an
+    event name it does not know, or a command that is not there: the hook simply
+    never fires, and a hook that never fires is usually a guard somebody is
+    relying on.
+
+    Checked once on the neutral tree rather than inside the emitter that reads
+    hooks, so a plugin whose only target prunes hooks still finds out its hook
+    file is broken. The alternative is a rule that is never looked at until
+    somebody adds a harness, months later, and then reads a refusal about a line
+    they wrote long ago.
+    """
+    named = f"rule {index + 1} of {HOOKS_NAME}"
+
+    if not isinstance(rule, dict):
+        raise refuse_rule(
+            [f"{named} is not a block.", f"Declared in {where}."],
+            ["Write each rule as a block naming 'at' and 'run'."],
+        )
+
+    if COERCED in rule:
+        raise refuse_rule(
+            [
+                f"{named} names the moment with 'on'.",
+                f"Declared in {where}.",
+                "",
+                "YAML 1.1 resolves a bare 'on' to the boolean true, so that line does not",
+                "reach Foundry as a key called 'on' at all, and the rule it belongs to",
+                "names no moment. Every YAML 1.1 reader does this, so quoting it here",
+                "would only move the problem to whatever reads the file next.",
+            ],
+            ["Rename the key to 'at'. The value does not change."],
+        )
+
+    unknown = sorted(key for key in rule if key not in RULE_KEYS)
+    if unknown:
+        listed = ", ".join(repr(key) for key in unknown)
+        it = "it" if len(unknown) == 1 else "them"
+        raise refuse_rule(
+            [
+                f"{named} holds {listed}.",
+                f"A hook rule names {', '.join(RULE_KEYS)} and nothing else.",
+                f"Declared in {where}.",
+                "",
+                "An unknown key is refused rather than ignored: a guard that quietly",
+                "does less than it says is worse than one that does not build.",
+            ],
+            [f"Take {it} out."],
+        )
+
+    moment = rule.get("at")
+    if moment not in MOMENTS:
+        said = "names no 'at'" if "at" not in rule else f"is set to run at {moment!r}"
+        raise refuse_rule(
+            [
+                f"{named} {said}.",
+                f"The moments a hook can name are: {', '.join(MOMENTS)}.",
+                f"Declared in {where}.",
+                "",
+                "A moment outside them is a hook that does not fire, which is a guard",
+                "that is not there.",
+            ],
+            ["Set 'at' to one of those."],
+        )
+
+    run = rule.get("run")
+    if not isinstance(run, str) or not run:
+        raise refuse_rule(
+            [f"{named} names no 'run'.", f"Declared in {where}."],
+            ["Add 'run', the path to the file this hook runs."],
+        )
+
+    if not (tree / run).is_file():
+        raise refuse_rule(
+            [
+                f"{named} runs {run!r}, which this plugin does not hold.",
+                f"Declared in {where}.",
+                "",
+                "'run' is a path to a file inside the plugin, not a shell line, so that",
+                "a hook pointing at nothing is caught here rather than never firing on",
+                "somebody else's machine. Put any shell work inside that file.",
+            ],
+            [
+                "Either correct the path, or add the file. If 'exclude' names the",
+                "directory it lives in, that is why it is not here.",
+            ],
+        )
+
+    match = rule.get("match")
+    if match is not None and not isinstance(match, str):
+        raise refuse_rule(
+            [f"{named} has a 'match' that is not a line of text.", f"Declared in {where}."],
+            ["Write it as a single pattern, or take the line out."],
+        )
+
+    timeout = rule.get("timeout")
+    if timeout is not None and (isinstance(timeout, bool) or not isinstance(timeout, int) or timeout <= 0):
+        raise refuse_rule(
+            [
+                f"{named} has a 'timeout' of {timeout!r}.",
+                f"Declared in {where}.",
+                "",
+                "A timeout is a whole number of seconds, greater than zero. It exists",
+                "because some harnesses give a hook a budget short enough to kill work",
+                "the author meant to finish, and the only way to say otherwise is to",
+                "name the number.",
+            ],
+            ["Write a whole number of seconds, or take the line out."],
+        )
+
+    only = rule.get("only")
+    if only is not None:
+        if not isinstance(only, list) or not only or not all(isinstance(name, str) for name in only):
+            raise refuse_rule(
+                [f"{named} has an 'only' that is not a list of harness names.", f"Declared in {where}."],
+                ["Write it as a list, such as 'only: [claude-code]', or take the line out."],
+            )
+        outside = sorted(name for name in only if name not in targets)
+        if outside:
+            listed = ", ".join(repr(name) for name in outside)
+            raise refuse_rule(
+                [
+                    f"{named} is for {listed}, which this plugin does not build.",
+                    f"targets: {', '.join(targets)}.",
+                    f"Declared in {where}.",
+                    "",
+                    "A rule reserved for a harness nobody builds fires nowhere, and reads",
+                    "as a rule somebody wrote. That is the same fault as a waiver naming",
+                    "a harness outside 'targets'.",
+                ],
+                ["Either add that harness to 'targets', or correct the name in 'only'."],
+            )
+
+
+def check_rules(tree: Path, manifest_path: Path, targets: tuple[str, ...]) -> None:
+    """Every rule in the neutral file, before any harness folder is written."""
+    path = tree / HOOKS_NAME
+    if not path.is_file():
+        return
+    try:
+        rules = hook_rules(tree)
+    except Exception as broken:  # yaml raises its own family of errors
+        raise refuse_rule(
+            [f"{HOOKS_NAME} is not valid YAML: {broken}.", f"Declared in {manifest_path}."],
+            ["Fix the file."],
+        ) from broken
+
+    if not isinstance(rules, list):
+        raise refuse_rule(
+            [f"{HOOKS_NAME} does not hold a list of rules.", f"Declared in {manifest_path}."],
+            ["Write it as a list, one block per hook, each naming 'at' and 'run'."],
+        )
+
+    for index, rule in enumerate(rules):
+        check_rule(rule, index, manifest_path, tree, targets)
+
+
+def rules_for(rules: list[dict], target: str) -> tuple[list[dict], list[dict]]:
+    """The rules this harness carries, and the ones it will not, already checked.
+
+    A rule with no `only` is for every harness that carries hooks. A rule naming
+    `only` is for the harnesses it names and is absent everywhere else, which is
+    a loss the framework prints and records rather than something an emitter
+    decides quietly.
+    """
+    kept, dropped = [], []
+    for rule in rules:
+        only = rule.get("only")
+        (kept if (only is None or target in only) else dropped).append(rule)
+    return kept, dropped
+
+
 def remove(path: Path) -> None:
     """Take a file or a directory out of a target's folder, if it is there.
 
@@ -184,6 +410,7 @@ def remove(path: Path) -> None:
 
 
 __all__ = [
+    "COMMON_MOMENTS",
     "CONTENT_KINDS",
     "Cannot",
     "Capability",
@@ -192,9 +419,15 @@ __all__ = [
     "KINDS",
     "MCP_NAME",
     "METADATA_KEYS",
+    "MOMENTS",
+    "RULE_KEYS",
     "SKILL_NAME",
+    "check_rule",
+    "check_rules",
     "frontmatter",
     "hook_rules",
+    "refuse_rule",
+    "rules_for",
     "mcp_servers",
     "metadata",
     "read_json",

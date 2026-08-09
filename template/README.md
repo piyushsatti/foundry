@@ -34,13 +34,43 @@ each one translates this file and removes it.
 
 | Key | Is |
 |---|---|
-| `at` | one of `session-start`, `before-tool`, `after-tool`, `session-end` |
+| `at` | one of the six moments below |
 | `run` | a path to a file in this repository, not a shell line |
 | `match` | optional, one pattern |
+| `only` | optional, the harnesses this rule is for |
+| `timeout` | optional, a whole number of seconds greater than zero |
 
-Those four moments are what every harness has in common. A moment outside them
-cannot be written for all of them, and a hook that does not fire is a guard that
-is not there, so the build refuses one rather than approximate it.
+A rule naming anything else is refused rather than ignored, because an ignored
+key in a guard is a guard that does less than it appears to.
+
+| Moment | Runs |
+|---|---|
+| `session-start` | when a session begins |
+| `before-tool` | before a tool call |
+| `after-tool` | after a tool call |
+| `turn-end` | when the assistant has finished responding |
+| `before-compact` | before the context is compacted |
+| `session-end` | when a session ends |
+
+The first three and the last are what every harness with a hook surface has in
+common, so any harness that carries hooks at all carries those four. `turn-end`
+and `before-compact` are not universal: a harness can carry hooks and still have
+no event for either, and today Claude Code is the only one Foundry emits for
+that has both.
+
+That is what `only` is for. Name the harnesses a rule is for and it is absent
+everywhere else, recorded as a loss on every build and written into the lock
+file of each folder that does not carry it:
+
+```yaml
+- at: before-compact
+  run: hooks/save.sh
+  only: [claude-code]
+```
+
+A moment outside the six is a hook that does not fire, and so is a rule reserved
+for harnesses that carry no hooks in this build. Both are refused rather than
+approximated.
 
 `run` is a path so that the build can check the file is really there and really
 ships. Put any shell work inside that file. Note that `exclude` in the manifest
@@ -137,9 +167,20 @@ empty wrapper and dropping `pi` from `targets` is the honest answer.
 
 ## Depending on another plugin
 
-Add it under `requires.plugins` in the manifest with an exact pin, taken from
-the `contents` value in that plugin's own lock file, and list what to take. A
-pin never points at a moving target: it has to mean the same thing tomorrow.
+Add it under `requires.plugins` in the manifest with an exact pin, and list what
+to take. A pin never points at a moving target: it has to mean the same thing
+tomorrow.
+
+The pin is the fingerprint of that plugin's **source checkout**. It is not the
+`contents` value in its lock file, which fingerprints what that plugin shipped
+and is a different number. Write any placeholder and build once: the refusal
+reports the fingerprint actually on disk, and that is the number to keep.
+
+Read it from a checkout that has not been built into. The output directory sits
+inside the fingerprint, so a dependency that has been built fingerprints
+differently from the same source freshly cloned, and a pin taken beside a
+`dist/` is one no clean checkout or CI runner can reproduce. Build somewhere
+outside the tree, or delete the output before reading a pin.
 
 If two things you depend on hand over something with the same name, or expect
 different builds of the same third plugin, the build stops and names both

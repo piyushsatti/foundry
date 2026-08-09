@@ -30,14 +30,14 @@ at it. Foundry has no opinion and no involvement.
 | `scripts/resolve.py` | Reads a plugin's manifest, walks its dependencies, settles which Foundry version applies and fingerprints everything. Runs inside a plugin repository, not inside Foundry |
 | `scripts/build.py` | Copies the plugin's own content, copies what it takes from each dependency, catches collisions, checks `provides`. Then hands that staged tree to one emitter per harness named in `targets` and writes `foundry.lock.json` inside each folder. Knows nothing about any harness itself |
 | `scripts/emitters/__init__.py` | The registry of which module emits which harness, the loss policy, the pruning that takes out every kind a harness cannot read, and the skill depth check. Everything about loss lives here and in no emitter |
-| `scripts/emitters/contract.py` | What every emitter module declares, and the file helpers every emitter shares: `write_json`, `metadata`, `skill_dirs`, `frontmatter`, `mcp_servers`, `hook_rules`, `remove`, `read_json` |
+| `scripts/emitters/contract.py` | What every emitter module declares, and the file helpers every emitter shares: `write_json`, `metadata`, `skill_dirs`, `frontmatter`, `mcp_servers`, `hook_rules`, `remove`, `read_json`. Also the moment vocabulary and the validation of a neutral hook rule, checked once before any harness folder is written |
 | `scripts/emitters/<harness>.py` | One harness's folder, and nothing else. `claude_code.py`, `agent_plugins.py` which also serves Codex, `skills_tree.py` which serves OpenCode and Pi, `instructions.py` |
 | `template/` | The starting shape of a plugin repository: manifest, empty content directories, CI workflow, its own README and CLAUDE.md |
 | `template/scripts/foundry.py` | The bootstrap stub. The one file genuinely copied into a plugin repo rather than fetched |
-| `VERSION` | Foundry's own version, currently 0.1.0 |
+| `VERSION` | Foundry's own version, currently 0.1.1 |
 | `ruff.toml` | The lint and format gate, pinned so it means the same thing on any machine. Development tooling only: nothing under `scripts/` imports it |
 | `tests/` | Fixture plumbing in `repos.py` that writes throwaway plugin repos, plus the rule tests under `tests/scripts/`. Run with `python3 -m unittest discover -s tests` |
-| `docs/adr/` | The decisions. `0002-foundry-as-template-and-dependency.md` says what Foundry is; `0003-multi-harness-emitters.md` says what it emits. Both current. `0004-templating-binds-at-build-time-and-at-runtime.md` is proposed, not accepted, and narrows one invariant below. `0001` is superseded history |
+| `docs/adr/` | The decisions. `0002-foundry-as-template-and-dependency.md` says what Foundry is; `0003-multi-harness-emitters.md` says what it emits; `0004-two-more-moments-and-a-rule-level-waiver.md` says why a per-harness override lives on a rule and not on a kind. All three current. `0005-templating-binds-at-build-time-and-at-runtime.md` is proposed, not accepted, and narrows two invariants below. `0001` is superseded history |
 | `docs/plans/` | The order of work for something not built yet, and its blast radius. A plan is deleted once its work has landed, unlike an ADR |
 | `.github/workflows/` | Foundry's own CI. Currently stale, see below |
 
@@ -46,9 +46,9 @@ at it. Foundry has no opinion and no involvement.
 | Invariant | Cost of breaking it |
 |---|---|
 | The bootstrap stub stays tiny and almost never changes | It is the only file that ever needs re-copying by hand across every plugin repository. Anything that might need fixing later belongs in `scripts/`, where one fix reaches everyone |
-| Nothing resolves on a user's machine | The whole conflict-free property comes from a plugin arriving as one finished folder. Any feature that makes an installed plugin fetch, resolve or assemble something destroys it. `docs/adr/0004` proposes narrowing this to fetching and assembling only, so that a plugin may render text already inside its own folder. Proposed, not accepted: until that ADR is accepted this row stands as written |
+| Nothing resolves on a user's machine | The whole conflict-free property comes from a plugin arriving as one finished folder. Any feature that makes an installed plugin fetch, resolve or assemble something destroys it. `docs/adr/0005` proposes narrowing this to fetching and assembling only, so that a plugin may render text already inside its own folder. Proposed, not accepted: until that ADR is accepted this row stands as written |
 | The build never picks a winner | Every ambiguity stops the build and names both sides. Choosing silently means nobody finds out a substitution happened |
-| There is no silent drop | A declared kind a harness cannot represent stops the build, naming the kind, the harness, the manifest line and both ways forward. Or the author wrote that loss down under `degrade.<harness>.drop`, and then it is printed at build time, recorded in that folder's `foundry.lock.json`, and recorded again in `foundry.release.json`. There is no third outcome. This is the winner rule applied to harnesses: a diminished folder is always a line somebody wrote, never something the tool concluded |
+| There is no silent drop | A declared kind a harness cannot represent stops the build, naming the kind, the harness, the manifest line and both ways forward. Or the author wrote that loss down under `degrade.<harness>.drop`, and then it is printed at build time, recorded in that folder's `foundry.lock.json`, and recorded again in `foundry.release.json`. A single hook rule follows the same two outcomes at its own smaller grain: a rule naming a moment a harness has no event for stops the build, or the rule already names `only` and the harness it excludes is a recorded, printed drop, and a rule excluded from every harness that carries hooks in this build stops the build too, because a rule dropped everywhere is a guard that runs nowhere no matter how many of those drops are on the record. There is no third outcome, at either grain. This is the winner rule applied to harnesses: a diminished folder is always a line somebody wrote, never something the tool concluded |
 | A Claude Code folder moves only on purpose, with a before-and-after diff run first | Every `contents` fingerprint already sitting in a shipped lock file was measured on those bytes, and every pin written against one stops matching the moment they move, silently, on somebody else's machine. `emitters/claude_code.py` still writes the manifest exactly as the old `write_metadata` did: same `METADATA_KEYS` tuple, same order, same path. A manifest that names no `targets` still gets a lock file with no `target` and no `dropped` field, because a lock file is part of the folder that ships. The folder has moved twice, both before `v0.1.0` and both with the before-and-after listing read. Once when `mcp.json` and `hooks/hooks.yaml` started being translated rather than shipped unread, which moved it only for plugins declaring an MCP server or a hook. Once when a `.gitkeep` at the top of a content directory stopped shipping, which moved it only for plugins carrying one |
 | A capability answers for every kind | `carries` and `cannot` in one `Capability` together name all six kinds in `KINDS`, and the framework refuses to dispatch otherwise, calling it a Foundry defect. When a seventh kind is added, no harness can carry it silently on the grounds that nobody re-read that module |
 | No harness folder holds a file that harness does not read | An unread file sits outside whatever that harness validates and inside the folder's `contents` fingerprint, so it ships and the record cannot explain why it is there. This is the same failure as the author's local `.claude` settings reaching people who installed a plugin. An emitter that translates a neutral file removes the neutral one as the last step of the translation, and `drop_placeholders` in `build.py` sweeps a dot file out of the top of each content directory before any emitter runs, dropping the directory if that leaves it empty |
@@ -72,9 +72,11 @@ own event vocabulary, so an emitter that carries hooks translates this file and 
 
 | Key | Is |
 |---|---|
-| `at` | one of `session-start`, `before-tool`, `after-tool`, `session-end`, the four moments five harnesses have in common |
+| `at` | one of `session-start`, `before-tool`, `after-tool`, `turn-end`, `before-compact`, `session-end`. `session-start`, `before-tool`, `after-tool` and `session-end` are universal: every hook-carrying harness expresses all four. `turn-end` and `before-compact` are not: only Claude Code has an event for either today |
 | `run` | a path to a file inside the plugin. Not a shell line, so the build can check the hook has something to run. Shell work goes inside that file |
 | `match` | optional, one pattern, passed to whatever the harness calls a matcher |
+| `only` | optional, a list of harness names. The rule is carried by the harnesses it names and is a recorded, printed drop everywhere else. Refused if it names a harness outside `targets`, and refused again if no harness carrying hooks in this build is left to run the rule |
+| `timeout` | optional, a whole number of seconds greater than zero, carried into the Claude Code hook entry |
 
 Any other key is refused rather than ignored, because an ignored key in a guard is a guard that does
 less than it appears to.
@@ -115,7 +117,7 @@ files into the names Claude Code opens, and removes the neutral one each time.
 | Neutral | Claude Code reads | Also changed |
 |---|---|---|
 | `mcp.json` | `.mcp.json` | only `mcpServers` crosses over. `$schema` names the portable specification the source was written against, and Claude Code's format does not name it |
-| `hooks/hooks.yaml` | `hooks/hooks.json` | the four moments become `SessionStart`, `PreToolUse`, `PostToolUse`, `SessionEnd`. Only the file goes: `hooks/` is a content directory and the scripts the rules run live in it |
+| `hooks/hooks.yaml` | `hooks/hooks.json` | the six moments become `SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`, `PreCompact`, `SessionEnd`. Only the file goes: `hooks/` is a content directory and the scripts the rules run live in it |
 | both | | `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` become `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}`. Claude Code knows nothing of the shorter pair, which would reach a user as literal text inside a path |
 
 Transports need no translation: Claude Code takes `streamable-http` as an alias for its own `http`,
@@ -180,7 +182,7 @@ python3 scripts/resolve.py template --print
 ```
 
 `--check` builds into a temporary directory and throws it away. All three exit 0 today, the suite at
-65 tests. Run them after any change to `scripts/` or `template/`.
+73 tests. Run them after any change to `scripts/` or `template/`.
 
 Python style is `ruff`, over the same four paths for both commands, before committing:
 
@@ -225,9 +227,12 @@ dependency loop, two sources for one name, and a `provides` claim absent from th
 a kind a harness cannot carry, hooks on OpenCode and on Pi, an MCP server on Pi, a harness name
 Foundry does not know, a `degrade` block naming a harness not in `targets`, an empty `targets` list,
 a skill nested more than one level deep, a manifest the author already wrote being overwritten, and
-the case where every named harness would drop everything the plugin holds. Hooks have four of their
-own: a rule written with `on`, a moment outside the four, a `run` naming a file the plugin does not
-hold, and a key a rule does not name.
+the case where every named harness would drop everything the plugin holds. Hooks have their own on
+top of that: a rule written with `on`, a moment outside the six, a key a rule does not name, a `run`
+naming a file the plugin does not hold, a `match` that is not a line of text, a `timeout` that is not
+a whole number greater than zero, an `only` naming a harness the plugin does not build, and an
+`only` naming only harnesses that carry no hooks in this build, which leaves the rule absent from
+every folder written.
 
 It also covers the eight things that fail silently or crash rather than refusing: the author's local
 `.claude` settings reaching the shipped folder, a refusal on one harness leaving a half-written
@@ -258,12 +263,15 @@ rewritten so every fence names something this repository can produce, which took
 described a scratch layout naming `docs/<product>/` and `research/`, both of which left in the
 split.
 
-`v0.1.0` is tagged on this machine and has not been pushed, so the bootstrap stub cannot reach it
-over the network yet. A plugin repository can still build against it today by pointing
-`foundry_source:` in its manifest at this checkout, or by setting `FOUNDRY_SOURCE` to the same path,
-because git clones a local directory as readily as a URL. That path is proven: a fresh copy of
-`template/` builds through the stub, twice, to the same five fingerprints the in-repo `--check`
-prints. Pushing the tag is Pi's call and has not been made.
+`v0.1.0` is tagged and pushed. A fresh plugin repository needs no `foundry_source:` line and no
+`FOUNDRY_SOURCE` override: the bootstrap stub clones the tag from GitHub and builds. Proven end to
+end from a copy of `template/` with neither set, to the same five fingerprints the in-repo `--check`
+prints.
+
+That paragraph said the opposite until 2026-08-09, and it stayed wrong for the few minutes between
+the push and this edit. In those minutes twelve agents converting the plugin repositories read it,
+believed it, and each one worked around a problem that no longer existed. A note about the state of
+the world is a claim with a shelf life, and this file is read by things that cannot check it.
 
 ## Working rules for this repo
 
