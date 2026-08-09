@@ -64,8 +64,9 @@ python3 scripts/foundry.py check
 
 The stub fetches the tag `v<version>` from the Foundry repository, taking `<version>` from the
 `foundry:` line of the manifest, and caches the release in `.foundry/`, which is never committed. So
-a plugin repository can only build once that tag is published. None is published yet. Until the
-first one is cut, build against a Foundry checkout directly:
+a plugin repository can only build once that tag is published. `v0.1.0` is, so the stub works over
+the network as it stands. To build against a Foundry checkout instead, which is what you want while
+changing Foundry itself:
 
 ```
 python3 <path-to-foundry>/scripts/build.py . --check
@@ -74,9 +75,9 @@ python3 <path-to-foundry>/scripts/build.py . --check
 Then edit `foundry.plugin.yaml`: set `id`, `version` and `description`, name the harnesses under
 `targets`, and list what the plugin hands over under `provides`. Skills go in `skills/`, one
 directory each, exactly one level deep. Agents go in `agents/`, one file each. Commands go in
-`commands/`, one file each. Hooks go in `hooks/hooks.yaml`, one block each naming `at`, `run` and
-optionally `match`. MCP servers go in `mcp.json` at the repository root. Anything development-only
-goes under `exclude` so it stays out of what people download.
+`commands/`, one file each. Hooks go in `hooks/hooks.yaml`, one block each naming `at` and `run`, and
+optionally `match`, `only` and `timeout`. MCP servers go in `mcp.json` at the repository root.
+Anything development-only goes under `exclude` so it stays out of what people download.
 
 Those last two are neutral forms and neither ships as written. Every harness with a hook surface has
 its own event vocabulary, and Claude Code reads its MCP servers from `.mcp.json` rather than

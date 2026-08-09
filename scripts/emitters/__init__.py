@@ -37,20 +37,38 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from resolve import CONTENT_KINDS, KINDS  # noqa: E402
 
 from .contract import (  # noqa: E402
+    COMMON_MOMENTS,
     HOOKS_NAME,
     MCP_NAME,
+    MOMENTS,
     SKILL_NAME,
     Cannot,
     Capability,
     EmitError,
+    check_rules,
     frontmatter,
     hook_rules,
     mcp_servers,
     metadata,
     remove,
+    rules_for,
     skill_dirs,
     write_json,
 )
+
+# What `build.py` calls on this package, and the whole of it. `check_rules` and
+# `hook_rules` are defined in `contract.py` and re-exported here on purpose, so
+# the build reaches every check through one name rather than reaching past this
+# package into the module behind it.
+__all__ = [
+    "EmitError",
+    "check_rules",
+    "check_skills_are_one_level_deep",
+    "declared_kinds",
+    "hook_rules",
+    "plan",
+    "run",
+]
 
 # Every harness Foundry emits, and the module that emits it. One module may
 # serve several harnesses when they share a package shape; each still declares
@@ -74,11 +92,27 @@ class Drop:
 
 
 @dataclass(frozen=True)
+class RuleDrop:
+    """One hook rule that will not be in one harness's folder, on purpose.
+
+    A kind-level drop takes a whole surface away. This takes one rule, because
+    a moment outside the four every harness has in common is carried by some
+    and not others, and a plugin that wanted one should not have to give up
+    hooks everywhere else to get it.
+    """
+
+    at: str
+    run: str
+    why: str
+
+
+@dataclass(frozen=True)
 class Loss:
     """What one harness will not carry. Empty is the ordinary case."""
 
     target: str
     dropped: tuple[Drop, ...]
+    rules: tuple[RuleDrop, ...] = ()
 
     def kinds(self) -> tuple[str, ...]:
         return tuple(drop.kind for drop in self.dropped)
@@ -143,7 +177,45 @@ def capability(target: str) -> Capability:
             f"{', '.join(answer.doubled())}.\n"
             f"  This is a Foundry defect, not a problem with the plugin."
         )
+    check_moments(target, module, answer)
     return answer
+
+
+def check_moments(target: str, module: object, answer: Capability) -> None:
+    """A harness that carries hooks names the moments it expresses, and no others.
+
+    Answered here for the same reason a capability answers for every kind: the
+    gap is found on any build rather than on the one plugin that happens to
+    name the moment nobody re-read. A harness carrying hooks and expressing
+    nothing would prune no rule and translate none either, shipping a hook file
+    with no events in it.
+    """
+    name = getattr(module, "__name__", str(module))
+    carries_hooks = "hooks" in answer.carries
+    if not carries_hooks:
+        if answer.moments:
+            raise EmitError(
+                f"{name} says {target} cannot carry hooks but names moments.\n"
+                f"  This is a Foundry defect, not a problem with the plugin."
+            )
+        return
+
+    outside = tuple(moment for moment in answer.moments if moment not in MOMENTS)
+    if outside:
+        raise EmitError(
+            f"{name} says {target} expresses {', '.join(outside)}, which is not a moment.\n"
+            f"  The moments are: {', '.join(MOMENTS)}.\n"
+            f"  This is a Foundry defect, not a problem with the plugin."
+        )
+
+    absent = tuple(moment for moment in COMMON_MOMENTS if moment not in answer.moments)
+    if absent:
+        raise EmitError(
+            f"{name} says {target} carries hooks but does not express "
+            f"{', '.join(absent)}.\n"
+            f"  Those are what every harness with a hook surface has in common.\n"
+            f"  This is a Foundry defect, not a problem with the plugin."
+        )
 
 
 # --------------------------------------------------------- what was declared
@@ -215,7 +287,56 @@ def check_skills_are_one_level_deep(tree: Path, manifest_path: Path) -> None:
 
 
 # ----------------------------------------------------------- the loss policy
-def assess(target: str, declared: dict[str, list[str]], waived: list[str], manifest_path: Path) -> Loss:
+def assess_rules(
+    target: str, rules: list[dict], answer: Capability, manifest_path: Path
+) -> tuple[RuleDrop, ...]:
+    """The rules this harness will not carry, or a refusal naming the moment.
+
+    A rule naming a moment this harness has no event for is a hook that never
+    fires. Left alone it is the same silence as a kind a harness cannot
+    represent, so it is the same policy: refuse, naming the moment and the
+    harness and the one line that would put the loss on the record, or record
+    what the author already wrote down.
+
+    The waiver is the rule's own `only`, not a manifest block, because the loss
+    is one rule rather than a surface. A `degrade` line taking `hooks` away from
+    a harness to get one moment past it would take every other rule with it.
+    """
+    if "hooks" not in answer.carries:
+        return ()
+
+    kept, absent = rules_for(rules, target)
+    refused = [rule for rule in kept if not answer.expresses(rule["at"])]
+    if refused:
+        lines = [f"CANNOT SHIP THIS TO {target.upper()}.", ""]
+        for rule in refused:
+            lines.append(f"  A rule runs at '{rule['at']}', which {target} has no event for.")
+        lines += [
+            f"  Declared in {manifest_path}.",
+            "",
+            f"  {target} expresses: {', '.join(answer.moments)}.",
+            "",
+            "  A hook that does not fire is a guard that is not there, so this is a",
+            "  refusal rather than a rule quietly left out of one folder.",
+            "",
+            "  Either drop that harness from 'targets', or name the harnesses the rule",
+            "  is for, as 'only: [<harness>]', so the loss is on the record.",
+        ]
+        raise EmitError("\n".join(lines))
+
+    return tuple(
+        RuleDrop(at=rule["at"], run=rule["run"], why=f"the rule is only for {', '.join(rule['only'])}")
+        for rule in absent
+    )
+
+
+def assess(
+    target: str,
+    declared: dict[str, list[str]],
+    waived: list[str],
+    manifest_path: Path,
+    rules: list[dict] | None = None,
+) -> Loss:
     """Refuse, or record what the author already agreed to lose. Nothing else.
 
     Every kind-level loss can be waived, including the ones that gut a package:
@@ -241,7 +362,14 @@ def assess(target: str, declared: dict[str, list[str]], waived: list[str], manif
 
     if refused:
         raise EmitError(refusal(target, manifest_path, refused))
-    return Loss(target=target, dropped=tuple(dropped))
+
+    # A waived `hooks` takes every rule with it, and that loss is already on the
+    # record as the kind. Assessing rules under it would print the same loss a
+    # second time, once per rule, in the name of a folder that has no hooks.
+    waived_away = any(drop.kind == "hooks" for drop in dropped)
+    assessed = () if waived_away else assess_rules(target, rules or [], answer, manifest_path)
+
+    return Loss(target=target, dropped=tuple(dropped), rules=assessed)
 
 
 def name_item(kind: str, item: str) -> str:
@@ -278,8 +406,62 @@ def refusal(target: str, manifest_path: Path, refused: list[tuple[str, list[str]
     return "\n".join(lines)
 
 
+def check_rules_reach_a_harness(
+    targets: list[str], losses: dict[str, Loss], rules: list[dict], manifest_path: Path
+) -> None:
+    """A rule kept by no harness in this build is refused.
+
+    `only` narrows a rule to the harnesses named, and `check_rule` already
+    refuses a name outside 'targets'. That is not enough on its own. A name can
+    be in 'targets' and still carry no hooks, either because that harness has no
+    hook surface at all or because 'degrade' took hooks away from it, and either
+    way the rule is absent from every folder the build writes.
+
+    Both halves of that are recorded, one as a rule drop and one as a kind drop,
+    so nothing is silent. But they are recorded against two different harnesses
+    and read separately as ordinary losses, and what they add up to is a guard
+    the author wrote that runs nowhere. That is the outcome this build system
+    exists to refuse, so it is refused here, where every harness's loss is known
+    and no folder has been written yet.
+    """
+    if not rules:
+        return
+
+    alive = [
+        target
+        for target in targets
+        if "hooks" in capability(target).carries
+        and not any(drop.kind == "hooks" for drop in losses[target].dropped)
+    ]
+
+    nowhere = [rule for rule in rules if not any(rules_for([rule], target)[0] for target in alive)]
+    if not nowhere:
+        return
+
+    lines = ["NO HARNESS WOULD RUN THIS HOOK.", ""]
+    for rule in nowhere:
+        only = rule.get("only")
+        reserved = f"is only for {', '.join(only)}" if only else "is for every harness"
+        lines.append(f"  The rule at '{rule['at']}' {reserved}, and none of those carries hooks here.")
+    lines += [
+        f"  Declared in {manifest_path}.",
+        "",
+        f"  Carrying hooks in this build: {', '.join(alive) if alive else 'no harness in targets'}.",
+        "",
+        "  A rule absent from every folder the build writes is a guard that runs",
+        "  nowhere, and the build reporting success is what makes it dangerous.",
+        "",
+        "  Either name a harness that carries hooks in 'only', or take the rule out.",
+    ]
+    raise EmitError("\n".join(lines))
+
+
 def plan(
-    targets: list[str], declared: dict[str, list[str]], degrade: dict[str, list[str]], manifest_path: Path
+    targets: list[str],
+    declared: dict[str, list[str]],
+    degrade: dict[str, list[str]],
+    manifest_path: Path,
+    rules: list[dict] | None = None,
 ) -> dict[str, Loss]:
     """One Loss per harness, or the first refusal, decided before anything is written.
 
@@ -287,8 +469,9 @@ def plan(
     cannot ship one of them stops without having written the others. Half a
     release is worse than none: the assets that did appear look complete.
     """
-    losses = {target: assess(target, declared, degrade.get(target, []), manifest_path) for target in targets}
-
+    losses = {
+        target: assess(target, declared, degrade.get(target, []), manifest_path, rules) for target in targets
+    }
     if declared and all(set(loss.kinds()) == set(declared) for loss in losses.values()):
         rows = "\n".join(f"    {target:<16}drops {', '.join(losses[target].kinds())}" for target in targets)
         raise EmitError(
@@ -300,6 +483,12 @@ def plan(
             "  Either name a harness that carries what this plugin holds, or stop\n"
             "  declaring the kinds nothing carries."
         )
+
+    # After the refusal above, never before it. A plugin holding hooks and
+    # nothing else, with every harness dropping them, is both faults at once,
+    # and the one that says the whole release would be empty is the one worth
+    # reading first.
+    check_rules_reach_a_harness(targets, losses, rules or [], manifest_path)
     return losses
 
 

@@ -34,28 +34,22 @@ own documentation rather than inferred:
                     user as a literal string in a path. Both are renamed
                     everywhere they appear in either translated file.
 
-  the hook events   The neutral vocabulary is the four moments five harnesses
-                    have in common. Claude Code names about thirty events, and
-                    all four moments land on exactly one each, so nothing here
-                    is approximated. A moment with no exact event would be a
-                    hook that does not fire, which is a false security claim,
-                    and it would be refused rather than mapped to the nearest
-                    thing.
+  the hook events   Claude Code names about thirty events, and every moment in
+                    the neutral vocabulary lands on exactly one of them, so
+                    nothing here is approximated. A moment with no exact event
+                    would be a hook that does not fire, which is a false
+                    security claim, and the framework refuses it rather than
+                    mapping it to the nearest thing.
 
-What a neutral hook rule is, stated here because this is the first emitter to
-read one: a list of blocks, each naming `at`, `run`, and optionally `match`.
-`run` is a path to a file inside the plugin, not a shell line, so that Foundry
-can check at build time that the hook has something to run. Anything else in a
-rule is refused rather than ignored, because an ignored key in a guard is a
-guard that does less than it appears to.
+Claude Code is the only harness that expresses all six moments today, which is
+why it is the only one that can carry `turn-end` and `before-compact`. Those
+two are what a plugin needs to act at the end of a turn or before the context
+is compacted, and no other harness Foundry emits for has an event for either.
 
-The moment is named `at` and not `on` because YAML 1.1 resolves a bare `on` to
-the boolean true, and every YAML 1.1 reader does it, so `on: session-start`
-parses as a rule keyed `true` rather than as a rule naming a moment. That went
-unnoticed for as long as nothing read a rule. A key that means one thing
-written and another parsed is not a format, so the key is a word YAML leaves
-alone and the old spelling is refused by name below rather than silently
-becoming an unknown key.
+The rule itself is checked once against the neutral vocabulary, in
+`contract.check_rules`, before any folder is written. Nothing in this file
+validates a rule: a plugin whose only target prunes hooks would then never find
+out its hook file is broken.
 """
 
 from __future__ import annotations
@@ -67,19 +61,21 @@ from .contract import (
     HOOKS_NAME,
     KINDS,
     MCP_NAME,
+    MOMENTS,
     Capability,
     EmitError,
     hook_rules,
     metadata,
     read_json,
     remove,
+    rules_for,
     write_json,
 )
 
 TARGETS = ("claude-code",)
 
 CAPABILITIES = {
-    "claude-code": Capability(carries=KINDS, cannot={}),
+    "claude-code": Capability(carries=KINDS, cannot={}, moments=MOMENTS),
 }
 
 METADATA_DIR = ".claude-plugin"
@@ -98,22 +94,23 @@ PATH_VARIABLES = (
     ("${PLUGIN_DATA}", "${CLAUDE_PLUGIN_DATA}"),
 )
 
-# The four neutral moments, and the one Claude Code event each names. Ordered,
-# because this is the order the events are written in and a folder's bytes are
-# inside its own `contents` fingerprint.
-MOMENTS = {
+# Each neutral moment, and the one Claude Code event it names. Keyed by moment
+# and read in the order of MOMENTS rather than the order written here, so this
+# map cannot reorder the events in a folder whose bytes are inside its own
+# `contents` fingerprint.
+#
+# `turn-end` is Stop, which runs when Claude has finished responding, and is the
+# last point in a turn a plugin can act. `before-compact` is PreCompact, which
+# runs before the context is compacted, automatically or by hand. Both were
+# verified against a live client rather than read off a list.
+MOMENT_EVENTS = {
     "session-start": "SessionStart",
     "before-tool": "PreToolUse",
     "after-tool": "PostToolUse",
+    "turn-end": "Stop",
+    "before-compact": "PreCompact",
     "session-end": "SessionEnd",
 }
-
-RULE_KEYS = ("at", "run", "match")
-
-# What YAML 1.1 turns a bare `on` key into. Named here so that a rule written
-# the old way is refused by that name instead of being reported as a rule
-# holding a key called True, which sends the author looking for a typo.
-COERCED = True
 
 
 def refuse(problem: list[str], fix: list[str]) -> EmitError:
@@ -186,104 +183,8 @@ def translate_mcp(manifest: dict, tree: Path) -> None:
 
 
 # ----------------------------------------------------------- hooks/hooks.yaml
-def check_rule(rule: object, index: int, where: Path, tree: Path) -> None:
-    """One neutral rule, against the only three keys a rule has.
-
-    Every fault here is silent at the user's end. Claude Code does not report an
-    event name it does not know, or a command that is not there: the hook simply
-    never fires, and a hook that never fires is usually a guard somebody is
-    relying on.
-    """
-    named = f"rule {index + 1} of {HOOKS_NAME}"
-
-    if not isinstance(rule, dict):
-        raise refuse(
-            [f"{named} is not a block.", f"Declared in {where}."],
-            ["Write each rule as a block naming 'on' and 'run'."],
-        )
-
-    if COERCED in rule:
-        raise refuse(
-            [
-                f"{named} names the moment with 'on'.",
-                f"Declared in {where}.",
-                "",
-                "YAML 1.1 resolves a bare 'on' to the boolean true, so that line does not",
-                "reach Foundry as a key called 'on' at all, and the rule it belongs to",
-                "names no moment. Every YAML 1.1 reader does this, so quoting it here",
-                "would only move the problem to whatever reads the file next.",
-            ],
-            ["Rename the key to 'at'. The value does not change."],
-        )
-
-    unknown = sorted(key for key in rule if key not in RULE_KEYS)
-    if unknown:
-        listed = ", ".join(repr(key) for key in unknown)
-        it = "it" if len(unknown) == 1 else "them"
-        raise refuse(
-            [
-                f"{named} holds {listed}.",
-                f"A hook rule names {', '.join(RULE_KEYS)} and nothing else.",
-                f"Declared in {where}.",
-                "",
-                "An unknown key is refused rather than ignored: a guard that quietly",
-                "does less than it says is worse than one that does not build.",
-            ],
-            [f"Take {it} out."],
-        )
-
-    moment = rule.get("at")
-    if moment not in MOMENTS:
-        said = "names no 'at'" if "at" not in rule else f"is set to run at {moment!r}"
-        raise refuse(
-            [
-                f"{named} {said}.",
-                f"The moments a hook can name are: {', '.join(MOMENTS)}.",
-                f"Declared in {where}.",
-                "",
-                "Those four are what every harness Foundry emits for has in common.",
-                "A moment outside them cannot be written for all of them, and a hook",
-                "that does not fire is a guard that is not there.",
-            ],
-            ["Set 'on' to one of the four."],
-        )
-
-    run = rule.get("run")
-    if not isinstance(run, str) or not run:
-        raise refuse(
-            [
-                f"{named} names no 'run'.",
-                f"Declared in {where}.",
-            ],
-            ["Add 'run', the path to the file this hook runs."],
-        )
-
-    if not (tree / run).is_file():
-        raise refuse(
-            [
-                f"{named} runs {run!r}, which this plugin does not hold.",
-                f"Declared in {where}.",
-                "",
-                "'run' is a path to a file inside the plugin, not a shell line, so that",
-                "a hook pointing at nothing is caught here rather than never firing on",
-                "somebody else's machine. Put any shell work inside that file.",
-            ],
-            [
-                "Either correct the path, or add the file. If 'exclude' names the",
-                "directory it lives in, that is why it is not here.",
-            ],
-        )
-
-    match = rule.get("match")
-    if match is not None and not isinstance(match, str):
-        raise refuse(
-            [f"{named} has a 'match' that is not a line of text.", f"Declared in {where}."],
-            ["Write it as a single pattern, or take the line out."],
-        )
-
-
-def translate_hooks(manifest: dict, tree: Path) -> None:
-    """The four moments as Claude Code's own events, with the neutral file gone.
+def translate_hooks(target: str, tree: Path) -> None:
+    """Each moment as Claude Code's own event, with the neutral file gone.
 
     Only `hooks/hooks.yaml` is removed, never the `hooks/` directory: it is a
     content directory and the scripts the rules run usually live beside it.
@@ -292,36 +193,21 @@ def translate_hooks(manifest: dict, tree: Path) -> None:
     the author wrote them, so the same source always produces the same bytes.
     A folder's bytes are inside its own `contents` fingerprint, and a map whose
     order came from a dictionary somewhere would move that number for nobody.
+
+    Every rule reaching here has already been checked against the neutral
+    vocabulary, and every rule this harness does not carry has already been
+    printed and recorded by the framework. What is left is translation.
     """
     neutral = tree / HOOKS_NAME
     if not neutral.is_file():
         return
 
-    where = manifest["root"] / HOOKS_NAME
-    try:
-        rules = hook_rules(tree)
-    except Exception as broken:  # yaml raises its own family of errors
-        raise refuse(
-            [f"{HOOKS_NAME} is not valid YAML: {broken}.", f"Declared in {where}."],
-            ["Fix the file."],
-        ) from broken
-
-    if not isinstance(rules, list):
-        raise refuse(
-            [
-                f"{HOOKS_NAME} does not hold a list of rules.",
-                f"Declared in {where}.",
-            ],
-            ["Write it as a list, one block per hook, each naming 'on' and 'run'."],
-        )
-
-    for index, rule in enumerate(rules):
-        check_rule(rule, index, where, tree)
+    kept, _ = rules_for(hook_rules(tree), target)
 
     events: dict[str, list[dict]] = {}
-    for moment, event in MOMENTS.items():
+    for moment in MOMENTS:
         entries = []
-        for rule in rules:
+        for rule in kept:
             if rule["at"] != moment:
                 continue
             entry: dict[str, object] = {}
@@ -331,10 +217,16 @@ def translate_hooks(manifest: dict, tree: Path) -> None:
             # the form Claude Code's own documentation uses: it survives an
             # install path with a space in it without quoting the whole line
             # into a single argument.
-            entry["hooks"] = [{"type": "command", "command": f'"${{CLAUDE_PLUGIN_ROOT}}"/{rule["run"]}'}]
+            hook: dict[str, object] = {
+                "type": "command",
+                "command": f'"${{CLAUDE_PLUGIN_ROOT}}"/{rule["run"]}',
+            }
+            if rule.get("timeout"):
+                hook["timeout"] = rule["timeout"]
+            entry["hooks"] = [hook]
             entries.append(entry)
         if entries:
-            events[event] = entries
+            events[MOMENT_EVENTS[moment]] = entries
 
     remove(neutral)
     if events:
@@ -346,4 +238,4 @@ def emit(target: str, manifest: dict, tree: Path) -> None:
     """The manifest Claude Code reads, then the two files it reads instead of the neutral ones."""
     write_json(tree / METADATA_DIR / METADATA_NAME, metadata(manifest))
     translate_mcp(manifest, tree)
-    translate_hooks(manifest, tree)
+    translate_hooks(target, tree)
