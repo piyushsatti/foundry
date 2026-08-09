@@ -1,14 +1,14 @@
-# ADR 0004: Templating binds in two places, and one of them is the user's machine
+# ADR 0005: Templating binds in two places, and one of them is the user's machine
 
-**Status:** proposed (2026-08-09) · **Decided by:** Pi, in the pattern-templating session.
+**Status:** accepted (2026-08-09) · **Decided by:** Pi. The language is Stencil.
 **Amends:** ADR 0002's decision that nothing is resolved on a user's machine, and the matching
 invariant in `CLAUDE.md`. Neither is superseded. Both are narrowed, and the narrowing is stated in
 one sentence below so nobody has to reconstruct it.
 
 ## Verdict
 
-- Foundry gains a template language for the markdown a plugin ships. Working name Pattern, a
-  placeholder: the real name is not decided.
+- Foundry gains a template language for the markdown a plugin ships. It is called Stencil. A source
+  file carries the `.stencil` extension: a skill written in it is `SKILL.stencil.md`.
 - It binds in two places. Build time, in the plugin's own CI. Runtime, on the machine the plugin is
   installed on.
 - The runtime half exists for exactly one reason. Whether a skill belonging to a different plugin is
@@ -96,7 +96,7 @@ folder (`scripts/emitters/claude_code.py:334`). Nothing in the hook vocabulary c
 
 ```mermaid
 graph LR
-  S[SKILL.pattern.md<br/>shipped, never consumed] --> H[hook resolves]
+  S[SKILL.stencil.md<br/>shipped, never consumed] --> H[hook resolves]
   L[live capabilities] --> H
   E[user env] --> H
   A[invocation args] --> H
@@ -133,7 +133,7 @@ re-resolves correctly on the next session.
 
 | Item | Status | Evidence |
 |---|---|---|
-| The real name of the language, and the two file extensions. `Pattern`, `SKILL.pattern.md` and `SKILL.md` are placeholders carried from the lab | open, and blocking any file being written | original specification, section 6 |
+| ~~The real name of the language, and the two file extensions~~ | **settled by Pi, 2026-08-09.** The language is Stencil. A source file is `SKILL.stencil.md` and the rendered file the harness reads stays `SKILL.md`. `.stencil` sits before `.md` so every editor, linter and diff still treats the source as the markdown it is | named directly |
 | Whether `{{arg.*}}` ships in version one at all, given it is the only construct that makes the concurrent-session race real | open | the cost table above |
 | Whether the two harnesses with no hook surface get an automatic `degrade`, or a refusal the author has to answer | open | `scripts/emitters/__init__.py` loss policy |
 | Whether a skill that never uses a runtime construct should still be renamed to the source extension | open | affects every existing plugin's diff |
@@ -144,7 +144,7 @@ re-resolves correctly on the next session.
 
 Everything above describes what exists and what was measured. Everything below is what is being
 asked for. It says nothing about cost, effort or ordering: those belong in the plan, at
-`docs/plans/pattern.md`.
+`docs/plans/stencil.md`.
 
 ## Requirements
 

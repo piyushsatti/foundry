@@ -16,19 +16,17 @@ This file is the order of work and the blast radius. Nothing here restates the a
 It does not land in a new repository. It is base tooling by the test in `CLAUDE.md`: someone
 building a completely unrelated plugin needs it. It is part of Foundry 0.1.0.
 
-## Blocked until named
+## Named, so the work can start
 
-Two decisions gate every file that would be written. Both are Pi's, both are section 6 of the
-original specification, and neither is answered.
+Both decisions that gated every file are answered. Pi named them on 2026-08-09.
 
-| Blocked on | Blocks |
+| Was blocked on | Answer |
 |---|---|
-| The real name of the language | The module filename, the manifest key, every message the resolver prints |
-| The two file extensions | Every skill filename in every plugin that adopts this, and the diff of adopting it |
+| The real name of the language | **Stencil.** It sets the module filename, the manifest key, and every message the resolver prints |
+| What the two files are called | The source a plugin author writes is **`SKILL.stencil.md`**. The file the harness reads stays **`SKILL.md`**, written beside it. `.stencil` sits before `.md` so the source is still markdown to every editor, linter and diff |
 
-`Pattern`, `SKILL.pattern.md` and `SKILL.md` are placeholders carried from the lab. Writing code
-against a placeholder means renaming it in tests, messages, docs and the template later, so the work
-below starts only once both are named.
+Both files live in the installed folder. The source is never consumed, so the resolver can run again
+on every session and a changed environment re-renders correctly.
 
 ## Order of work
 
