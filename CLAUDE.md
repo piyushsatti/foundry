@@ -34,7 +34,7 @@ at it. Foundry has no opinion and no involvement.
 | `scripts/emitters/<harness>.py` | One harness's folder, and nothing else. `claude_code.py`, `agent_plugins.py` which also serves Codex, `skills_tree.py` which serves OpenCode and Pi, `instructions.py` |
 | `template/` | The starting shape of a plugin repository: manifest, empty content directories, CI workflow, its own README and CLAUDE.md |
 | `template/scripts/foundry.py` | The bootstrap stub. The one file genuinely copied into a plugin repo rather than fetched |
-| `VERSION` | Foundry's own version, currently 0.1.0 |
+| `VERSION` | Foundry's own version, currently 0.1.1 |
 | `ruff.toml` | The lint and format gate, pinned so it means the same thing on any machine. Development tooling only: nothing under `scripts/` imports it |
 | `tests/` | Fixture plumbing in `repos.py` that writes throwaway plugin repos, plus the rule tests under `tests/scripts/`. Run with `python3 -m unittest discover -s tests` |
 | `docs/adr/` | The decisions. `0002-foundry-as-template-and-dependency.md` says what Foundry is; `0003-multi-harness-emitters.md` says what it emits; `0004-two-more-moments-and-a-rule-level-waiver.md` says why a per-harness override lives on a rule and not on a kind. All three current. `0001` is superseded history |
