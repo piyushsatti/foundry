@@ -257,9 +257,12 @@ rewritten so every fence names something this repository can produce, which took
 described a scratch layout naming `docs/<product>/` and `research/`, both of which left in the
 split.
 
-No `v0.1.0` tag is published yet, so the bootstrap stub in a fresh plugin repository cannot fetch
-Foundry until one is cut. Build such a repository by calling `scripts/build.py` here directly until
-then.
+`v0.1.0` is tagged on this machine and has not been pushed, so the bootstrap stub cannot reach it
+over the network yet. A plugin repository can still build against it today by pointing
+`foundry_source:` in its manifest at this checkout, or by setting `FOUNDRY_SOURCE` to the same path,
+because git clones a local directory as readily as a URL. That path is proven: a fresh copy of
+`template/` builds through the stub, twice, to the same five fingerprints the in-repo `--check`
+prints. Pushing the tag is Pi's call and has not been made.
 
 ## Working rules for this repo
 
