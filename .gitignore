@@ -1,31 +1,24 @@
-# ── THE FENCE ──────────────────────────────────────────────────────────
-# local/ holds work-sensitive, machine-bound content (hostnames, employer
-# refs, internal IPs). Ignored by default so a public repo can't leak it.
-#
-#   • Going PUBLIC  → keep this line (or switch local/ to chezmoi encryption).
-#   • Whole repo PRIVATE → delete this line to track local/ too.
-/local/
+# Every line here names something this repository can actually produce. A fence
+# around a directory that does not exist reads as evidence the directory is
+# expected, and the last set of those outlived the monorepo they were written
+# for by several months.
 
-# ── never track ──
+# ── never track, anywhere ──
 **/.credentials.json
 **/*.key
 **/*.pem
 **/*.token
 .DS_Store
 
-# ── Python / build (workshop side) ──
+# ── written by running the tools in scripts/ ──
 __pycache__/
 *.pyc
-*.egg-info/
-build/
+.ruff_cache/
+# scripts/build.py --out dist, and the same name in every plugin repository
 dist/
 
-# ── local runtime state ──
+# ── local to one machine, never to the repository ──
 .claude/
-*.db
-*.db-journal
-*.db-wal
-*.db-shm
 .env
 .env.*
 *~
@@ -33,19 +26,8 @@ dist/
 .vscode/
 .idea/
 
-# ── meditate per-machine config (config/targets.example.yaml is the tracked template) ──
-/bundles/meditate/config/targets.yaml
-
-# ── ephemeral scratch: session artifacts / plans / audits / handoffs (kept locally, never tracked) ──
-!.gitignored/
-.gitignored/*
-!.gitignored/README.md
-
-# Build output — materialized by scripts/build.py; served from the release ref
-/plugins/
-
-# Worktree machinery is machine-local (managed by devtools:worktree)
+# ── worktree machinery, managed by devtools:worktree ──
 /.worktrees/
 
-# Agent-owned local context — never tracked
+# ── agent-owned local context ──
 /CLAUDE.local.md

@@ -3,7 +3,7 @@
   "owner": {
     "name": "Piyush Satti"
   },
-  "description": "Piyush's agentic infrastructure \u2014 memory curation, project-compass, review, orchestration, and dev-environment plugins.",
+  "description": "Piyush's agentic infrastructure: memory curation, project-compass, review, orchestration, and dev-environment plugins.",
   "plugins": [
     {
       "name": "crucible",
@@ -33,7 +33,7 @@
         "path": "plugins/manifold",
         "ref": "release"
       },
-      "description": "KAOS project compass \u2014 a DB-canonical spec substrate with an MCP server exposing read/write tools over a project's goal graph."
+      "description": "KAOS project compass: a DB-canonical spec substrate with an MCP server exposing read/write tools over a project's goal graph."
     },
     {
       "name": "meditate",

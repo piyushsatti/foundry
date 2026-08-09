@@ -1,56 +1,57 @@
-# Release: materialize bundles/ -> plugins/ and publish the built tree to the
-# `release` branch that marketplace.json's git-subdir sources point at.
+# Foundry's release is a git tag and nothing else.
 #
-# Structure of the release branch: a self-contained snapshot whose root holds
-# plugins/<name>/ (what each git-subdir source pulls) and .claude-plugin/
-# marketplace.json with relative ./plugins/<name> sources (so adding the
-# release ref directly also works).
+# The bootstrap stub in a plugin repository (template/scripts/foundry.py)
+# fetches Foundry with a shallow clone of the tag v<version>. There is no
+# artifact to build, no package to push and no plugin in this repository to
+# publish, so cutting a release means pushing a tag.
 #
-# Rollback runbook: a bad ship = repoint the release branch to the last good
-# sha (git push --force origin <sha>:release). Installs are pull-based; users
-# recover on their next `claude plugin marketplace update` + `plugin update`.
-# A partial/failed push leaves the previous release intact — the branch update
-# is a single atomic ref move; just re-run the workflow.
+# Two things have to hold. The tag has to agree with VERSION, because every
+# plugin repository asking for a Foundry version clones the matching tag, so a
+# tag on the wrong commit hands strangers a Foundry that calls itself something
+# else. And the commit under the tag has to prove everything CI proves, because
+# a tag can be pushed to any commit and nothing says CI ever saw it. That second
+# one calls ci.yml rather than repeating it: two copies of a proof drift, and
+# the copy that drifts is the one nobody is watching.
+#
+# This workflow used to publish a built plugins/ tree to the release branch.
+# There are no plugins here any more. That branch is untouched and still serves
+# the copies people already installed: see .claude-plugin/README.md.
+
 name: release
+
 on:
-  workflow_dispatch:
   push:
-    tags: ["release-v*"]
+    tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  publish:
+  tag:
+    name: the tag matches VERSION
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install tooling deps
-        run: pip install pyyaml
-      - name: Gates (same as CI)
-        run: |
-          python3 scripts/skills_manifest.py validate
-          python3 scripts/check_boundaries.py
-          python3 -m unittest tests.test_build_determinism tests.test_check_boundaries
-      - name: Materialize bundles
-        run: python3 scripts/build.py
-      - name: Publish plugins/ to the release branch
+
+      - name: Compare the tag against the VERSION on the commit it points at
         run: |
           set -euo pipefail
-          STAGE="$(mktemp -d)"
-          cp -R plugins "$STAGE/plugins"
-          mkdir -p "$STAGE/.claude-plugin"
-          mv "$STAGE/plugins/.claude-plugin/marketplace.json" "$STAGE/.claude-plugin/marketplace.json"
-          SRC_SHA="$GITHUB_SHA"
-          git checkout --orphan release-stage
-          git rm -rfq .
-          find . -mindepth 1 -maxdepth 1 -not -name .git -exec rm -rf {} +
-          cp -R "$STAGE/plugins" plugins
-          cp -R "$STAGE/.claude-plugin" .claude-plugin
-          git add -A
-          git -c user.name="foundry-release" -c user.email="release@foundry" \
-            commit -m "release: materialized plugins from $SRC_SHA"
-          git push --force origin HEAD:release
+          version="$(tr -d '[:space:]' < VERSION)"
+          expected="v$version"
+          if [ "$GITHUB_REF_NAME" != "$expected" ]; then
+            {
+              echo "tag $GITHUB_REF_NAME does not match VERSION."
+              echo "  VERSION on this commit says $version, so the tag has to be $expected."
+              echo "  A plugin repository asking for Foundry $version clones $expected and has"
+              echo "  to get this commit. Move the tag, or change VERSION."
+            } >&2
+            exit 1
+          fi
+          echo "$GITHUB_REF_NAME matches VERSION $version"
+
+  proof:
+    name: the tagged commit proves what CI proves
+    # After the tag check, which is a second and costs nothing, so a mismatched
+    # tag fails there rather than after four jobs have run.
+    needs: tag
+    uses: ./.github/workflows/ci.yml

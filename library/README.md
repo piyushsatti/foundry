@@ -1,1 +1,0 @@
-Shared-capability promotion target. A skill/agent moves here only when a SECOND bundle needs it (Rule of Three); bundles pull it via compose.skills/agents in bundle.yaml. Never reference another bundle's internals — promote instead.
