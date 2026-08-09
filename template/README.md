@@ -137,9 +137,20 @@ empty wrapper and dropping `pi` from `targets` is the honest answer.
 
 ## Depending on another plugin
 
-Add it under `requires.plugins` in the manifest with an exact pin, taken from
-the `contents` value in that plugin's own lock file, and list what to take. A
-pin never points at a moving target: it has to mean the same thing tomorrow.
+Add it under `requires.plugins` in the manifest with an exact pin, and list what
+to take. A pin never points at a moving target: it has to mean the same thing
+tomorrow.
+
+The pin is the fingerprint of that plugin's **source checkout**. It is not the
+`contents` value in its lock file, which fingerprints what that plugin shipped
+and is a different number. Write any placeholder and build once: the refusal
+reports the fingerprint actually on disk, and that is the number to keep.
+
+Read it from a checkout that has not been built into. The output directory sits
+inside the fingerprint, so a dependency that has been built fingerprints
+differently from the same source freshly cloned, and a pin taken beside a
+`dist/` is one no clean checkout or CI runner can reproduce. Build somewhere
+outside the tree, or delete the output before reading a pin.
 
 If two things you depend on hand over something with the same name, or expect
 different builds of the same third plugin, the build stops and names both

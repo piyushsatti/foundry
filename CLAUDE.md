@@ -257,12 +257,15 @@ rewritten so every fence names something this repository can produce, which took
 described a scratch layout naming `docs/<product>/` and `research/`, both of which left in the
 split.
 
-`v0.1.0` is tagged on this machine and has not been pushed, so the bootstrap stub cannot reach it
-over the network yet. A plugin repository can still build against it today by pointing
-`foundry_source:` in its manifest at this checkout, or by setting `FOUNDRY_SOURCE` to the same path,
-because git clones a local directory as readily as a URL. That path is proven: a fresh copy of
-`template/` builds through the stub, twice, to the same five fingerprints the in-repo `--check`
-prints. Pushing the tag is Pi's call and has not been made.
+`v0.1.0` is tagged and pushed. A fresh plugin repository needs no `foundry_source:` line and no
+`FOUNDRY_SOURCE` override: the bootstrap stub clones the tag from GitHub and builds. Proven end to
+end from a copy of `template/` with neither set, to the same five fingerprints the in-repo `--check`
+prints.
+
+That paragraph said the opposite until 2026-08-09, and it stayed wrong for the few minutes between
+the push and this edit. In those minutes twelve agents converting the plugin repositories read it,
+believed it, and each one worked around a problem that no longer existed. A note about the state of
+the world is a claim with a shelf life, and this file is read by things that cannot check it.
 
 ## Working rules for this repo
 
