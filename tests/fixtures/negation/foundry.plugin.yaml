@@ -1,0 +1,19 @@
+# Fixture for .github/checks/repos.py. See tests/fixtures/README.md.
+#
+# scripts/ holds two entries and is excluded whole: exclude: [scripts] matches
+# the top-level name and takes both entries with it. A future '!' pattern
+# could re-include scripts/keep.md on its own; today there is no such
+# pattern, so neither file ships, and that is exactly the baseline this
+# fixture records.
+
+id: negation
+version: 0.1.0
+description: Fixture recording that a whole-directory exclude takes every entry with it, with no way yet to reinclude one.
+
+foundry: 0.1.0
+
+requires:
+  plugins: []
+
+exclude:
+  - scripts

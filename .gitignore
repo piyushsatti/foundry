@@ -31,3 +31,10 @@ dist/
 
 # ── agent-owned local context ──
 /CLAUDE.local.md
+
+# ── the plugin repositories somebody builds this against, and their baselines ──
+# Foundry keeps no list of the plugins built with it, so the names of somebody's
+# own repositories, and the file lists recorded from building them, stay on the
+# machine that has them. .github/checks/repos.py explains the whole arrangement.
+/.github/checks/repos.local
+/.github/checks/baselines/local/

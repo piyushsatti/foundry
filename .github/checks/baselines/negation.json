@@ -1,0 +1,16 @@
+{
+  "folders": {
+    "claude-code": {
+      "contents": "a129fd4a93ff",
+      "files": {
+        ".claude-plugin/plugin.json": "3723244c853e",
+        "README.md": "4aa00d0da10f",
+        "foundry.lock.json": "565593284e5e"
+      }
+    }
+  },
+  "id": "negation",
+  "targets": [
+    "claude-code"
+  ]
+}

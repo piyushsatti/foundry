@@ -1,0 +1,21 @@
+# Fixture for .github/checks/repos.py. See tests/fixtures/README.md for what
+# this repository exists to prove and what it does not yet prove.
+#
+# Carries a tests/ directory nested inside a skill, alongside a top-level
+# tests/ of the same name. Today's exclude: [tests] matches top-level entries
+# only, so the nested one ships and the top-level one does not.
+
+id: nested-skill-tests
+version: 0.1.0
+description: Fixture proving exclude reaches only the top level, not a nested directory of the same name.
+
+foundry: 0.1.0
+
+requires:
+  plugins: []
+
+provides:
+  skills: [demo]
+
+exclude:
+  - tests

@@ -97,3 +97,19 @@ that now refuses an unreadable file itself, so the build always stops earlier.
 They were unreachable before this too, by crashing rather than by refusing. Either delete both, or
 give one of them a reason to exist that the earlier check does not already cover. Dead code in a
 refusal path reads as a guard that is running.
+
+## The pinned action majors are running on borrowed time
+
+Every CI run now annotates itself:
+
+    Node.js 20 is deprecated. The following actions target Node.js 20 but are
+    being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5
+
+Both lines are in `.github/workflows/ci.yml` and in the workflow copied by hand into every plugin
+repository, so the day GitHub stops forcing is the day every one of those repositories goes red at
+once, with nothing having changed in any of them. This is the most likely way Foundry breaks while
+nobody is touching Foundry.
+
+Moving to the next majors is one line each, but it is a change every plugin repository has to be
+told about, which is the same cost the bootstrap stub carries. Do it deliberately, in one pass,
+rather than one repository at a time.

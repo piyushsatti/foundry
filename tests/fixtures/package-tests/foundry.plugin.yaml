@@ -1,0 +1,18 @@
+# Fixture for .github/checks/repos.py. See tests/fixtures/README.md.
+#
+# Carries a tests/ directory nested inside packages/<name>/, alongside a
+# top-level tests/ of the same name. packages/ is not one of Foundry's four
+# content directories, so it ships as an ordinary top-level directory, the way
+# a workspace package directory does in a real plugin repository.
+
+id: package-tests
+version: 0.1.0
+description: Fixture proving a nested tests/ under a non-content directory still escapes a top-level exclude.
+
+foundry: 0.1.0
+
+requires:
+  plugins: []
+
+exclude:
+  - tests

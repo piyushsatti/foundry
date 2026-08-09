@@ -1,0 +1,17 @@
+# Fixture for .github/checks/repos.py. See tests/fixtures/README.md.
+#
+# reports/summary/final.md sits where two future patterns would both apply: a
+# broad one matching all of reports/, and a narrower one matching this one
+# file specifically. Which one wins is an order-of-application rule that does
+# not exist yet, so nothing in 'exclude' names either pattern today and both
+# files simply ship. The path is here so that the day that rule lands, this
+# fixture is already the recorded before-picture to compare against.
+
+id: precedence
+version: 0.1.0
+description: Fixture holding a path two future exclude patterns would both match, so applying them in order becomes observable.
+
+foundry: 0.1.0
+
+requires:
+  plugins: []
