@@ -32,18 +32,18 @@ That broke Foundry's promise. Converting the plugins moved their files to fit th
 A plugin brings what it has and Foundry builds it. Teach `exclude` to name a nested path, then put
 all five layouts back.
 
-## Pull request 14 is the templating language and it does not merge
+## Build Stencil
 
-It adds `docs/adr/0004-templating-binds-at-build-time-and-at-runtime.md`. Merging pull request 16
-put a different `0004` on main, so two decisions claim the number, and both pull requests edit
-`CLAUDE.md`. Renumber and resolve, then integrate the branch.
+The decision landed and is accepted: `docs/adr/0005-templating-binds-at-build-time-and-at-runtime.md`.
+The order of work is `docs/plans/stencil.md`. Nothing is blocked any more.
 
-Two things block every line of templating code and both are Pi's alone:
-
-- the real name of the language. `Pattern` is a placeholder. It sets the module name, the manifest
-  key, and every message the resolver prints
-- the two file extensions. `SKILL.pattern.md` and `SKILL.md` are placeholders, and changing them
-  renames a file in every plugin that adopts this
+- the language is **Stencil**
+- a plugin author writes **`SKILL.stencil.md`**, and **`SKILL.md`** is rendered beside it. Both live
+  in the installed folder, and the harness only ever reads the second
+- it binds twice. `{{build.*}}` and `{{use skill.x}}` at build time. `{{env.*}}`, `has()` and
+  `{{arg.*}}` on the machine the plugin is installed on, through two hooks the plugin ships
+- the runtime half exists for one reason: whether a skill in another plugin is installed can only be
+  known where both are installed, and a plugin's build may not look outside its own repository
 
 ## "Use this template" hands out the build tool
 
