@@ -20,6 +20,7 @@ from tests.repos import (
     files_under,
     make_repo,
     needs,
+    resolve,
 )
 
 LOCK_NAME = "foundry.lock.json"
@@ -148,6 +149,85 @@ class PluginOnItsOwn(RepoCase):
             "the author's local settings shipped to whoever installs this",
         )
         self.assertIn(".claude", build.NEVER_SHIP)
+
+    def test_the_cache_the_bootstrap_stub_writes_never_reaches_the_folder(self):
+        """`.foundry` holds Foundry itself, fetched so this repo could be built.
+
+        The stub writes it on the first build, so it is in every plugin
+        repository that has ever run one. Copied through, each shipped folder
+        carries Foundry's own source inside it, in a folder whose whole point is
+        that nothing resolves where it is installed. It is in `SKIP_DIRS` too,
+        so a plugin's pin does not depend on whether it has been built.
+        """
+        plugin = make_repo(
+            self.workspace,
+            "solo",
+            provides={"skills": ["greet"]},
+            files={
+                "skills/greet/SKILL.md": "greet\n",
+                ".foundry/0.1.0/VERSION": "0.1.0\n",
+                ".foundry/0.1.0/scripts/build.py": "# a whole copy of Foundry\n",
+            },
+        )
+        out = self.destination()
+
+        build.build(plugin, out)
+
+        self.assertFalse((out / ".foundry").exists(), "Foundry itself shipped inside the folder")
+        self.assertIn(".foundry", build.NEVER_SHIP)
+        self.assertIn(".foundry", resolve.SKIP_DIRS)
+
+    def test_a_repo_built_once_fingerprints_the_same_as_one_never_built(self):
+        """A pin has to mean the same thing on a machine that has built before.
+
+        The cache is the difference between those two states and nothing else,
+        so if it counted, the same source would pin differently everywhere and
+        the instruction to pin against a clean checkout would describe a state
+        no built repository can get back to.
+        """
+        never_built = make_repo(
+            self.workspace,
+            "solo",
+            provides={"skills": ["greet"]},
+            files={"skills/greet/SKILL.md": "greet\n"},
+        )
+        built_before = make_repo(
+            self.workspace,
+            "solo",
+            provides={"skills": ["greet"]},
+            files={
+                "skills/greet/SKILL.md": "greet\n",
+                ".foundry/0.1.0/VERSION": "0.1.0\n",
+            },
+        )
+
+        self.assertEqual(
+            resolve.fingerprint(never_built),
+            resolve.fingerprint(built_before),
+            "building a repository once changed what its pin means",
+        )
+
+    def test_an_earlier_release_is_not_copied_into_the_next_one(self):
+        """`--out dist` twice is the first command the template's README gives.
+
+        Without this the second run copies the whole of the first run's release
+        into the new one, and the third copies the second's copy of the first.
+        The output is matched by resolved path and not by the name `dist`,
+        because the name is a convention and the flag takes anything.
+        """
+        plugin = make_repo(
+            self.workspace,
+            "solo",
+            provides={"skills": ["greet"]},
+            files={"skills/greet/SKILL.md": "greet\n"},
+        )
+        out = plugin / "dist"
+
+        build.build(plugin, out)
+        build.build(plugin, out)
+
+        self.assertFalse((out / "dist").exists(), "the previous release shipped inside this one")
+        self.assertTrue((out / "skills/greet/SKILL.md").is_file())
 
     def test_a_placeholder_holding_an_empty_directory_open_does_not_ship(self):
         """`.gitkeep` is git's business, and the shipped folder is not a git repo.

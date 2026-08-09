@@ -51,9 +51,15 @@ class FingerprintIsFrozen(RepoCase):
         # The digest above only proves what these skip lists do to this one
         # tree. Pinning the lists themselves is what catches a new entry being
         # added, which would drop files this tree happens not to contain.
+        #
+        # `.foundry` was added before v0.1.0, and this assertion is what caught
+        # the change rather than letting it through. The digest above did not
+        # move, because this sample tree holds no cache. Every real plugin
+        # repository holds one from its first build, and while it counted, the
+        # same source pinned differently on a machine that had built before.
         self.assertEqual(
             sorted(resolve.SKIP_DIRS),
-            [".claude", ".git", ".github", ".venv", "__pycache__", "node_modules"],
+            [".claude", ".foundry", ".git", ".github", ".venv", "__pycache__", "node_modules"],
         )
         self.assertEqual(sorted(resolve.SKIP_SUFFIXES), [".pyc", ".pyo"])
         self.assertEqual(sorted(resolve.SKIP_NAMES), [".DS_Store", "foundry.plugin.yaml"])

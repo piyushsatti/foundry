@@ -72,10 +72,18 @@ CONTENT_DIRS = CONTENT_KINDS
 # the same number whether it was copied or not, so the record cannot show that
 # it happened. Adding it changes no fingerprint anywhere: what a fingerprint
 # covers is decided entirely by the skip lists in `resolve.py`.
+#
+# `.foundry` is the same failure with a bigger payload. It is the cache the
+# bootstrap stub writes when it fetches a Foundry release, so it exists in every
+# plugin repository from its first build, and it was being copied whole into
+# every folder: 170 files and eight megabytes of Foundry's own source inside
+# each one, in a folder whose whole point is that nothing resolves where it is
+# installed.
 NEVER_SHIP = {
     ".git",
     ".github",
     ".claude",
+    ".foundry",
     ".venv",
     "__pycache__",
     "node_modules",
@@ -100,18 +108,34 @@ def ignored(_directory: str, names: list[str]) -> set[str]:
     return {name for name in names if name in NEVER_SHIP or name.endswith((".pyc", ".pyo"))}
 
 
-def copy_own_content(manifest: dict, out: Path) -> dict[str, str]:
+def copy_own_content(manifest: dict, out: Path, skip: tuple[Path, ...] = ()) -> dict[str, str]:
     """Everything in the plugin repo except what never ships.
 
     Returns every item it wrote under a content directory, credited to this
     plugin, so that a dependency later handing over the same name is caught.
     The plugin's own content goes down first, and without this the dependency
     would quietly overwrite it.
+
+    `skip` names this build's own two directories, and both have to be named
+    because `--out dist` puts both of them inside the plugin being read.
+
+    | Path | What it does if it is not skipped |
+    |---|---|
+    | the destination | the second `--out dist` copies the whole of the first run's release into the new one, and the third copies the second's copy of the first |
+    | the staging directory | it is created beside the destination, so `--out dist` puts it in the plugin root, and copying the plugin root copies the staging directory into itself until the path is too long for the filesystem |
+
+    The second one fails on the first build, not the second, and `--out dist` is
+    the command the template's README gives everybody. Both are matched by
+    resolved path rather than by name: `dist` is a convention in a README and
+    the flag takes anything.
     """
     excluded = set(manifest["exclude"])
+    forbidden = {path.resolve() for path in skip}
     placed: dict[str, str] = {}
     for entry in sorted(manifest["root"].iterdir()):
         if entry.name in NEVER_SHIP or entry.name in excluded:
+            continue
+        if entry.resolve() in forbidden:
             continue
         target = out / entry.name
         if entry.is_dir():
@@ -309,7 +333,7 @@ def build(plugin_dir: Path, out: Path) -> dict:
         # of it, so no emitter can be reached by what another emitter did.
         neutral = staging / "neutral"
         neutral.mkdir()
-        placed = copy_own_content(manifest, neutral)
+        placed = copy_own_content(manifest, neutral, skip=(out, staging))
         drop_placeholders(neutral)
         taken = copy_dependency_content(manifest, neutral, placed)
         check_provides(manifest, neutral)

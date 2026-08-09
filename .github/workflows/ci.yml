@@ -107,6 +107,31 @@ jobs:
         # fingerprint recorded against it moves, with nothing warning anybody.
         run: python3 .github/checks/defaults.py template
 
+      - name: The command the template's README gives works, twice
+        # `build --out dist` from inside the repository, which is what a new
+        # plugin author runs and what every job here had been avoiding by
+        # building into a temporary directory instead. Both of this build's own
+        # directories then sit inside the tree it reads: the destination, and
+        # the staging directory created beside it. It used to copy the staging
+        # directory into itself until the path was too long for the filesystem,
+        # on the first build rather than the second.
+        #
+        # Twice, because the second run is the one that would copy the first
+        # run's whole release into the new one.
+        run: |
+          set -euo pipefail
+          WORK="$(mktemp -d)"
+          cp -R template "$WORK/plugin"
+          cd "$WORK/plugin"
+          python3 "$GITHUB_WORKSPACE/scripts/build.py" . --out dist
+          python3 "$GITHUB_WORKSPACE/scripts/build.py" . --out dist
+          test -z "$(find dist -mindepth 1 -name dist)" || {
+            echo "a release shipped inside the next one"; exit 1; }
+          test -z "$(find dist -name .gitkeep)" || {
+            echo "a placeholder shipped"; exit 1; }
+          test -z "$(find dist -path '*.foundry*')" || {
+            echo "the Foundry cache shipped"; exit 1; }
+
       - name: The bootstrap stub still reads the manifest
         # The stub is the one file copied by hand into every plugin repository,
         # and it finds the foundry: and foundry_source: lines with two regexes.

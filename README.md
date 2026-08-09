@@ -193,6 +193,15 @@ Nothing prints the fingerprint on its own yet. Two ways to get it:
 The fingerprint covers the whole checkout, so a stray uncommitted file in the dependency's working
 tree changes it. Pin against a clean checkout.
 
+One thing a build leaves behind is exempt, and it has to be. The `.foundry` cache the bootstrap stub
+writes appears on a repository's first build and never leaves, so if it counted, no repository that
+had ever been built could be pinned against and the advice above would describe a state nothing can
+return to. It is outside the fingerprint.
+
+The output directory is not exempt, because Foundry does not know its name: `--out` takes anything,
+and treating `dist` as special would be a guess about somebody else's repository. So delete the
+output directory, or build somewhere outside the tree, before reading a pin off a checkout.
+
 ## What the build refuses to do, and why
 
 The build never picks a winner. Every case below stops it, names both sides, and says what to do.

@@ -54,8 +54,9 @@ at it. Foundry has no opinion and no involvement.
 | Error messages are the product | Each refusal states what is wrong, where it was declared, and what to do about it. A refusal with no next step is a bug |
 | Foundry keeps no list of consumers and never reaches into another repository | The dependency direction only runs one way. A list here inverts it |
 | Only pyyaml beyond the standard library | The build tool runs in strangers' CI. Every added dependency is a new way for someone else's build to fail |
-| What gets skipped during fingerprinting is frozen | `SKIP_DIRS`, `SKIP_SUFFIXES` and `SKIP_NAMES` in `resolve.py` alone decide what a fingerprint covers, both the pin and the lock file's `contents`. Changing any of the three changes every fingerprint, which invalidates every pin anyone has written. `NEVER_SHIP` in `build.py` is a separate list deciding only what gets copied, and changing it moves no fingerprint at all |
-| Nothing skipped by `resolve.py` may be missing from `NEVER_SHIP` | A path outside the fingerprint that still gets copied ships without the lock file's `contents` changing, so the record cannot show it happened. That is how `.claude`, the author's local settings, was reaching people who installed a plugin |
+| What gets skipped during fingerprinting is frozen | `SKIP_DIRS`, `SKIP_SUFFIXES` and `SKIP_NAMES` in `resolve.py` alone decide what a fingerprint covers, both the pin and the lock file's `contents`. Changing any of the three changes every fingerprint, which invalidates every pin anyone has written. A test asserts all three lists by hand for exactly this reason, and it is what caught `.foundry` being added rather than letting it through. `NEVER_SHIP` in `build.py` is a separate list deciding only what gets copied, and changing it moves no fingerprint at all |
+| Nothing skipped by `resolve.py` may be missing from `NEVER_SHIP` | A path outside the fingerprint that still gets copied ships without the lock file's `contents` changing, so the record cannot show it happened. That is how `.claude`, the author's local settings, was reaching people who installed a plugin, and how `.foundry`, the cache the bootstrap stub writes, was putting 170 files of Foundry's own source inside every shipped folder |
+| A build never reads its own output or its own scratch | `--out dist` puts both inside the plugin being read. The staging directory is created beside the destination, so copying the plugin root copies the staging directory into itself until the path is too long for the filesystem, and that fails on the first build rather than the second. `copy_own_content` is handed both paths and matches them resolved, because `dist` is a convention in a README and the flag takes anything |
 | A pin names the fingerprint of the dependency's source checkout | `resolve()` fingerprints each manifest's `root` and `check_pins` compares every pin against that. The lock file's `contents` is a separate record of what shipped and no pin is ever checked against it. State it the other way round and people copy `contents` into a pin, which always disagrees |
 | A dependency hands over skills, agents, commands and hooks only | `CONTENT_DIRS` in `build.py` is what stops a dependency writing anywhere it likes in the output |
 
@@ -178,7 +179,7 @@ python3 scripts/resolve.py template --print
 ```
 
 `--check` builds into a temporary directory and throws it away. All three exit 0 today, the suite at
-62 tests. Run them after any change to `scripts/` or `template/`.
+65 tests. Run them after any change to `scripts/` or `template/`.
 
 Python style is `ruff`, over the same four paths for both commands, before committing:
 
@@ -225,12 +226,15 @@ Foundry does not know, a `degrade` block naming a harness not in `targets`, an e
 a skill nested more than one level deep, a manifest the author already wrote being overwritten, and
 the case where every named harness would drop everything the plugin holds. Hooks have four of their
 own: a rule written with `on`, a moment outside the four, a `run` naming a file the plugin does not
-hold, and a key a rule does not name. It also covers the five things that fail silently rather than
-refusing: the author's local `.claude` settings reaching the shipped folder, a refusal on one
-harness leaving a half-written release behind, the neutral files shipping into a Claude Code folder
-untranslated, a `.gitkeep` shipping into every folder and holding an empty content directory open,
-and the sweep that removes it reaching one level too far into a skill somebody wrote. Add a test
-there rather than checking a refusal by hand.
+hold, and a key a rule does not name.
+
+It also covers the eight things that fail silently or crash rather than refusing: the author's local
+`.claude` settings reaching the shipped folder, a refusal on one harness leaving a half-written
+release behind, the neutral files shipping into a Claude Code folder untranslated, a `.gitkeep`
+shipping into every folder and holding an empty content directory open, the sweep that removes it
+reaching one level too far into a skill somebody wrote, the `.foundry` cache shipping inside every
+folder, that same cache moving a plugin's pin the moment it is built once, and a previous release
+being copied into the next one. Add a test there rather than checking a refusal by hand.
 
 Two guards are worth knowing before changing anything under `scripts/emitters/`. One asserts a
 Claude Code folder holds exactly the files it should, and one asserts its `contents` fingerprint is

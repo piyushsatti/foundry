@@ -77,7 +77,16 @@ NAME_RE = re.compile(r"^[a-z0-9._-]+$")
 MOVING_TARGETS = {"latest", "current", "head", "*", "main", "master"}
 
 # Never part of what a plugin ships, so never part of its fingerprint.
-SKIP_DIRS = {".git", "__pycache__", ".venv", "node_modules", ".claude", ".github"}
+#
+# `.foundry` is the cache the bootstrap stub writes when it fetches a Foundry
+# release, and it is here because a pin has to mean the same thing on two
+# machines. Without it the fingerprint of a plugin's checkout depends on whether
+# that checkout has ever been built and which Foundry versions it happens to
+# have cached, so the same source pins differently everywhere and the advice to
+# pin against a clean checkout describes a state no built repository can return
+# to. It is in `NEVER_SHIP` for the separate reason that it was being copied
+# into every folder, eight megabytes of Foundry's own source inside each one.
+SKIP_DIRS = {".git", "__pycache__", ".venv", "node_modules", ".claude", ".github", ".foundry"}
 SKIP_SUFFIXES = {".pyc", ".pyo"}
 SKIP_NAMES = {".DS_Store", MANIFEST_NAME}
 
