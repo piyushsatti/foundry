@@ -18,6 +18,14 @@ Registry: [`manifest.yaml`](../manifest.yaml) · refresh: `python3 scripts/skill
 
 The ways of working (locked 2026-07-15, ways-of-working experiment). Load at the start of any implementation or review task. Full rationale: the ways-of-working operating model; raw research: piyushsatti/research.
 
+Canonical source: 02-operating-model.md in the private piyushsatti/experiments repo. This is the worker rulebook; the coordination rulebook is the orchestration skill.
+
+## The waterfall (per issue, in order)
+
+1. Design: affected files + function signatures + implementation outline, decisions folded in.
+2. Verify: prove the signatures hold against live code and schema; external calls actually work; unknowns resolved or spiked.
+3. Implement: mechanical; files, signatures, and feasibility already locked. If implementation wants to deviate, that is a raise, not a choice.
+
 ## The raise block
 
 Your ticket lists Proven · How-proven · Assumed · Unknown and declared files + signatures. If anything you hit contradicts these, or forces work outside declared scope: STOP writing code. Complete read-only checks on the rest of your plan and bundle all contradictions into one raise report: what broke · evidence (file:line, error, output) · smallest options you see. Do not patch around it. Do not pick an option yourself. You resume only on an amended ticket, never on a verbal ok.
@@ -39,3 +47,7 @@ A review is a checklist execution with evidence, not an opinion. PR-to-epic revi
 ## The transcript convention
 
 Every agent PR description carries one line: session id · model · effort · link into the transcript store (piyushsatti/transcripts). Never the transcript itself.
+
+## Where things land (worker slice)
+
+Keep the why-in-one-line at the code; evict deliberation to the ticket or PR thread. Current-state docs (latest only) live in the repo; decision rationale lives in the wiki; never both.
