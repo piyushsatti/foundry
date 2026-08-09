@@ -21,11 +21,13 @@ import contextlib
 import io
 import json
 import sys
+import types
 import unittest.mock
 
 from tests.repos import RUNNING_FOUNDRY, RepoCase, build, files_under, make_repo, resolve
 
-from emitters import EmitError  # noqa: E402  reachable once tests.repos has put scripts/ on the path
+import emitters  # noqa: E402  reachable once tests.repos has put scripts/ on the path
+from emitters import COMMON_MOMENTS, Cannot, Capability, EmitError  # noqa: E402
 
 LOCK_NAME = "foundry.lock.json"
 RELEASE_NAME = "foundry.release.json"
@@ -278,6 +280,31 @@ class TheFolderThatAlreadyShips(Fixtures):
             "a manifest that never mentioned targets got a lock file naming one",
         )
         self.assertNotIn("dropped", lock, "a manifest that never mentioned targets got a drops list")
+
+    def test_a_rule_set_naming_only_the_original_four_moments_moves_no_byte_and_gets_no_rules_key(self):
+        """The most important test in the batch. `hooks/hooks.yaml` above names
+        only 'session-start', with no 'only' and no 'timeout' anywhere, which
+        is the rule shape every plugin wrote before this change. Every
+        `contents` fingerprint already recorded in a shipped lock file was
+        measured on bytes produced by exactly that shape, so if this number
+        moves, or a 'rules' key starts appearing where there used to be none,
+        every one of those pins stops matching, silently, on somebody else's
+        machine."""
+        out = self.destination()
+
+        self.ship(self.silent_about_harnesses(), out)
+
+        lock = read_json(out / LOCK_NAME)
+        self.assertEqual(
+            lock["contents"],
+            self.CONTENTS,
+            "growing the moment vocabulary or adding 'only'/'timeout' moved bytes nobody asked to move",
+        )
+        self.assertNotIn(
+            "rules",
+            lock,
+            "a rule set with no 'only' anywhere got a 'rules' key it never had before",
+        )
 
     def test_the_two_files_claude_code_reads_are_written_and_the_neutral_ones_are_gone(self):
         """The folder held an MCP file and a hook file that Claude Code never opened.
@@ -702,7 +729,7 @@ class ALossIsRefusedOrWrittenDown(RepoCase):
         plugin = make_repo(
             self.workspace,
             "hooks-only",
-            files={"hooks/hooks.yaml": HOOKS_TEXT},
+            files={"hooks/hooks.yaml": HOOKS_TEXT, "hooks/announce.sh": ANNOUNCE_TEXT},
             targets=["opencode", "pi"],
             degrade={"opencode": {"drop": ["hooks"]}, "pi": {"drop": ["hooks"]}},
         )
@@ -788,11 +815,18 @@ class AHookThatWouldNotFireIsRefused(RepoCase):
         self.assertIn("YAML 1.1 resolves a bare 'on' to the boolean true", message)
         self.assertIn("Rename the key to 'at'", message)
 
-    def test_a_moment_outside_the_four_is_refused_and_the_four_are_listed(self):
-        message = self.refusal_for("- at: before-compact\n  run: hooks/announce.sh\n")
+    def test_a_moment_outside_the_six_is_refused_and_the_six_are_listed(self):
+        message = self.refusal_for("- at: mid-turn\n  run: hooks/announce.sh\n")
 
-        self.assertIn("'before-compact'", message)
-        for moment in ("session-start", "before-tool", "after-tool", "session-end"):
+        self.assertIn("'mid-turn'", message)
+        for moment in (
+            "session-start",
+            "before-tool",
+            "after-tool",
+            "turn-end",
+            "before-compact",
+            "session-end",
+        ):
             self.assertIn(moment, message)
 
     def test_a_run_naming_a_file_the_plugin_does_not_hold_is_refused(self):
@@ -805,7 +839,7 @@ class AHookThatWouldNotFireIsRefused(RepoCase):
         message = self.refusal_for("- at: session-start\n  run: hooks/announce.sh\n  blocking: true\n")
 
         self.assertIn("'blocking'", message)
-        self.assertIn("A hook rule names at, run, match and nothing else", message)
+        self.assertIn("A hook rule names at, run, match, only, timeout and nothing else", message)
 
     def test_a_match_becomes_the_matcher_claude_code_reads(self):
         out = self.destination()
@@ -830,6 +864,72 @@ class AHookThatWouldNotFireIsRefused(RepoCase):
                 }
             },
         )
+
+    def test_turn_end_and_before_compact_translate_to_stop_and_precompact(self):
+        """If this breaks, a plugin's turn-end or before-compact hook either
+        stops firing on Claude Code, because the moment landed on no event at
+        all, or fires under the wrong event name, which is the same silent
+        loss as a moment outside the vocabulary altogether."""
+        out = self.destination()
+
+        self.ship(
+            self.with_rule(
+                "- at: turn-end\n  run: hooks/announce.sh\n- at: before-compact\n  run: hooks/announce.sh\n"
+            ),
+            out,
+        )
+
+        events = read_json(out / "hooks/hooks.json")["hooks"]
+        self.assertIn("Stop", events)
+        self.assertIn("PreCompact", events)
+
+    def test_a_named_timeout_is_in_the_hook_entry_and_an_absent_one_leaves_no_key(self):
+        """If this breaks, either a hook's timeout is silently dropped so a
+        harness's own default governs it instead of the number the author
+        wrote, or every hook carries a 'timeout' key even for a rule that
+        never named one, moving every fingerprint that never asked for one."""
+        out = self.destination()
+
+        self.ship(
+            self.with_rule(
+                "- at: before-tool\n  run: hooks/announce.sh\n  timeout: 30\n"
+                "- at: after-tool\n  run: hooks/announce.sh\n"
+            ),
+            out,
+        )
+
+        events = read_json(out / "hooks/hooks.json")["hooks"]
+        self.assertEqual(events["PreToolUse"][0]["hooks"][0]["timeout"], 30)
+        self.assertNotIn("timeout", events["PostToolUse"][0]["hooks"][0])
+
+    def test_a_timeout_that_is_not_a_positive_whole_number_is_refused(self):
+        """If this breaks, a plugin can declare a budget Claude Code cannot
+        honor and the build ships it anyway. 'true' is included on purpose:
+        Python says isinstance(True, int), so a check that only tests for
+        int would silently accept a timeout of one and nobody would notice
+        the author never wrote a number at all."""
+        cases = {
+            "zero": "0",
+            "negative": "-1",
+            "not a whole number": "1.5",
+            "a boolean": "true",
+            "not a number at all": "thirty",
+        }
+        for label, value in cases.items():
+            with self.subTest(label):
+                message = self.refusal_for(
+                    f"- at: session-start\n  run: hooks/announce.sh\n  timeout: {value}\n"
+                )
+                self.assertIn("'timeout'", message)
+
+    def test_only_naming_a_harness_outside_targets_is_refused(self):
+        """If this breaks, a rule can name a harness nobody is building and
+        the mistake never surfaces, the same fault a 'degrade' block naming
+        an unbuilt harness already stops the build over."""
+        message = self.refusal_for("- at: session-start\n  run: hooks/announce.sh\n  only: [pi]\n")
+
+        self.assertIn("'pi'", message)
+        self.assertIn("targets: claude-code", message)
 
 
 class ThePathVariablesAreClaudeCodesOwn(RepoCase):
@@ -1072,3 +1172,109 @@ class ARefusedReleaseLeavesNothingBehind(RepoCase):
         self.assertFalse((out / "pi/mcp.json").exists())
         self.assertFalse((out / "pi/.mcp.json").exists())
         self.assertTrue((out / RELEASE_NAME).is_file())
+
+
+class AnOnlyLimitedRuleIsADropNotARefusal(RepoCase):
+    """`only` lets one rule reach one harness without giving up hooks
+    everywhere else, which is the whole reason it exists rather than a
+    `degrade` block: that would take every other rule down with it.
+
+    Claude Code is the one harness Foundry emits today that expresses every
+    moment, so there is no second hook-carrying harness in the registry to
+    prove the policy against. This builds one: a synthetic capability,
+    injected into `emitters.REGISTRY` and `sys.modules` for the length of
+    each test, that carries hooks and expresses only the four moments every
+    hook-carrying harness has in common. That is the shape a real second
+    harness will have the day one is registered, so the policy is proven
+    against it now rather than left untested until then.
+    """
+
+    MODULE_NAME = "synthetic_hooks"
+    TARGET = "synthetic-hooks"
+
+    def synthetic_module(self) -> types.ModuleType:
+        module = types.ModuleType(f"emitters.{self.MODULE_NAME}")
+        module.TARGETS = (self.TARGET,)
+        module.CAPABILITIES = {
+            self.TARGET: Capability(
+                carries=("skills", "hooks"),
+                cannot={
+                    "agents": Cannot("this synthetic harness carries no agents surface"),
+                    "commands": Cannot("this synthetic harness carries no commands surface"),
+                    "mcp": Cannot("this synthetic harness carries no MCP surface"),
+                    "allowed-tools": Cannot("this synthetic harness carries no allowed-tools surface"),
+                },
+                moments=COMMON_MOMENTS,
+            )
+        }
+        module.emit = lambda target, manifest, tree: None
+        return module
+
+    def registered(self):
+        """The two patches that make the synthetic harness reachable, together.
+
+        `REGISTRY` is what `emitters.load` reads to find the module name, and
+        `sys.modules` is what `importlib.import_module` returns without ever
+        touching disk, since no file for this harness exists under `scripts/`.
+        """
+        return unittest.mock.patch.dict(
+            emitters.REGISTRY, {self.TARGET: self.MODULE_NAME}
+        ), unittest.mock.patch.dict(sys.modules, {f"emitters.{self.MODULE_NAME}": self.synthetic_module()})
+
+    def with_two_hook_harnesses(self, rule: str):
+        return make_repo(
+            self.workspace,
+            "guarded",
+            files={
+                "skills/greet/SKILL.md": "---\nname: greet\ndescription: Greet.\n---\n\nGreet.\n",
+                "hooks/hooks.yaml": rule,
+                "hooks/announce.sh": ANNOUNCE_TEXT,
+            },
+            targets=["claude-code", self.TARGET],
+        )
+
+    def test_only_claude_code_is_a_recorded_drop_for_the_other_harness(self):
+        """If this breaks, a rule meant for one harness either vanishes from
+        the other's lock file with nothing to explain the gap, or it stops
+        the whole build over a harness the rule was never meant to reach."""
+        plugin = self.with_two_hook_harnesses(
+            "- at: turn-end\n  run: hooks/announce.sh\n  only: [claude-code]\n"
+        )
+        out = self.destination()
+        argv = ["build.py", str(plugin), "--out", str(out)]
+
+        registry_patch, modules_patch = self.registered()
+        with registry_patch, modules_patch:
+            captured = io.StringIO()
+            with contextlib.redirect_stdout(captured):
+                with unittest.mock.patch.object(sys, "argv", argv):
+                    self.assertEqual(build.main(), 0)
+            printed = captured.getvalue()
+
+        self.assertIn(f"dropped the hook at turn-end from {self.TARGET}", printed)
+        self.assertIn("the rule is only for claude-code", printed)
+
+        lock = read_json(out / self.TARGET / LOCK_NAME)
+        self.assertEqual(
+            lock["rules"],
+            [{"at": "turn-end", "run": "hooks/announce.sh", "why": "the rule is only for claude-code"}],
+        )
+        self.assertTrue((out / "claude-code/hooks/hooks.json").is_file())
+
+    def test_no_only_at_all_is_a_refusal_naming_both_ways_forward(self):
+        """If this breaks, a rule with no 'only' reaches a harness with no
+        event for it and simply never fires, instead of stopping the build
+        the way every other hook that cannot fire already does."""
+        plugin = self.with_two_hook_harnesses("- at: turn-end\n  run: hooks/announce.sh\n")
+        out = self.destination()
+
+        registry_patch, modules_patch = self.registered()
+        with registry_patch, modules_patch:
+            with self.assertRaises(EmitError) as refusal:
+                self.ship(plugin, out)
+
+        message = str(refusal.exception)
+        self.assertIn(f"CANNOT SHIP THIS TO {self.TARGET.upper()}.", message)
+        self.assertIn("turn-end", message)
+        self.assertIn("drop that harness from 'targets'", message)
+        self.assertIn("only: [<harness>]", message)
