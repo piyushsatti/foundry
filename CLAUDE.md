@@ -6,24 +6,21 @@ from. Nothing else.
 
 ## Foundry is atomic. Do not split it.
 
-**Foundry is one repository and stays one repository.** It is never broken out into a marketplace, a
-bundle, a template repository, a package, or anything else. The build tool, the manifest format, the
-template a plugin starts from and the release process are one thing, and you take all of it or none
-of it. Anyone who wants to build plugins this way uses Foundry whole.
+**One repository. Never broken into a marketplace, a bundle, a template repo, or a package.** Build
+tool, manifest format, Stencil, the template, the release process: one inheritance. Take all of it or
+none.
 
-This is a design decision, not an open question, and it is Pi's. It is written here because it is not
-derivable from the code: the repository looks separable, `template/` looks like it could live
-elsewhere, and a defect will eventually make splitting look like the obvious fix. It is not.
+Pi's decision, not an open question. Written here because the code does not say it: the repo looks
+separable, and a defect will eventually make splitting look obvious. It is not.
 
 | Never | Instead |
 |---|---|
-| Move `template/` into its own repository, even to make "Use this template" hand out a clean skeleton | Report the problem and ask. The answer is Pi's to give |
-| Publish any part of Foundry as a separate package or repository | Nothing here is published separately |
-| Let a plugin depend on a piece of Foundry rather than on Foundry | A plugin declares `foundry:` and takes the whole tool |
+| Move `template/` to its own repository | Report the problem, ask |
+| Publish any part of Foundry separately | Nothing here ships on its own |
+| Let a plugin depend on a piece of Foundry | It declares `foundry:` and takes the whole tool |
 
-This was written on 2026-08-09 after a session proposed exactly that split, planned it, and created a
-public `foundry-template` repository before Pi saw the decision. The defect that prompted it is real
-and is recorded below under known problems. The split was not the answer.
+Written 2026-08-09 after a session proposed that split and created a public `foundry-template` repo
+before Pi saw the decision. The defect behind it is real and is under known problems below.
 
 No plugins live here. No skills, agents, shared library, MCP servers or web app live here. All of
 that left the repo in the split and now sits in a holding folder outside it. Where each piece lands
@@ -271,16 +268,16 @@ machines Foundry cannot see.
 
 ## Known problems, open
 
-**"Use this template" on this repository hands out the build tool, not a plugin.** GitHub's template
-feature copies a repository root, and this root is Foundry. A plugin generated from it arrives
-holding `scripts/build.py`, every emitter, the whole test suite, `.github/checks/`, both workflows,
-the architecture records and a nested copy of `template/`, and has to delete about forty files by
-hand before it can be worked on. Measured on the one repository generated this way, which still
-carries 42 pending deletions of exactly those files.
+**"Use this template" hands out the build tool, not a plugin.** GitHub copies a repository root, and
+this root is Foundry. The only `foundry.plugin.yaml` is in `template/`, one floor down, so a
+generated repo cannot build:
 
-The fix is Pi's to name and it is not a split: read the atomic rule at the top of this file before
-proposing anything. Until then, a new plugin is made by copying `template/` rather than by
-generating from this repository.
+```
+no foundry.plugin.yaml here.
+```
+
+The size is not the problem, the layout is. Fix is Pi's, and it is not a split: read the atomic rule
+at the top. Meanwhile, make a new plugin by copying `template/`.
 
 ## Known stale, do not trust these until they are rewritten
 
