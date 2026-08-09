@@ -37,14 +37,21 @@ Each phase has a gate. A phase does not start until the gate above it is green.
 |---|---|---|
 | 1 | Port the lab resolver into `scripts/`, build stage only, with its tests | `python3 -m unittest discover -s tests` green, `uvx ruff check` clean |
 | 2 | Attach the build stage in `build.py` at the one position the wiki's `Stencil` page fixes, after `copy_dependency_content` and before `check_provides` | `python3 scripts/build.py template --check` prints the same five fingerprints it prints today, because the template holds no templates |
-| 3 | Prove a template that resolves at build time and a plain file produce the same bytes when the template has no constructs | A test asserting byte-identity, so adopting the source extension on a file with no holes moves no fingerprint |
+| 3 | Prove a template that resolves at build time and a plain file produce the same bytes when the template has no constructs | A test asserting the rendered file's bytes equal the plain file's, so a file with no holes comes back through the resolver unaltered |
 | 4 | Runtime stage: the resolver's second entry point, and the script a plugin ships | Tested against a fixture plugin repo written by `tests/repos.py` |
 | 5 | The two hook rules in `template/`, and the loss policy for the five harnesses with no `hooks` entry | The build refuses, or degrades, and says which. Test by message text |
 | 6 | Documentation: `CLAUDE.md` invariant narrowed, `README.md` given the two-stage story | Both read correctly to someone who has not read the wiki's decision page |
 
-Phase 3 is the one worth not skipping. If adopting the source extension moves a `contents`
-fingerprint on a file that has no template constructs in it, every existing plugin's pin breaks for
-a rename.
+Adoption moves fingerprints and no gate can stop it. `fingerprint` in `scripts/resolve.py` hashes
+each file's relative path before its bytes, so a rename is a change by construction, and that one
+function measures both a dependency pin and a folder's `contents`. Adoption moves both: the source
+checkout, because `SKILL.md` became `SKILL.stencil.md`, and the shipped folder, because it now
+carries the source beside the rendered file. The blast-radius row below says exactly this, and it is
+the row to trust.
+
+Phase 3 is still the one worth not skipping, for the narrower thing it does buy: the resolver is a
+no-op on a file with no constructs. Without that test, an adopting plugin pays a content change on
+top of the rename, and a file nobody meant to template comes back altered.
 
 ## Blast radius
 

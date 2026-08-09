@@ -108,13 +108,45 @@ def ignored(_directory: str, names: list[str]) -> set[str]:
     return {name for name in names if name in NEVER_SHIP or name.endswith((".pyc", ".pyo"))}
 
 
+def skipping(forbidden: frozenset[Path]):
+    """`ignored`, plus the two directories this build owns, at every level.
+
+    `shutil.copytree` asks this before it descends into anything, and it asks
+    at each level rather than once at the top. That is the only place the
+    destination and the staging directory can be caught when either sits deeper
+    than a direct child of the plugin root: a top-level filter never sees them,
+    because the directory holding them was already handed to `copytree` whole.
+
+    `--out build/dist` is the case. `build` is an ordinary top-level directory,
+    so it is copied entire, and the staging directory sitting inside it is
+    copied into itself until the path is too long for the filesystem. That is a
+    `shutil.Error` with no next step in it, on the first build rather than the
+    second.
+    """
+
+    def ignore(directory: str, names: list[str]) -> set[str]:
+        here = Path(directory)
+        skipped = ignored(directory, names)
+        return skipped | {
+            name for name in names if name not in skipped and (here / name).resolve() in forbidden
+        }
+
+    return ignore
+
+
 def copy_own_content(manifest: dict, out: Path, skip: tuple[Path, ...] = ()) -> dict[str, str]:
     """Everything in the plugin repo except what never ships.
 
     Returns every item it wrote under a content directory, credited to this
     plugin, so that a dependency later handing over the same name is caught.
     The plugin's own content goes down first, and without this the dependency
-    would quietly overwrite it.
+    would quietly overwrite it. Every direct child of a content directory is
+    credited, dot names included: a path nobody is credited with is a path a
+    dependency can write over, and an uncredited directory is worse than an
+    uncredited file because `copytree` raises `FileExistsError` on it rather
+    than overwriting quietly. `drop_placeholders` gives back the credit for
+    anything it removes, so this map stays the set of paths actually in the
+    tree and never refuses on behalf of a file that is no longer there.
 
     `skip` names this build's own two directories, and both have to be named
     because `--out dist` puts both of them inside the plugin being read.
@@ -127,10 +159,13 @@ def copy_own_content(manifest: dict, out: Path, skip: tuple[Path, ...] = ()) -> 
     The second one fails on the first build, not the second, and `--out dist` is
     the command the template's README gives everybody. Both are matched by
     resolved path rather than by name: `dist` is a convention in a README and
-    the flag takes anything.
+    the flag takes anything. Both are matched at every level rather than only
+    at the top, because the flag takes a path as well as a name and `--out
+    build/dist` puts them under a directory that is itself copied whole.
     """
     excluded = set(manifest["exclude"])
-    forbidden = {path.resolve() for path in skip}
+    forbidden = frozenset(path.resolve() for path in skip)
+    ignore = skipping(forbidden)
     placed: dict[str, str] = {}
     for entry in sorted(manifest["root"].iterdir()):
         if entry.name in NEVER_SHIP or entry.name in excluded:
@@ -139,18 +174,16 @@ def copy_own_content(manifest: dict, out: Path, skip: tuple[Path, ...] = ()) -> 
             continue
         target = out / entry.name
         if entry.is_dir():
-            shutil.copytree(entry, target, ignore=ignored)
+            shutil.copytree(entry, target, ignore=ignore)
         else:
             shutil.copy2(entry, target)
         if entry.name in CONTENT_DIRS and target.is_dir():
             for item in sorted(target.iterdir()):
-                if item.name.startswith("."):
-                    continue
                 placed[f"{entry.name}/{item.name}"] = manifest["id"]
     return placed
 
 
-def drop_placeholders(out: Path) -> None:
+def drop_placeholders(out: Path, placed: dict[str, str]) -> None:
     """A placeholder is not content, so it neither ships nor holds a directory open.
 
     A file such as `.gitkeep` exists to make git keep an empty directory, and
@@ -170,6 +203,11 @@ def drop_placeholders(out: Path) -> None:
     Only the top level of each content directory is swept. Inside a skill
     directory a dot file is that skill's own business, and a directory that
     still holds something is left alone.
+
+    `placed` is the map of what is in the tree and who put it there, so a file
+    removed here gives its credit back. Left in, the map would name a path that
+    no longer exists, and a dependency handing over that same name would be
+    refused as a second source for a file nobody ships.
     """
     for kind in CONTENT_DIRS:
         directory = out / kind
@@ -178,8 +216,39 @@ def drop_placeholders(out: Path) -> None:
         for entry in sorted(directory.iterdir()):
             if entry.name.startswith(".") and entry.is_file():
                 entry.unlink()
+                placed.pop(f"{kind}/{entry.name}", None)
         if not any(directory.iterdir()):
             directory.rmdir()
+
+
+def check_take_entry(manifest: dict, dependency: dict, kind: str, item: object) -> None:
+    """One plain name, sitting directly in that dependency's content directory.
+
+    The entry is used unchanged on both sides of the copy: read from
+    `<dependency>/<kind>/<item>`, written to `<kind>/<item>` in the neutral
+    tree. So anything in it that walks walks on both sides, and fencing `kind`
+    against `CONTENT_DIRS` alone leaves the fence open. `take: {skills:
+    ["../mcp.json"]}` reads a file that is not content at all and writes it to
+    the root of the shipped folder, over the plugin's own `mcp.json` if it has
+    one. Nothing catches it on the way past: the collision map is keyed on the
+    literal string, and nothing else ever writes `skills/../mcp.json`.
+
+    That is the case this check exists for. MCP servers are always the plugin's
+    own and are the one thing a dependency may not hand over, and without a
+    fence on the entry a dependency hands one over on the priority channel,
+    silently, under its own server name.
+    """
+    if isinstance(item, str) and item not in ("", ".", "..") and "/" not in item and "\\" not in item:
+        return
+    raise BuildError(
+        f"{manifest['manifest_path']}: cannot take '{item}' from {dependency['id']}.\n"
+        f"  Declared under take.{kind}.\n"
+        f"  A take entry is one plain name sitting directly in that dependency's\n"
+        f"  {kind}/ directory, with no '/' and no '..'. An entry that walks reads\n"
+        f"  something that is not content and writes it outside {kind}/, and a\n"
+        f"  dependency hands over {', '.join(CONTENT_DIRS)} and nothing else.\n"
+        f"  Name the item itself, or ask {dependency['id']} to put it in {kind}/."
+    )
 
 
 def copy_dependency_content(manifest: dict, out: Path, placed: dict[str, str]) -> list[dict]:
@@ -187,6 +256,9 @@ def copy_dependency_content(manifest: dict, out: Path, placed: dict[str, str]) -
 
     `placed` maps every path already written to whoever wrote it, so the
     second writer to the same path is caught rather than silently winning.
+    That map is keyed on `<kind>/<item>`, which is only a path inside the
+    neutral tree because `check_take_entry` has already refused everything that
+    is not one.
     """
     taken = []
     for dependency in manifest["dependencies"]:
@@ -198,6 +270,7 @@ def copy_dependency_content(manifest: dict, out: Path, placed: dict[str, str]) -
                     f"  A dependency hands over {', '.join(CONTENT_DIRS)} and nothing else."
                 )
             for item in items:
+                check_take_entry(manifest, dependency, kind, item)
                 source = source_root / kind / item
                 if not source.exists():
                     raise BuildError(
@@ -342,7 +415,7 @@ def build(plugin_dir: Path, out: Path) -> dict:
         neutral = staging / "neutral"
         neutral.mkdir()
         placed = copy_own_content(manifest, neutral, skip=(out, staging))
-        drop_placeholders(neutral)
+        drop_placeholders(neutral, placed)
         taken = copy_dependency_content(manifest, neutral, placed)
         check_provides(manifest, neutral)
         emitters.check_skills_are_one_level_deep(neutral, manifest["manifest_path"])

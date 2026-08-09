@@ -86,3 +86,14 @@ nothing. A refusal with no next step is a bug by Foundry's own rule.
 
 The first change to the first number creates the directory and that document, in the same change
 that moves the number.
+
+## Two hand-written JSON refusals are now unreachable
+
+`translate_mcp` in `emitters/claude_code.py` and `check_mcp` in `emitters/agent_plugins.py` each
+catch a JSON decode error on `mcp.json` and raise a proper refusal. Neither can run any more.
+`declared_kinds` calls `mcp_servers` in `emitters/contract.py` before any emitter is reached, and
+that now refuses an unreadable file itself, so the build always stops earlier.
+
+They were unreachable before this too, by crashing rather than by refusing. Either delete both, or
+give one of them a reason to exist that the earlier check does not already cover. Dead code in a
+refusal path reads as a guard that is running.

@@ -229,6 +229,32 @@ class PluginOnItsOwn(RepoCase):
         self.assertFalse((out / "dist").exists(), "the previous release shipped inside this one")
         self.assertTrue((out / "skills/greet/SKILL.md").is_file())
 
+    def test_a_destination_below_the_plugin_root_is_still_never_read(self):
+        """`--out` takes a path, not just a name, and `build/dist` is a path.
+
+        The destination and the staging directory beside it are matched by
+        resolved path, but a top-level filter never reaches either when they sit
+        under `build/`: that directory is an ordinary top-level entry, so it is
+        handed to `copytree` whole and the staging directory inside it is copied
+        into itself until the path is too long for the filesystem. That is a
+        `shutil.Error` with no next step in it, on the first build.
+        """
+        plugin = make_repo(
+            self.workspace,
+            "solo",
+            provides={"skills": ["greet"]},
+            files={"skills/greet/SKILL.md": "greet\n"},
+        )
+        out = plugin / "build" / "dist"
+
+        build.build(plugin, out)
+        build.build(plugin, out)
+
+        self.assertTrue((out / "skills/greet/SKILL.md").is_file())
+        self.assertFalse((out / "build/dist").exists(), "the previous release shipped inside this one")
+        leaked = [path for path in files_under(out) if "-building-" in path]
+        self.assertEqual(leaked, [], f"the build's own scratch shipped: {leaked}")
+
     def test_a_placeholder_holding_an_empty_directory_open_does_not_ship(self):
         """`.gitkeep` is git's business, and the shipped folder is not a git repo.
 
@@ -367,6 +393,172 @@ class TakingFromADependency(RepoCase):
         message = str(refusal.exception)
         self.assertIn("TWO SOURCES FOR THE SAME THING", message)
         self.assertIn("commands/ship.md", message)
+
+
+class ATakeEntryNamesOneThing(RepoCase):
+    """`take` reaches into one content directory and may not leave it.
+
+    The entry is used unchanged on both sides of the copy, read from
+    `<dependency>/<kind>/<item>` and written to `<kind>/<item>`, so anything in
+    it that walks walks on both sides. Fencing the kind against the four
+    content directories says which directory a dependency may reach into and
+    nothing at all about where the bytes land.
+    """
+
+    KINDS = ("skills", "agents", "commands", "hooks")
+
+    def test_a_take_entry_that_walks_out_of_the_directory_is_refused(self):
+        library = make_repo(
+            self.workspace,
+            "library",
+            files={"secret.txt": "not content\n", "skills/audit/SKILL.md": "audit\n"},
+        )
+        plugin = make_repo(
+            self.workspace,
+            "consumer",
+            requires=[needs(library, take={"skills": ["../secret.txt"]})],
+        )
+        out = self.destination()
+
+        with self.assertRaises(build.BuildError) as refusal:
+            build.build(plugin, out)
+
+        message = str(refusal.exception)
+        self.assertIn("cannot take '../secret.txt'", message)
+        self.assertIn("library", message)
+        self.assertIn("take.skills", message)
+        self.assertIn(MANIFEST_NAME, message, "the refusal does not say where it was declared")
+        for kind in self.KINDS:
+            self.assertIn(kind, message, "the refusal does not name what may be handed over")
+        self.assertFalse(out.exists(), "a refused build left a folder on disk")
+
+    def test_a_take_entry_naming_a_path_inside_an_item_is_refused(self):
+        """The deeper path also walks past the collision map, which is the worse half.
+
+        `placed` is keyed on the path each item lands at, so an entry naming
+        something below an item collides with nothing, and the file the plugin
+        wrote itself is overwritten with no refusal and no line in the lock file
+        saying what it replaced.
+        """
+        library = make_repo(self.workspace, "library", files={"skills/greet/SKILL.md": "the library's\n"})
+        plugin = make_repo(
+            self.workspace,
+            "consumer",
+            files={"skills/greet/SKILL.md": "the plugin's own\n"},
+            requires=[needs(library, take={"skills": ["greet/SKILL.md"]})],
+        )
+
+        with self.assertRaises(build.BuildError) as refusal:
+            build.build(plugin, self.destination())
+
+        self.assertIn("cannot take 'greet/SKILL.md'", str(refusal.exception))
+
+    def test_a_dependency_cannot_hand_over_an_mcp_server(self):
+        """MCP servers are the one thing a dependency may never supply.
+
+        Without a fence on the entry the file lands at the root of the neutral
+        tree, over the plugin's own, and the emitter reads whatever sits there
+        with no knowledge of where it came from. The shipped `.mcp.json` then
+        holds the dependency's server under the dependency's name, and nothing
+        was printed and nothing was refused.
+        """
+        library = make_repo(
+            self.workspace,
+            "library",
+            files={
+                "mcp.json": '{"mcpServers": {"theirs": {"command": "theirs"}}}\n',
+                "skills/audit/SKILL.md": "audit\n",
+            },
+        )
+        plugin = make_repo(
+            self.workspace,
+            "consumer",
+            files={
+                "mcp.json": '{"mcpServers": {"mine": {"command": "mine"}}}\n',
+                "skills/greet/SKILL.md": "greet\n",
+            },
+            requires=[needs(library, take={"skills": ["../mcp.json"]})],
+        )
+        out = self.destination()
+
+        with self.assertRaises(build.BuildError) as refusal:
+            build.build(plugin, out)
+
+        self.assertIn("cannot take '../mcp.json'", str(refusal.exception))
+        self.assertFalse(out.exists(), "the dependency's server reached a shipped folder")
+
+    def test_nothing_but_one_plain_name_gets_through(self):
+        """Every shape that is not a single name, checked in one place.
+
+        A path separator, a parent reference, the directory itself, an absolute
+        path and an empty string all reach outside the item they claim to name,
+        and a value that is not a name at all crashes on the join instead of
+        refusing.
+        """
+        library = make_repo(self.workspace, "library", files={"skills/audit/SKILL.md": "audit\n"})
+        for entry in ("..", ".", "../..", "audit/SKILL.md", "/etc/passwd", "", "a\\b", 7):
+            with self.subTest(entry=entry):
+                plugin = make_repo(
+                    self.workspace,
+                    "consumer",
+                    requires=[needs(library, take={"skills": [entry]})],
+                )
+                with self.assertRaises(build.BuildError) as refusal:
+                    build.build(plugin, self.destination())
+                self.assertIn("A take entry is one plain name", str(refusal.exception))
+
+
+class TheCollisionMapHoldsEveryPathTheTreeHolds(RepoCase):
+    """A path nobody is credited with is a path a dependency can write over.
+
+    The map is what makes two sources for one thing a refusal rather than a
+    silent substitution, so anything in a content directory that is missing
+    from it is a gap in that refusal, whatever the item is named.
+    """
+
+    def test_a_dependency_never_writes_over_a_dot_directory_the_plugin_owns(self):
+        """A dot name is skipped by the placeholder sweep, which only takes files.
+
+        Uncredited, the second writer does not overwrite quietly here, it raises
+        `FileExistsError` out of `copytree`: a traceback with no next step in it,
+        for a case that has a refusal already written for it.
+        """
+        library = make_repo(self.workspace, "library", files={"skills/.shared/lib.py": "theirs\n"})
+        plugin = make_repo(
+            self.workspace,
+            "consumer",
+            files={"skills/.shared/lib.py": "the plugin's own\n", "skills/greet/SKILL.md": "greet\n"},
+            requires=[needs(library, take={"skills": [".shared"]})],
+        )
+
+        with self.assertRaises(build.BuildError) as refusal:
+            build.build(plugin, self.destination())
+
+        message = str(refusal.exception)
+        self.assertIn("TWO SOURCES FOR THE SAME THING", message)
+        self.assertIn("skills/.shared", message)
+        self.assertIn("consumer", message)
+        self.assertIn("library", message)
+
+    def test_a_swept_placeholder_is_not_reported_as_a_second_source(self):
+        """The credit is given back when the sweep removes the file.
+
+        Left in the map, the refusal above would fire for a path that is not in
+        the folder, and name a file whoever reads the message cannot find.
+        """
+        library = make_repo(self.workspace, "library", files={"skills/.gitkeep": ""})
+        plugin = make_repo(
+            self.workspace,
+            "consumer",
+            provides={"skills": ["greet"]},
+            files={"skills/greet/SKILL.md": "greet\n", "skills/.gitkeep": ""},
+            requires=[needs(library, take={"skills": [".gitkeep"]})],
+        )
+        out = self.destination()
+
+        build.build(plugin, out)
+
+        self.assertTrue((out / "skills/greet/SKILL.md").is_file())
 
 
 class ARefusedBuildLeavesNothingBehind(RepoCase):

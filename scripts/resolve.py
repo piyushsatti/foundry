@@ -298,16 +298,33 @@ def read_manifest(plugin_dir: Path) -> dict:
 
 
 def collect(plugin_dir: Path) -> list[dict]:
-    """The plugin plus everything it depends on, each read once.
+    """The plugin plus everything it depends on, each manifest read once.
 
     Depth-first, tracking the path taken, so a cycle is reported as the actual
     loop rather than as a stack overflow.
+
+    A second visit to the same directory is ordinary rather than exceptional:
+    a diamond reaches one dependency down two branches, and a cycle arrives
+    back at a manifest already on the trail. Both have to be answered from
+    what was already read, and neither can be recognised before the read,
+    because `found` and `trail` are keyed by the plugin id and the id is
+    inside the file. `parsed` is keyed by the resolved directory, which is
+    known beforehand, so the file is opened once and the decision is taken
+    after. The trail is still consulted before `found`, so a cycle served from
+    `parsed` is refused exactly as one read from disk would be.
     """
+    parsed: dict[Path, dict] = {}
     found: dict[str, dict] = {}
     order: list[dict] = []
 
+    def read_once(directory: Path) -> dict:
+        key = directory.resolve()
+        if key not in parsed:
+            parsed[key] = read_manifest(directory)
+        return parsed[key]
+
     def walk(directory: Path, trail: list[str]) -> None:
-        manifest = read_manifest(directory)
+        manifest = read_once(directory)
         name = manifest["id"]
         if name in trail:
             loop = " needs ".join(trail[trail.index(name) :] + [name])

@@ -493,7 +493,7 @@ def plan(
 
 
 # ------------------------------------------------------------------- emitting
-def prune(tree: Path, answer: Capability) -> None:
+def prune(target: str, tree: Path, answer: Capability) -> None:
     """Take out every kind this harness cannot represent, whether declared or not.
 
     No harness folder may hold a file that harness does not read. An unread
@@ -505,6 +505,12 @@ def prune(tree: Path, answer: Capability) -> None:
     Pruning is here rather than in each emitter because it is identical for
     every harness: what differs is the list of kinds, which the emitter already
     declared.
+
+    A kind this chain has no branch for is refused rather than passed over. The
+    capability check makes declaring a seventh kind loud; without the refusal
+    below, carrying it would be silent, which is the half that ships. The chain
+    is exhaustive over KINDS today, so nothing reaches it until somebody grows
+    KINDS or misspells a key in `cannot`.
     """
     for kind in answer.cannot:
         if kind in CONTENT_KINDS:
@@ -513,6 +519,20 @@ def prune(tree: Path, answer: Capability) -> None:
             remove(tree / MCP_NAME)
         elif kind == "allowed-tools":
             strip_allowed_tools(tree)
+        else:
+            raise EmitError(
+                f"FOUNDRY CANNOT PRUNE {kind!r}.\n\n"
+                f"  {target} says it cannot carry {kind!r}, and pruning has no branch\n"
+                f"  for that kind, so nothing would be taken out of the folder. It\n"
+                f"  would ship inside a fingerprint with nothing able to explain it.\n\n"
+                f"  Foundry prunes: {', '.join(KINDS)}.\n"
+                f"  Declared in scripts/emitters/{REGISTRY.get(target, '<harness>')}.py,\n"
+                f"  in CAPABILITIES for {target}, under 'cannot'.\n\n"
+                f"  This is a Foundry defect, not a problem with the plugin. Either the\n"
+                f"  key is misspelled there, or a kind was added to KINDS in resolve.py\n"
+                f"  without telling 'prune' where that kind lives in the tree. Add the\n"
+                f"  branch, then this refusal goes back to being unreachable."
+            )
 
 
 def strip_allowed_tools(tree: Path) -> None:
@@ -557,7 +577,7 @@ def run(target: str, manifest: dict, tree: Path) -> None:
     harness cannot carry, which is what keeps every emitter free of loss logic.
     """
     module = load(target)
-    prune(tree, capability(target))
+    prune(target, tree, capability(target))
     try:
         module.emit(target, manifest, tree)
     except NotImplementedError as gap:

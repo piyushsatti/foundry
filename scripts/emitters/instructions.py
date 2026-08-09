@@ -65,6 +65,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .contract import (
+    CONTENT_KINDS,
+    MCP_NAME,
     SKILL_NAME,
     Cannot,
     Capability,
@@ -89,12 +91,11 @@ POINTERS = {
 
 FILENAMES = (AGENTS_NAME, *POINTERS)
 
-# What a person copies into their repository, and therefore the whole of what
-# this folder may hold. Everything else is taken out rather than shipped: this
-# is the one target whose contents land in a working tree somebody else owns,
-# so a stray file here is not an unread file, it is a file that overwrites one
-# of theirs.
-KEEP = FILENAMES + ("skills", "commands")
+# Where a kind sits at the top of a folder. A content kind is a directory of
+# its own name and `mcp` is one file, so either is a name this folder can keep.
+# `allowed-tools` is a field inside a skill rather than a path, so it is absent
+# here on purpose: a capability carrying it leaves nothing extra at the top.
+AT_TOP = {**{kind: kind for kind in CONTENT_KINDS}, "mcp": MCP_NAME}
 
 CAPABILITIES = {
     "instructions": Capability(
@@ -110,6 +111,23 @@ CAPABILITIES = {
         },
     ),
 }
+
+
+def kept_names(target: str) -> tuple[str, ...]:
+    """What a person copies into their repository, and the whole of what this folder may hold.
+
+    Everything else is taken out rather than shipped: this is the one target
+    whose contents land in a working tree somebody else owns, so a stray file
+    here is not an unread file, it is a file that overwrites one of theirs.
+
+    Which kinds this harness carries is stated once, in its Capability, and read
+    back from there rather than written out a second time. Two statements of one
+    fact drift, and these two would never be read against each other: a kind
+    added to `carries` is pruned by nothing and then deleted here, so the folder
+    arrives without it while the capability says it is carried.
+    """
+    carried = CAPABILITIES[target].carries
+    return FILENAMES + tuple(AT_TOP[kind] for kind in carried if kind in AT_TOP)
 
 
 @dataclass(frozen=True)
@@ -132,7 +150,7 @@ def emit(target: str, manifest: dict, tree: Path) -> None:
     for name, because in POINTERS.items():
         (tree / name).write_text(pointer_file(manifest, name, because))
 
-    report(target, keep_only_what_is_named(tree, skills, commands))
+    report(target, keep_only_what_is_named(target, tree, skills, commands))
 
 
 # ------------------------------------------------------------- what is refused
@@ -375,7 +393,7 @@ def wrap(text: str, width: int = 78) -> list[str]:
 
 
 # --------------------------------------------------------- what is left behind
-def keep_only_what_is_named(tree: Path, skills: list[Entry], commands: list[Entry]) -> list[str]:
+def keep_only_what_is_named(target: str, tree: Path, skills: list[Entry], commands: list[Entry]) -> list[str]:
     """Everything the three files do not name goes, and comes back as a report.
 
     Keeping a whole content directory is not enough. A skill directory with no
@@ -390,9 +408,10 @@ def keep_only_what_is_named(tree: Path, skills: list[Entry], commands: list[Entr
     have, and the placeholder keeping it alive in the plugin repo is a fact
     about that repo rather than anything to deliver.
     """
+    keep = kept_names(target)
     left_behind = []
     for entry in sorted(tree.iterdir()):
-        if entry.name in KEEP:
+        if entry.name in keep:
             continue
         left_behind.append(named(entry, tree))
         remove(entry)

@@ -18,16 +18,18 @@ Run: python3 -m unittest discover -s tests   (from the repo root)
 from __future__ import annotations
 
 import contextlib
+import importlib
 import io
 import json
 import sys
 import types
 import unittest.mock
+from pathlib import Path
 
 from tests.repos import RUNNING_FOUNDRY, RepoCase, build, files_under, make_repo, resolve
 
 import emitters  # noqa: E402  reachable once tests.repos has put scripts/ on the path
-from emitters import COMMON_MOMENTS, Cannot, Capability, EmitError  # noqa: E402
+from emitters import COMMON_MOMENTS, Cannot, Capability, EmitError, instructions  # noqa: E402
 
 LOCK_NAME = "foundry.lock.json"
 RELEASE_NAME = "foundry.release.json"
@@ -610,6 +612,68 @@ class WhatEachEmitterWrites(Fixtures):
         )
         self.assertIn("instructions left behind 1 path", self.printed)
         self.assertIn("README.md", self.printed)
+
+
+class WhatTheInstructionsFolderKeepsIsReadOffItsCapability(RepoCase):
+    """One statement of what a harness carries, and the emitter reads that one.
+
+    `instructions` takes out everything its three files do not name, so it needs
+    a list of the top-level names that may stay. Written out by hand, that list
+    is a second statement of `carries` that nothing ever reads against the
+    first: the framework has already pruned every kind the capability cannot
+    carry, so the two agree until somebody changes one of them, and then the
+    folder arrives short while CAPABILITIES says the kind is carried.
+
+    The capability below is the shape that drift would take. It is the real one
+    with `agents` moved from `cannot` into `carries`, which is exactly the edit
+    a person makes in one place and forgets in the other.
+    """
+
+    CARRYING_AGENTS = Capability(
+        carries=("skills", "commands", "agents"),
+        cannot={
+            "hooks": Cannot("an instructions file is prose and runs nothing"),
+            "mcp": Cannot("an instructions file cannot start a server"),
+            "allowed-tools": Cannot("an instructions file enforces nothing"),
+        },
+    )
+
+    def with_an_agent(self):
+        return make_repo(
+            self.workspace,
+            "carried",
+            files={
+                "skills/greet/SKILL.md": "---\nname: greet\ndescription: Greet.\n---\n\nGreet.\n",
+                "commands/review.md": COMMAND_TEXT,
+                "agents/panelist.md": AGENT_TEXT,
+            },
+            targets=["instructions"],
+        )
+
+    def test_the_names_it_keeps_are_the_files_it_writes_and_the_kinds_it_carries(self):
+        self.assertEqual(
+            instructions.kept_names("instructions"),
+            instructions.FILENAMES + ("skills", "commands"),
+        )
+
+    def test_a_kind_moved_into_carries_stays_in_the_folder_with_no_second_list_to_update(self):
+        """If this breaks, the emitter is deciding a kind's fate on its own.
+
+        Deleting a carried kind is the loss policy inverted: the capability says
+        it ships, the framework leaves it in place for that reason, and the last
+        step of the emitter takes it out with a line in a report as the only
+        trace.
+        """
+        out = self.destination()
+
+        with unittest.mock.patch.dict(instructions.CAPABILITIES, {"instructions": self.CARRYING_AGENTS}):
+            printed = self.ship(self.with_an_agent(), out)
+
+        self.assertTrue(
+            (out / "agents/panelist.md").is_file(),
+            "the capability carries agents and the folder took them out anyway",
+        )
+        self.assertNotIn("agents", printed)
 
 
 class ALossIsRefusedOrWrittenDown(RepoCase):
@@ -1308,3 +1372,314 @@ class AnOnlyLimitedRuleIsADropNotARefusal(RepoCase):
         self.assertIn("turn-end", message)
         self.assertIn("drop that harness from 'targets'", message)
         self.assertIn("only: [<harness>]", message)
+
+
+class TheRegistryAndEveryModuleAgree(unittest.TestCase):
+    """Two statements of one fact, read against each other over the whole registry.
+
+    `emitters.load` reads a registry line against one module's `TARGETS`, one
+    target at a time, and only for a target some plugin actually named. That
+    leaves drift open in both directions. A registry line pointing at a module
+    that does not claim it goes unnoticed until somebody builds that harness. A
+    module claiming a name the registry does not send it reaches the author as
+    `NO SUCH TARGET`, which tells them to fix a name in their own 'targets' when
+    the fault is Foundry's and no edit of theirs can reach it.
+
+    Walking the whole registry closes both halves, and it is walked here rather
+    than at import for the same reason the three fingerprint skip lists are
+    written out by hand in `tests/scripts/test_resolve.py`: drift between two
+    parts of Foundry is Foundry's defect, so it stops Foundry's own build and
+    never a stranger's.
+    """
+
+    def modules(self) -> dict[str, object]:
+        """Every module the registry names, imported once, keyed by that name."""
+        return {
+            name: importlib.import_module(f"emitters.{name}")
+            for name in sorted(set(emitters.REGISTRY.values()))
+        }
+
+    def test_the_registry_names_exactly_the_harnesses_this_file_writes_out_by_hand(self):
+        """`ALL_TARGETS` is the fourth place a harness is named and the one that
+        refuses nothing, so a seventh added without touching it ships untested.
+        Reading it against the registry is what makes that one report."""
+        self.assertEqual(
+            sorted(emitters.REGISTRY),
+            sorted(ALL_TARGETS),
+            "the registry and this file disagree about which harnesses exist",
+        )
+
+    def test_every_registry_line_points_at_a_module_that_claims_that_harness(self):
+        """The direction `load` already checks, asserted over every entry rather
+        than only over the harnesses some plugin happened to name."""
+        modules = self.modules()
+        for target, name in sorted(emitters.REGISTRY.items()):
+            with self.subTest(target):
+                self.assertIn(
+                    target,
+                    getattr(modules[name], "TARGETS", ()),
+                    f"the registry sends {target} to {name}, which does not claim it, "
+                    "so that harness is listed and never emitted",
+                )
+
+    def test_no_module_claims_a_harness_the_registry_does_not_send_it(self):
+        """The direction nothing checked. A module claiming a name the registry
+        maps elsewhere, or maps nowhere, is Foundry disagreeing with itself, and
+        the plugin author is the one who reads about it."""
+        for name, module in sorted(self.modules().items()):
+            for claimed in getattr(module, "TARGETS", ()):
+                with self.subTest(f"{name} claims {claimed}"):
+                    self.assertEqual(
+                        emitters.REGISTRY.get(claimed),
+                        name,
+                        f"{name} claims {claimed}, which the registry does not send to it",
+                    )
+
+    def test_a_module_declaring_targets_that_no_registry_line_names_is_reported(self):
+        """An emitter written and never registered emits for nobody.
+
+        Nothing imports it, so neither direction above can see it: the module is
+        reachable only by walking the package rather than the registry.
+        """
+        registered = set(emitters.REGISTRY.values())
+        for path in sorted(Path(emitters.__file__).parent.glob("*.py")):
+            if path.stem == "__init__":
+                continue
+            module = importlib.import_module(f"emitters.{path.stem}")
+            if not hasattr(module, "TARGETS"):
+                continue
+            with self.subTest(path.stem):
+                self.assertIn(
+                    path.stem,
+                    registered,
+                    f"{path.stem} declares TARGETS and no line in the registry names it",
+                )
+
+    def test_a_module_registered_for_a_harness_it_does_not_claim_refuses_and_names_foundry(self):
+        """The refusal `load` already raises, which nothing asserted before.
+
+        Its whole job is to tell a plugin author the fault is not theirs. A
+        registry line is not something any manifest can reach, so a refusal that
+        read like the `NO SUCH TARGET` one would send them editing 'targets'
+        forever.
+        """
+        stranger = types.ModuleType("emitters.mislaid")
+        stranger.TARGETS = ("some-other-harness",)
+
+        registry_patch = unittest.mock.patch.dict(emitters.REGISTRY, {"mislaid": "mislaid"})
+        modules_patch = unittest.mock.patch.dict(sys.modules, {"emitters.mislaid": stranger})
+        with registry_patch, modules_patch:
+            with self.assertRaises(EmitError) as refusal:
+                emitters.load("mislaid")
+
+        message = str(refusal.exception)
+        self.assertIn("emitters.mislaid is registered for mislaid but does not claim it", message)
+        self.assertIn("Its TARGETS are: some-other-harness", message)
+        self.assertIn("This is a Foundry defect, not a problem with the plugin.", message)
+
+
+class NoKindFallsThroughPruning(RepoCase):
+    """Every kind a harness cannot carry is taken out, and none is passed over.
+
+    The capability check makes declaring a seventh kind loud: a module that does
+    not answer for it refuses to dispatch, calling itself a Foundry defect.
+    Pruning is the other half of the same growth point and it was the quiet one.
+    An if/elif chain with no last branch leaves a kind it has no branch for
+    sitting in the folder, inside that folder's `contents` fingerprint, with
+    nothing in the lock file able to say why it is there. That is a silent drop
+    read backwards: a silent carry.
+    """
+
+    def staged(self, name: str = "tree") -> Path:
+        """One tree holding every shape a kind takes on disk."""
+        tree = self.workspace / name
+        for kind in resolve.CONTENT_KINDS:
+            (tree / kind).mkdir(parents=True, exist_ok=True)
+        (tree / "skills/greet").mkdir(parents=True, exist_ok=True)
+        (tree / "skills/greet/SKILL.md").write_text(SKILL_TEXT)
+        (tree / "mcp.json").write_text(MCP_TEXT)
+        return tree
+
+    def test_every_kind_foundry_models_is_actually_taken_out_of_the_folder(self):
+        """The kind-by-kind statement of the invariant, so a branch that stops
+        working is caught as itself rather than as a folder listing somewhere
+        further down the file."""
+        gone = {
+            "skills": lambda tree: not (tree / "skills").exists(),
+            "agents": lambda tree: not (tree / "agents").exists(),
+            "commands": lambda tree: not (tree / "commands").exists(),
+            "hooks": lambda tree: not (tree / "hooks").exists(),
+            "mcp": lambda tree: not (tree / "mcp.json").exists(),
+            "allowed-tools": lambda tree: "allowed-tools" not in (tree / "skills/greet/SKILL.md").read_text(),
+        }
+        self.assertEqual(sorted(gone), sorted(resolve.KINDS), "a kind has no assertion here")
+
+        for kind, is_gone in sorted(gone.items()):
+            with self.subTest(kind):
+                tree = self.staged(kind)
+                answer = Capability(carries=(), cannot={kind: Cannot(f"this harness has no {kind} surface")})
+
+                emitters.prune("claude-code", tree, answer)
+
+                self.assertTrue(is_gone(tree), f"{kind} was declared uncarryable and stayed in the folder")
+
+    def test_nothing_a_registered_harness_declares_it_cannot_carry_falls_through(self):
+        """The real capability set, read through the same chain. If a module
+        ever declares a kind pruning has no branch for, this goes red before any
+        plugin names that harness."""
+        for target in sorted(emitters.REGISTRY):
+            with self.subTest(target):
+                emitters.prune(target, self.staged(target), emitters.capability(target))
+
+    def test_a_kind_pruning_has_no_branch_for_is_refused_as_a_foundry_defect(self):
+        """Both ways the chain can be reached: a kind Foundry does not model
+        yet, and a key somebody misspelled in `cannot`. The capability check
+        cannot see either one, because a capability that answers for all six and
+        holds a seventh key is neither short nor doubled."""
+        for label, kind in {"a kind Foundry does not model": "themes", "a misspelled key": "mcpp"}.items():
+            with self.subTest(label):
+                answer = Capability(carries=(), cannot={kind: Cannot("this harness has no such surface")})
+
+                with self.assertRaises(EmitError) as refusal:
+                    emitters.prune("opencode", self.staged(kind), answer)
+
+                message = str(refusal.exception)
+                self.assertIn(f"FOUNDRY CANNOT PRUNE '{kind}'", message)
+                self.assertIn("opencode", message)
+                self.assertIn(f"Foundry prunes: {', '.join(resolve.KINDS)}", message)
+                self.assertIn("scripts/emitters/skills_tree.py", message)
+                self.assertIn("This is a Foundry defect, not a problem with the plugin.", message)
+
+    def test_the_refusal_leaves_the_kinds_it_did_prune_taken_out(self):
+        """Pruning is not a transaction and must not read like one. The refusal
+        stops the build, so the half-pruned tree is thrown away with everything
+        else the build was writing, and no folder ships from it."""
+        answer = Capability(
+            carries=(),
+            cannot={"agents": Cannot("this harness has no agents surface"), "themes": Cannot("nor themes")},
+        )
+        tree = self.staged()
+
+        with self.assertRaises(EmitError):
+            emitters.prune("pi", tree, answer)
+
+        self.assertFalse((tree / "agents").exists())
+
+
+class AFileTheBuildCannotParseIsARefusalAndNotATraceback(RepoCase):
+    """The two files read before any folder is written: SKILL.md and mcp.json.
+
+    `declared_kinds` opens both on the neutral tree, to find out which kinds the
+    plugin actually holds, and it runs before the first emitter. So a parse
+    error there had two ways to reach a user and both were wrong. Unhandled, it
+    left the CLI as a raw traceback with nothing to do about it. Handled by
+    reading the file as empty, it would have been worse: the framework would
+    never learn the kind was declared, nothing would be pruned or refused, and
+    the plugin would ship with the thing it exists for quietly missing.
+
+    The emitters that read these files check them for themselves, but nothing
+    reaches an emitter with either file broken, so those checks cannot be what
+    makes this true.
+    """
+
+    GOOD_SKILL = "---\nname: greet\ndescription: Greet.\n---\n\nGreet.\n"
+
+    def with_files(self, files: dict, **manifest):
+        return make_repo(self.workspace, "unparseable", files=files, **manifest)
+
+    def refusal_for(self, files: dict, target: str) -> tuple[str, object]:
+        plugin = self.with_files(files, targets=[target])
+        out = self.destination(target)
+        with self.assertRaises(EmitError) as refusal:
+            self.ship(plugin, out)
+        return str(refusal.exception), out
+
+    # ------------------------------------------------------------ frontmatter
+    def test_a_skill_whose_frontmatter_is_not_yaml_is_refused_and_the_skill_is_named(self):
+        """If this breaks, an author who writes an unquoted brace in a
+        frontmatter value gets a Python traceback out of a build tool whose
+        error messages are the product."""
+        broken = "---\ndescription: Greet.\nname: {{ who }}\n---\n\nGreet.\n"
+
+        message, out = self.refusal_for({"skills/greet/SKILL.md": broken}, "claude-code")
+
+        self.assertIn("CANNOT BUILD THIS PLUGIN.", message)
+        self.assertIn("greet/SKILL.md does not open with a valid YAML block", message)
+        self.assertIn("found unhashable key", message)
+        self.assertIn("Fix the block between the two '---' lines", message)
+        self.assertFalse(out.exists())
+
+    def test_the_frontmatter_refusal_lands_on_every_harness_and_not_just_the_ones_reading_it(self):
+        """If this breaks, the refusal has moved into an emitter, and a plugin
+        built for a harness that reads no frontmatter ships a skill whose
+        declaration nobody could parse."""
+        broken = "---\ndescription: Greet.\nname: {{ who }}\n---\n\nGreet.\n"
+
+        for target in ALL_TARGETS:
+            with self.subTest(target):
+                message, out = self.refusal_for({"skills/greet/SKILL.md": broken}, target)
+
+                self.assertIn("greet/SKILL.md does not open with a valid YAML block", message)
+                self.assertFalse(out.exists())
+
+    def test_frontmatter_that_parses_but_is_not_a_map_is_still_read_as_absent(self):
+        """If this breaks, the refusal has grown past what it is for. A block
+        that is not a map is an answer, the file declares nothing, and deciding
+        a content file is otherwise malformed belongs to the validating tools
+        and not to the build."""
+        listed = "---\n- greet\n- describe\n---\n\nGreet.\n"
+        plugin = self.with_files({"skills/greet/SKILL.md": listed}, targets=["claude-code"])
+        out = self.destination()
+
+        self.ship(plugin, out)
+
+        self.assertEqual((out / "skills/greet/SKILL.md").read_text(), listed)
+
+    # --------------------------------------------------------------- mcp.json
+    def test_an_mcp_file_that_is_not_json_is_refused_before_any_folder_is_written(self):
+        """If this breaks, a plugin whose whole point is one MCP server either
+        crashes the build with a traceback or ships everywhere with no server
+        in it and nothing said."""
+        files = {"skills/greet/SKILL.md": self.GOOD_SKILL, "mcp.json": '{"mcpServers": }\n'}
+
+        message, out = self.refusal_for(files, "claude-code")
+
+        self.assertIn("CANNOT BUILD THIS PLUGIN.", message)
+        self.assertIn("mcp.json is not valid JSON", message)
+        self.assertIn("Fix the file.", message)
+        self.assertFalse(out.exists())
+
+    def test_the_mcp_refusal_lands_on_every_harness_including_the_ones_with_no_mcp_surface(self):
+        """If this breaks, the refusal has moved back into the two emitters
+        that translate the file, and every other harness reads a broken MCP
+        file as an absent one."""
+        files = {"skills/greet/SKILL.md": self.GOOD_SKILL, "mcp.json": '{"mcpServers": }\n'}
+
+        for target in ALL_TARGETS:
+            with self.subTest(target):
+                message, out = self.refusal_for(files, target)
+
+                self.assertIn("mcp.json is not valid JSON", message)
+                self.assertFalse(out.exists())
+
+    # -------------------------------------------------------------- at the CLI
+    def test_the_command_line_reports_both_as_a_refusal_and_exits_one(self):
+        """If this breaks, `build.py` is back to printing a stack trace, which
+        states no next step and names no file the author wrote."""
+        cases = {
+            "frontmatter": {"skills/greet/SKILL.md": "---\nname: {{ who }}\n---\n\nGreet.\n"},
+            "mcp": {"skills/greet/SKILL.md": self.GOOD_SKILL, "mcp.json": "{ not json\n"},
+        }
+        for label, files in cases.items():
+            with self.subTest(label):
+                plugin = self.with_files(files, targets=["claude-code"])
+                out = self.destination(label)
+                argv = ["build.py", str(plugin), "--out", str(out)]
+
+                complaint = io.StringIO()
+                with contextlib.redirect_stderr(complaint):
+                    with unittest.mock.patch.object(sys, "argv", argv):
+                        self.assertEqual(build.main(), 1)
+
+                self.assertIn("CANNOT BUILD THIS PLUGIN.", complaint.getvalue())
+                self.assertFalse(out.exists())

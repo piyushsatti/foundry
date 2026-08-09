@@ -213,3 +213,37 @@ class DependencyWalk(RepoCase):
         message = str(refusal.exception)
         self.assertIn("DEPENDENCY LOOP", message)
         self.assertIn("alpha needs beta needs alpha", message)
+
+    def test_a_diamond_reads_the_shared_manifest_once(self):
+        """Two branches reaching one dependency parse its manifest once.
+
+        Nothing wrong comes out of a second read, which is exactly why this
+        needs a test: the answer stays correct and no output changes, so the
+        only thing that reports the walk reading a manifest twice is a test
+        that counts the reads.
+
+        The loop above is the other half of this. A cycle is a second visit
+        too, and it is still refused while that manifest comes back from what
+        the walk already read rather than from the file, because a name on the
+        trail is checked before a name already walked.
+        """
+        shared = make_repo(self.workspace, "shared", files={"skills/shared/SKILL.md": "shared\n"})
+        left = make_repo(self.workspace, "left", requires=[needs(shared)])
+        right = make_repo(self.workspace, "right", requires=[needs(shared)])
+        root = make_repo(self.workspace, "root", requires=[needs(left), needs(right)])
+
+        reads: list[str] = []
+        real = resolve.read_manifest
+
+        def counted(directory: Path) -> dict:
+            reads.append(str(Path(directory).resolve()))
+            return real(directory)
+
+        resolve.read_manifest = counted
+        self.addCleanup(setattr, resolve, "read_manifest", real)
+
+        order = resolve.collect(root)
+
+        self.assertEqual([manifest["id"] for manifest in order], ["root", "left", "shared", "right"])
+        self.assertEqual(len(reads), len(set(reads)), f"a manifest was read more than once: {reads}")
+        self.assertEqual(set(reads), {str(root), str(left), str(shared), str(right)})

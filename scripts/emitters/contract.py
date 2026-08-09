@@ -123,6 +123,23 @@ class Capability:
         return tuple(kind for kind in self.carries if kind in self.cannot)
 
 
+# --------------------------------------------------------------- the refusal
+def refuse_plugin(problem: list[str], fix: list[str]) -> EmitError:
+    """A fault in a file the build has to read, which no choice of `targets` fixes.
+
+    Headed differently from a harness refusal on purpose. `CANNOT SHIP THIS TO
+    <harness>` says the plugin is fine and that one folder cannot carry it. This
+    says a file the build reads before any folder is written is not readable
+    yet, so every folder would be wrong the same way and naming a harness is
+    beside the point.
+    """
+    lines = ["CANNOT BUILD THIS PLUGIN.", ""]
+    lines += [f"  {line}" if line else "" for line in problem]
+    lines.append("")
+    lines += [f"  {line}" if line else "" for line in fix]
+    return EmitError("\n".join(lines))
+
+
 # ----------------------------------------------------------- shared file work
 def write_json(path: Path, payload: dict) -> None:
     """Two-space indent and a trailing newline, everywhere, without exception.
@@ -160,6 +177,13 @@ def frontmatter(path: Path) -> dict:
     Anything that is not a map at the top is treated as absent rather than
     refused, because deciding a content file is malformed is the validating
     tools' job and not the build's.
+
+    A block that does not parse at all is the other thing, and it is refused.
+    Not a map is an answer: the file declares nothing. Unparseable is no answer:
+    the build cannot tell an `allowed-tools` line that is not there from one it
+    failed to read, and reading it as absent ships a skill without the guard its
+    author wrote. That is the silent drop wearing different clothes, so the
+    build stops and names the file instead.
     """
     if not path.is_file():
         return {}
@@ -168,7 +192,24 @@ def frontmatter(path: Path) -> dict:
         return {}
     for index in range(1, len(lines)):
         if lines[index].strip() == "---":
-            loaded = yaml.safe_load("\n".join(lines[1:index])) or {}
+            try:
+                loaded = yaml.safe_load("\n".join(lines[1:index])) or {}
+            except Exception as broken:  # yaml raises its own family of errors
+                raise refuse_plugin(
+                    [
+                        f"{path.parent.name}/{path.name} does not open with a valid YAML block: {broken}.",
+                        f"Look for it under skills/{path.parent.name}/ in the plugin, or in a dependency it takes that skill from.",
+                        "",
+                        "Foundry reads that block to find out what the file declares, so a",
+                        "block it cannot parse stops the build rather than being read as",
+                        "empty. Read as empty, a skill whose 'allowed-tools' line could not",
+                        "be parsed would ship everywhere with no restriction on it.",
+                    ],
+                    [
+                        "Fix the block between the two '---' lines. A value holding ':',",
+                        "'{', '[', '#' or '*' has to be quoted to stay text.",
+                    ],
+                ) from broken
             return loaded if isinstance(loaded, dict) else {}
     return {}
 
@@ -190,8 +231,30 @@ def mcp_servers(tree: Path) -> dict:
 
     A plugin's MCP servers are always its own. Nothing is ever taken from a
     dependency, so there are never two of these maps to merge.
+
+    A file that is not JSON at all is refused here rather than read as empty.
+    This is the first thing in the build that opens the file, before any harness
+    folder exists, so an unreadable one read as empty means the framework never
+    learns the plugin declared MCP: nothing is pruned, nothing is refused, no
+    emitter that checks the file for itself is ever reached, and a plugin that
+    exists to serve one server ships everywhere with no server in it.
     """
-    payload = read_json(tree / MCP_NAME)
+    path = tree / MCP_NAME
+    try:
+        payload = read_json(path)
+    except json.JSONDecodeError as broken:
+        raise refuse_plugin(
+            [
+                f"{MCP_NAME} is not valid JSON: {broken}.",
+                f"Look for it at {path.relative_to(tree)} in the plugin.",
+                "",
+                "Foundry opens this file before it writes any folder, to find out whether",
+                "the plugin declares MCP at all. A file it cannot read is refused rather",
+                "than counted as absent, because counted as absent it would ship a plugin",
+                "whose whole point is a server with no server in it and say nothing.",
+            ],
+            ["Fix the file. The line and column above are where the reader stopped."],
+        ) from broken
     servers = payload.get("mcpServers") if isinstance(payload, dict) else None
     return servers if isinstance(servers, dict) else {}
 
@@ -208,16 +271,10 @@ def hook_rules(tree: Path) -> list[dict]:
 def refuse_rule(problem: list[str], fix: list[str]) -> EmitError:
     """A fault in the neutral rule itself, which no harness could read.
 
-    Headed differently from a harness refusal on purpose. `CANNOT SHIP THIS TO
-    <harness>` says the plugin is fine and that one folder cannot carry it.
-    This says the file is not a hook file yet, and no choice of `targets`
-    changes that.
+    `refuse_plugin` under the name the hook checks read it by: this one says the
+    file is not a hook file yet, and no choice of `targets` changes that.
     """
-    lines = ["CANNOT BUILD THIS PLUGIN.", ""]
-    lines += [f"  {line}" if line else "" for line in problem]
-    lines.append("")
-    lines += [f"  {line}" if line else "" for line in fix]
-    return EmitError("\n".join(lines))
+    return refuse_plugin(problem, fix)
 
 
 def check_rule(rule: object, index: int, where: Path, tree: Path, targets: tuple[str, ...]) -> None:
@@ -426,6 +483,7 @@ __all__ = [
     "check_rules",
     "frontmatter",
     "hook_rules",
+    "refuse_plugin",
     "refuse_rule",
     "rules_for",
     "mcp_servers",
