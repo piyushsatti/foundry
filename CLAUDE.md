@@ -47,7 +47,7 @@ at it. Foundry has no opinion and no involvement.
 | The bootstrap stub stays tiny and almost never changes | It is the only file that ever needs re-copying by hand across every plugin repository. Anything that might need fixing later belongs in `scripts/`, where one fix reaches everyone |
 | Nothing resolves on a user's machine | The whole conflict-free property comes from a plugin arriving as one finished folder. Any feature that makes an installed plugin fetch, resolve or assemble something destroys it |
 | The build never picks a winner | Every ambiguity stops the build and names both sides. Choosing silently means nobody finds out a substitution happened |
-| There is no silent drop | A declared kind a harness cannot represent stops the build, naming the kind, the harness, the manifest line and both ways forward. Or the author wrote that loss down under `degrade.<harness>.drop`, and then it is printed at build time, recorded in that folder's `foundry.lock.json`, and recorded again in `foundry.release.json`. A single hook rule follows the same two outcomes at its own smaller grain: a rule naming a moment a harness has no event for stops the build, or the rule already names `only` and the harness it excludes is a recorded, printed drop. There is no third outcome, at either grain. This is the winner rule applied to harnesses: a diminished folder is always a line somebody wrote, never something the tool concluded |
+| There is no silent drop | A declared kind a harness cannot represent stops the build, naming the kind, the harness, the manifest line and both ways forward. Or the author wrote that loss down under `degrade.<harness>.drop`, and then it is printed at build time, recorded in that folder's `foundry.lock.json`, and recorded again in `foundry.release.json`. A single hook rule follows the same two outcomes at its own smaller grain: a rule naming a moment a harness has no event for stops the build, or the rule already names `only` and the harness it excludes is a recorded, printed drop, and a rule excluded from every harness that carries hooks in this build stops the build too, because a rule dropped everywhere is a guard that runs nowhere no matter how many of those drops are on the record. There is no third outcome, at either grain. This is the winner rule applied to harnesses: a diminished folder is always a line somebody wrote, never something the tool concluded |
 | A Claude Code folder moves only on purpose, with a before-and-after diff run first | Every `contents` fingerprint already sitting in a shipped lock file was measured on those bytes, and every pin written against one stops matching the moment they move, silently, on somebody else's machine. `emitters/claude_code.py` still writes the manifest exactly as the old `write_metadata` did: same `METADATA_KEYS` tuple, same order, same path. A manifest that names no `targets` still gets a lock file with no `target` and no `dropped` field, because a lock file is part of the folder that ships. The folder has moved twice, both before `v0.1.0` and both with the before-and-after listing read. Once when `mcp.json` and `hooks/hooks.yaml` started being translated rather than shipped unread, which moved it only for plugins declaring an MCP server or a hook. Once when a `.gitkeep` at the top of a content directory stopped shipping, which moved it only for plugins carrying one |
 | A capability answers for every kind | `carries` and `cannot` in one `Capability` together name all six kinds in `KINDS`, and the framework refuses to dispatch otherwise, calling it a Foundry defect. When a seventh kind is added, no harness can carry it silently on the grounds that nobody re-read that module |
 | No harness folder holds a file that harness does not read | An unread file sits outside whatever that harness validates and inside the folder's `contents` fingerprint, so it ships and the record cannot explain why it is there. This is the same failure as the author's local `.claude` settings reaching people who installed a plugin. An emitter that translates a neutral file removes the neutral one as the last step of the translation, and `drop_placeholders` in `build.py` sweeps a dot file out of the top of each content directory before any emitter runs, dropping the directory if that leaves it empty |
@@ -74,7 +74,7 @@ own event vocabulary, so an emitter that carries hooks translates this file and 
 | `at` | one of `session-start`, `before-tool`, `after-tool`, `turn-end`, `before-compact`, `session-end`. `session-start`, `before-tool`, `after-tool` and `session-end` are universal: every hook-carrying harness expresses all four. `turn-end` and `before-compact` are not: only Claude Code has an event for either today |
 | `run` | a path to a file inside the plugin. Not a shell line, so the build can check the hook has something to run. Shell work goes inside that file |
 | `match` | optional, one pattern, passed to whatever the harness calls a matcher |
-| `only` | optional, a list of harness names. The rule is carried by the harnesses it names and is a recorded, printed drop everywhere else. Refused if it names a harness outside `targets` |
+| `only` | optional, a list of harness names. The rule is carried by the harnesses it names and is a recorded, printed drop everywhere else. Refused if it names a harness outside `targets`, and refused again if no harness carrying hooks in this build is left to run the rule |
 | `timeout` | optional, a whole number of seconds greater than zero, carried into the Claude Code hook entry |
 
 Any other key is refused rather than ignored, because an ignored key in a guard is a guard that does
@@ -181,7 +181,7 @@ python3 scripts/resolve.py template --print
 ```
 
 `--check` builds into a temporary directory and throws it away. All three exit 0 today, the suite at
-65 tests. Run them after any change to `scripts/` or `template/`.
+73 tests. Run them after any change to `scripts/` or `template/`.
 
 Python style is `ruff`, over the same four paths for both commands, before committing:
 
@@ -229,7 +229,9 @@ a skill nested more than one level deep, a manifest the author already wrote bei
 the case where every named harness would drop everything the plugin holds. Hooks have their own on
 top of that: a rule written with `on`, a moment outside the six, a key a rule does not name, a `run`
 naming a file the plugin does not hold, a `match` that is not a line of text, a `timeout` that is not
-a whole number greater than zero, and an `only` naming a harness the plugin does not build.
+a whole number greater than zero, an `only` naming a harness the plugin does not build, and an
+`only` naming only harnesses that carry no hooks in this build, which leaves the rule absent from
+every folder written.
 
 It also covers the eight things that fail silently or crash rather than refusing: the author's local
 `.claude` settings reaching the shipped folder, a refusal on one harness leaving a half-written

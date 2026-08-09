@@ -931,6 +931,36 @@ class AHookThatWouldNotFireIsRefused(RepoCase):
         self.assertIn("'pi'", message)
         self.assertIn("targets: claude-code", message)
 
+    def test_a_rule_reserved_for_a_harness_that_carries_no_hooks_here_is_refused(self):
+        """The name being in 'targets' is not enough for the rule to run anywhere.
+
+        opencode has no hook surface, so a rule reserved for it is absent from
+        the claude-code folder as a rule drop and absent from the opencode
+        folder as a kind drop. Both losses are recorded, against two different
+        harnesses, and each reads as ordinary. What they add up to is a guard
+        that runs in no folder the build writes, and a green build saying so.
+        """
+        plugin = make_repo(
+            self.workspace,
+            "reserved",
+            files={
+                "skills/greet/SKILL.md": "---\nname: greet\ndescription: Greet.\n---\n\nGreet.\n",
+                "hooks/hooks.yaml": "- at: turn-end\n  run: hooks/announce.sh\n  only: [opencode]\n",
+                "hooks/announce.sh": ANNOUNCE_TEXT,
+            },
+            targets=["claude-code", "opencode"],
+            degrade={"opencode": {"drop": ["hooks"]}},
+        )
+
+        with self.assertRaises(EmitError) as refusal:
+            self.ship(plugin, self.destination("reserved"))
+
+        message = str(refusal.exception)
+        self.assertIn("NO HARNESS WOULD RUN THIS HOOK", message)
+        self.assertIn("'turn-end'", message)
+        self.assertIn("is only for opencode", message)
+        self.assertIn("Carrying hooks in this build: claude-code", message)
+
 
 class ThePathVariablesAreClaudeCodesOwn(RepoCase):
     """The portable names reach a Claude Code user as literal text in a path.

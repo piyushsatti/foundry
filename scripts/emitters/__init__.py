@@ -406,6 +406,56 @@ def refusal(target: str, manifest_path: Path, refused: list[tuple[str, list[str]
     return "\n".join(lines)
 
 
+def check_rules_reach_a_harness(
+    targets: list[str], losses: dict[str, Loss], rules: list[dict], manifest_path: Path
+) -> None:
+    """A rule kept by no harness in this build is refused.
+
+    `only` narrows a rule to the harnesses named, and `check_rule` already
+    refuses a name outside 'targets'. That is not enough on its own. A name can
+    be in 'targets' and still carry no hooks, either because that harness has no
+    hook surface at all or because 'degrade' took hooks away from it, and either
+    way the rule is absent from every folder the build writes.
+
+    Both halves of that are recorded, one as a rule drop and one as a kind drop,
+    so nothing is silent. But they are recorded against two different harnesses
+    and read separately as ordinary losses, and what they add up to is a guard
+    the author wrote that runs nowhere. That is the outcome this build system
+    exists to refuse, so it is refused here, where every harness's loss is known
+    and no folder has been written yet.
+    """
+    if not rules:
+        return
+
+    alive = [
+        target
+        for target in targets
+        if "hooks" in capability(target).carries
+        and not any(drop.kind == "hooks" for drop in losses[target].dropped)
+    ]
+
+    nowhere = [rule for rule in rules if not any(rules_for([rule], target)[0] for target in alive)]
+    if not nowhere:
+        return
+
+    lines = ["NO HARNESS WOULD RUN THIS HOOK.", ""]
+    for rule in nowhere:
+        only = rule.get("only")
+        reserved = f"is only for {', '.join(only)}" if only else "is for every harness"
+        lines.append(f"  The rule at '{rule['at']}' {reserved}, and none of those carries hooks here.")
+    lines += [
+        f"  Declared in {manifest_path}.",
+        "",
+        f"  Carrying hooks in this build: {', '.join(alive) if alive else 'no harness in targets'}.",
+        "",
+        "  A rule absent from every folder the build writes is a guard that runs",
+        "  nowhere, and the build reporting success is what makes it dangerous.",
+        "",
+        "  Either name a harness that carries hooks in 'only', or take the rule out.",
+    ]
+    raise EmitError("\n".join(lines))
+
+
 def plan(
     targets: list[str],
     declared: dict[str, list[str]],
@@ -422,7 +472,6 @@ def plan(
     losses = {
         target: assess(target, declared, degrade.get(target, []), manifest_path, rules) for target in targets
     }
-
     if declared and all(set(loss.kinds()) == set(declared) for loss in losses.values()):
         rows = "\n".join(f"    {target:<16}drops {', '.join(losses[target].kinds())}" for target in targets)
         raise EmitError(
@@ -434,6 +483,12 @@ def plan(
             "  Either name a harness that carries what this plugin holds, or stop\n"
             "  declaring the kinds nothing carries."
         )
+
+    # After the refusal above, never before it. A plugin holding hooks and
+    # nothing else, with every harness dropping them, is both faults at once,
+    # and the one that says the whole release would be empty is the one worth
+    # reading first.
+    check_rules_reach_a_harness(targets, losses, rules or [], manifest_path)
     return losses
 
 

@@ -67,6 +67,7 @@ surface.
 | A `Capability` answers for moments the way it already answers for kinds | `check_moments` in `emitters/__init__.py` refuses a hook-carrying harness that names a moment outside `MOMENTS`, one that omits a common moment, and a non-hook harness that names any moment at all. Each is a Foundry defect: the gap is in Foundry's own module, not in anything a plugin author wrote |
 | A hook rule may name `only: [<harness>, ...]` | The waiver for a rule-level loss. A rule naming it is carried by the harnesses it names and is a recorded, printed drop everywhere else, the same discipline `degrade` already applies to a kind, applied one line lower |
 | `only` names a harness already in `targets`, or the build refuses | A waiver reserved for a harness nobody builds fires nowhere and reads as a rule somebody wrote. Refusing it is the same fault as `degrade` naming a harness outside `targets`, already refused before this change |
+| A rule kept by no harness that carries hooks in this build is refused, checked in `emitters.check_rules_reach_a_harness` after every harness's loss is known | Being in `targets` is not enough for a rule to run anywhere. A harness named in `only` can carry no hooks at all, or can have had hooks taken away by `degrade`, and either way the rule is absent from every folder written. Both halves get recorded, one as a rule drop and one as a kind drop, against two different harnesses, and each reads as an ordinary loss. What they add up to is a guard that runs nowhere under a green build, which is the third outcome the loss policy forbids. It runs after the `NOTHING WOULD SHIP` refusal, never before, because a plugin holding only hooks is both faults at once and the wider one is worth reading first |
 | A hook rule may name `timeout: <seconds>`, a whole number greater than zero | Some harnesses give a hook a default budget short enough to kill work the author meant to finish, and the only way to say otherwise is to name the number. Refused on anything that is not a positive whole number, because a timeout that cannot be reached is not a timeout |
 | Rule validation moved to `contract.check_rules`, called once against the neutral tree in `build.py`, before any per-harness folder is written | It used to live inside `claude_code.py`, so a plugin whose only target pruned hooks entirely never had its hook file read at all. A rule written with `on` instead of `at`, or naming a file the plugin does not hold, shipped unnoticed until somebody added `claude-code` to `targets` months later, and the refusal then named a line the author had forgotten writing |
 | A rule-level refusal carries its own heading, distinct from a kind-level one | `CANNOT BUILD THIS PLUGIN.` when the hook file itself is not a hook file yet: an unrecognised key, a moment outside the six, a `run` naming nothing, an `on` where `at` belongs. No choice of `targets` fixes this. `CANNOT SHIP THIS TO <HARNESS>.` when the file is fine and a named harness simply has no event for a moment a rule uses: fixed by dropping that harness from `targets`, or by scoping the rule with `only` |
@@ -83,6 +84,13 @@ only one that carries hooks. A rule's `only` therefore always evaluates against 
 which at most one member can ever carry hooks in the first place, so `rules_for` never has a second
 harness to drop a rule from, and `assess_rules` never reaches its refusal or its `RuleDrop` branch on
 any plugin building today.
+
+Say the consequence plainly, because it is sharper than "no effect". With one hook-carrying harness
+registered, `only: [claude-code]` is the single spelling a plugin can write and build: it changes
+nothing, since claude-code was already going to carry the rule. Every other spelling is now refused,
+either because the name is outside `targets` or because it leaves the rule absent from every folder.
+So today the key can be written correctly and does nothing, or written any other way and refuses.
+Neither is a drop.
 
 The key is not dead weight for that reason. It exists so that the day a second hook-carrying harness
 is registered, the manifest key, the check in `contract.check_rule`, the lock file's `rules` list and
@@ -137,6 +145,7 @@ survives validation is either kept, refused for one harness's missing event, or 
 | A plugin author giving up hooks on every harness to keep one rule scoped to Claude Code | `only` waives one rule, not the whole `hooks` kind, so the rest of the surface keeps shipping everywhere it did before |
 | A broken hook rule surviving a build because the only target named prunes hooks before anything reads the file | `contract.check_rules` runs on the neutral tree before any harness folder, hook-carrying or not, is written |
 | A rule-level drop happening without being printed and written into the lock file | `assess_rules` returns a `RuleDrop` for anything `only` excludes, and `write_lock` records it under `rules` exactly as `dropped` already records a kind-level loss |
+| A green build shipping a hook rule that no folder in the release carries, because each of the two losses that add up to it looked ordinary on its own | `check_rules_reach_a_harness` refuses a rule kept by no harness that carries hooks in this build, after every harness's loss is known and before any folder is written |
 
 ## Still open
 
