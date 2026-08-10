@@ -1,8 +1,17 @@
 # foundry
 
-Foundry is a standalone base. It holds the tooling that turns a plugin repository into a shippable
-folder for each agent harness that plugin asked for, and the template a new plugin repository starts
-from. Nothing else.
+**Foundry is a compiler for agent plugins.** It holds that compiler, which turns a plugin
+repository into one finished folder per agent harness that plugin asked for, and the template a new
+plugin repository starts from. Nothing else.
+
+The category was decided on 2026-08-10 against alternatives, and it earns its keep in this file
+because it says where a change belongs. A front end validates the manifest, one intermediate tree
+carries the content, one back end per target writes a folder. **Bundler is wrong by definition**, a
+bundler merges many files into few and nothing here merges. **Transpiler is wrong**, nothing here is
+a language until Stencil. Converter fits Pandoc's shape and is rejected because a converter is
+expected to lose quietly. Stencil does not weaken the word: staging a build so that part of it is
+deferred, leaving a residual the runtime finishes, is textbook multi-stage compilation, and a
+compiler that ships a runtime is the norm rather than the exception.
 
 ## Foundry is atomic. Do not split it.
 

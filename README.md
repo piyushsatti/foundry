@@ -1,8 +1,14 @@
 # foundry
 
-Foundry is the base an agent plugin is built on. It holds exactly two things: the tooling that turns
-a plugin repository into a shippable folder for each agent harness that plugin names, and the
-template a new plugin repository starts from.
+**Foundry is a compiler for agent plugins.** One source in, one finished folder out per agent
+harness. It holds exactly two things: that compiler, and the template a new plugin repository starts
+from.
+
+The word is meant literally. A front end reads and validates a manifest, one intermediate tree
+carries the content, and one back end per target writes that harness's folder, which is why
+`scripts/emitters/` is named after what compiler back ends are called. The harnesses cannot carry
+the same things, and lowering to a target that cannot hold everything is ordinary compiler work.
+What Foundry adds is that it will not do it quietly.
 
 It holds no plugins. Every plugin lives in its own repository, with its own version and its own
 releases.

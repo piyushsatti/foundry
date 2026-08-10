@@ -102,7 +102,7 @@ refusal path reads as a guard that is running.
 
 `find_symlink` in `resolve.py` stops the build on any symlink in a plugin's content, from
 `fingerprint` and again from `copy_dependency_content`. That is the whole answer for this release: a
-named failure at bundle time rather than a rule about which links are safe to follow.
+named failure at build time rather than a rule about which links are safe to follow.
 
 It was chosen over following a link that stays inside the repository, which would need `fingerprint`
 and the copy to agree about resolution forever. Those two disagreeing is what caused the leak in the
