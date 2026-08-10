@@ -72,18 +72,6 @@ make a new plugin by copying `template/`.
 It should not exist. Deleting it needs the `delete_repo` scope, which the local `gh` token does not
 have: `gh auth refresh -h github.com -s delete_repo`.
 
-## A build's own output sits inside the fingerprint
-
-`SKIP_DIRS` in `resolve.py` has no `dist`, so a checkout that has been built into fingerprints
-differently from a clean one, and a consumer pinning it then refuses on a pin that was correct when
-written. Reproduced: review-library is `26ecf1ddadc0` clean, and both consumers pin that number.
-
-Commit `0e8cbe0` considered this and deliberately went the other way, `CLAUDE.md` says the skip
-lists are frozen, and `FingerprintIsFrozen` in `tests/scripts/test_resolve.py` asserts them by hand,
-in `test_a_known_tree_still_hashes_to_the_digest_it_has_always_hashed_to`. So reversing it needs
-its own decision record and moves every pin that exists. The workaround holds meanwhile: never build
-into the tree.
-
 ## Six plugin repositories have no remote
 
 review-library, crucible, plan-orchestrator, devtools, meditate and manifold are converted, clean,

@@ -51,8 +51,12 @@ import emitters  # noqa: E402
 from emitters import EmitError  # noqa: E402
 from resolve import (  # noqa: E402
     CONTENT_KINDS,
+    LOCK_NAME,
     MANIFEST_NAME,
+    RELEASE_NAME,
     ResolveError,
+    built_by_this_tool,
+    find_release,
     find_symlink,
     fingerprint,
     read_manifest,
@@ -93,13 +97,6 @@ NEVER_SHIP = {
     ".DS_Store",
     MANIFEST_NAME,
 }
-
-LOCK_NAME = "foundry.lock.json"
-
-# Written at the root of a release that holds more than one harness folder. It
-# is the one place a person can see that the Pi folder at 1.4.2 has no MCP
-# server while the Claude Code folder at the same version does.
-RELEASE_NAME = "foundry.release.json"
 
 # A private handoff from an emitter to write_lock below, naming a file-level
 # loss the kind-level Loss object has no branch for. instructions.py is the
@@ -389,6 +386,21 @@ def copy_own_content(manifest: dict, out: Path, skip: tuple[Path, ...] = ()) -> 
     excludes = Excludes(manifest["exclude"])
     forbidden = frozenset(path.resolve() for path in skip)
     root = manifest["root"].resolve()
+
+    stale = find_release(root, forbidden)
+    if stale is not None:
+        raise BuildError(
+            f"{stale}: this is a release, not source.\n\n"
+            f"  This is the same refusal fingerprint() already raises on this\n"
+            f"  plugin's checkout, made again here because this is the point the\n"
+            f"  copy actually happens. It holds {LOCK_NAME}, a file only\n"
+            f"  Foundry writes, so copying it would put a whole previous release\n"
+            f"  inside the folder people install.\n\n"
+            f"  Delete {stale}, or point --out somewhere outside this plugin.\n"
+            f"  Adding it to 'exclude' would keep it out of what ships and leave\n"
+            f"  it inside this plugin's fingerprint, which is half a fix."
+        )
+
     ignore = skipping(forbidden, excludes, root)
     placed: dict[str, str] = {}
     for entry in sorted(manifest["root"].iterdir()):
@@ -680,11 +692,6 @@ def write_release(answer: dict, records: list[dict], out: Path) -> None:
     (out / RELEASE_NAME).write_text(json.dumps(release, indent=2) + "\n")
 
 
-def built_by_this_tool(out: Path) -> bool:
-    """One folder carries a lock file; a release of several carries a record."""
-    return (out / LOCK_NAME).exists() or (out / RELEASE_NAME).exists()
-
-
 def build(plugin_dir: Path, out: Path) -> dict:
     """Assemble beside the destination, move into place only once it is whole.
 
@@ -701,7 +708,7 @@ def build(plugin_dir: Path, out: Path) -> dict:
     them. The count decides the layout, so nothing changes for a plugin that
     ships to one place.
     """
-    answer = resolve(plugin_dir)
+    answer = resolve(plugin_dir, exempt=(out,))
     manifest = read_manifest(plugin_dir)
     targets = manifest["targets"]
 

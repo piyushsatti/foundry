@@ -199,9 +199,20 @@ writes appears on a repository's first build and never leaves, so if it counted,
 had ever been built could be pinned against and the advice above would describe a state nothing can
 return to. It is outside the fingerprint.
 
-The output directory is not exempt, because Foundry does not know its name: `--out` takes anything,
-and treating `dist` as special would be a guess about somebody else's repository. So delete the
-output directory, or build somewhere outside the tree, before reading a pin off a checkout.
+The output directory is not exempt either, and it is no longer merely counted. **A directory holding
+`foundry.lock.json` or `foundry.release.json` is a release Foundry already wrote, and finding one in
+a source tree stops the build and names it.** Recognised by what is inside it, never by its name:
+`--out` takes anything, so treating `dist` as special would be a guess about somebody else's
+repository, while those two filenames are written by nothing but this tool.
+
+So delete the output directory, or point `--out` outside the tree. That was already the advice here
+and it is now enforced rather than asked for, because the alternative was silent: the same source
+fingerprinted differently once it had been built, and the stale release was copied into every folder
+people install. Adding it to `exclude` is not a way out, since `exclude` decides what ships and never
+reaches the fingerprint.
+
+The one exemption is the destination of the build currently running, matched by resolved path rather
+than by name, which is what keeps `--out dist` working when it is run twice.
 
 ## What the build refuses to do, and why
 
@@ -217,6 +228,7 @@ The build never picks a winner. Every case below stops it, names both sides, and
 | A plugin claims under `provides` something the built folder does not contain | The claim is metadata other people read, so an empty one is a lie in public |
 | The dependency graph contains a loop | Reported as the actual loop, so it can be broken |
 | The output directory holds files this tool did not write | It refuses to delete someone else's directory |
+| A release this tool wrote earlier is sitting in the source tree | It is not source. Hashed in, the same checkout pins differently once it has been built; copied in, a whole previous release lands inside the folder people install |
 | A named harness cannot represent a kind the plugin declares, and no `degrade` line says so | The absence would be invisible: the folder installs, reports success and does less than it says |
 | Every named harness would drop everything the plugin holds | Every folder in the release would be an empty wrapper |
 | `targets` names a harness Foundry does not emit, or is an empty list | A misspelled name that quietly built nothing is how a release ships without the folder somebody was promised |
@@ -232,8 +244,10 @@ look complete.
 
 | Rule | Detail |
 |---|---|
-| A plugin declares the oldest Foundry it works with | `foundry: 0.1.0` means 0.1.0, or any later release keeping the same first number |
-| The build picks the newest version anything in the tree actually asked for | Never newer than that, so a build can never land on a version nobody requested |
+| A plugin declares the oldest Foundry it works with | `foundry: 0.1.0` says this plugin is compatible with 0.1.0 and any later release keeping the same first number. It does not ask for the newest of those |
+| The build picks the newest version anything in the tree actually asked for | Never newer than that, so a build can never land on a version nobody requested. **With no dependencies, nothing else asked, so a plugin gets exactly the version it declared** |
+| A feature added after the declared version does not exist for that plugin | Raise the line to the release that introduced it. The refusal names the key, not the version, so this is the connection worth knowing in advance |
+| Running a Foundry checkout's `build.py` directly ignores the declared version | It runs whatever is in that checkout, so a manifest can build locally and be refused by CI, which fetches what the manifest says. Every build prints `built with Foundry X, resolved to Y`, and CI runs Y |
 | A plugin takes all of Foundry or none | There is no picking pieces. Selection would let repositories drift into incompatible subsets |
 | A plugin may sit on an old Foundry indefinitely | Foundry cannot run a plugin's tests, so only that plugin can approve its own upgrade |
 

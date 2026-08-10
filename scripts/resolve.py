@@ -50,6 +50,20 @@ MIGRATIONS_DIR = "docs/migrations"
 
 MANIFEST_NAME = "foundry.plugin.yaml"
 
+# The two files Foundry writes into a finished folder, and nothing else writes
+# anywhere. They live here rather than in `build.py`, which is where they used
+# to sit, because this module has to recognise a release on sight and cannot
+# import upward to ask. `build.py` imports both from here.
+#
+# One folder carries a lock file. A release of several folders carries the
+# record at its top and a lock file inside each folder, so a directory holding
+# either name is a release, and checking both is what names a multi-harness
+# release at `dist/` rather than at `dist/agent-plugins`. The record is also
+# the one place a person can see that the Pi folder at 1.4.2 has no MCP server
+# while the Claude Code folder at the same version does.
+LOCK_NAME = "foundry.lock.json"
+RELEASE_NAME = "foundry.release.json"
+
 # Manifest fields that describe the plugin to whoever installs it. They are
 # carried through untouched and land in the plugin metadata the build writes.
 METADATA_KEYS = ("description", "author", "homepage", "license", "keywords")
@@ -185,7 +199,55 @@ def find_symlink(root: Path) -> Path | None:
     return None
 
 
-def fingerprint(root: Path) -> str:
+def built_by_this_tool(directory: Path) -> bool:
+    """One folder carries a lock file; a release of several carries a record."""
+    return (directory / LOCK_NAME).exists() or (directory / RELEASE_NAME).exists()
+
+
+def find_release(root: Path, exempt: frozenset[Path] = frozenset()) -> Path | None:
+    """The topmost directory under `root` that Foundry already wrote, if any.
+
+    A release is recognised by what is inside it and never by what it is
+    called. `--out` takes any path, so `dist` is a convention in a README and
+    nothing more, while `foundry.lock.json` and `foundry.release.json` are
+    files only this tool writes. Naming a directory would also mean guessing
+    about somebody else's repository, which is the argument that rejected
+    exempting an output directory by name and which this does not need.
+
+    The topmost one is returned, not the deepest and not the lock file itself:
+    a release of six folders holds its record at the top and a lock file in
+    each folder, so naming a child would send an author to delete one sixth of
+    the thing. It is also what makes "delete it" a complete instruction.
+
+    `exempt` holds resolved paths this build already accounts for, which is its
+    own destination. A directory named there is stepped over **and the walk
+    continues**, rather than the walk stopping at the first release it meets:
+    stopping would let the build's own `dist` shadow a genuinely stale
+    directory sorting after it, which is a hole in exactly the place the bug
+    this rule exists for was found.
+
+    Pruned by `SKIP_DIRS` the same way `find_symlink` and `fingerprint` prune,
+    so a cached release under `.foundry` or a sample one inside a virtualenv is
+    not a build error. `SKIP_SUFFIXES` and `SKIP_NAMES` say nothing here:
+    both describe a file, and this only ever asks the question of a directory.
+    """
+    for entry in sorted(root.iterdir()):
+        relative = entry.relative_to(root)
+        if any(part in SKIP_DIRS for part in relative.parts):
+            continue
+        if entry.is_symlink() or not entry.is_dir():
+            continue
+        if entry.resolve() in exempt:
+            continue
+        if built_by_this_tool(entry):
+            return entry
+        found = find_release(entry, exempt)
+        if found is not None:
+            return found
+    return None
+
+
+def fingerprint(root: Path, exempt: tuple[Path, ...] = ()) -> str:
     """A short, stable name for the exact contents of a folder.
 
     Sorted file paths and their bytes, hashed together, so a rename counts as a
@@ -210,6 +272,18 @@ def fingerprint(root: Path) -> str:
     is a refusal rather than a rule about which links are safe to follow, and
     `find_symlink` is what finds one; see its own docstring for why the walk
     below cannot be trusted to notice one on its own.
+
+    A directory Foundry already wrote stops this the same way, and `exempt`
+    names the ones this caller accounts for: its own destination, and nothing
+    else. Those are left out of the digest rather than merely allowed past the
+    refusal, which is the whole point. Hashing an exempt directory would leave
+    `--out dist` twice fingerprinting differently from a clean checkout, which
+    is the bug being closed, reintroduced one line further down.
+
+    This changes nothing about what a fingerprint covers for anybody who does
+    not pass `exempt`, and every caller outside `build()` passes none. The
+    three skip lists above stay frozen and hand-asserted; this is a per-call,
+    path-matched exemption, the shape `copy_own_content`'s `skip` already has.
     """
     link = find_symlink(root)
     if link is not None:
@@ -223,12 +297,32 @@ def fingerprint(root: Path) -> str:
             f"  put while what ships moves underneath it, with nothing to notice.\n\n"
             f"  Remove the symlink, or replace it with a real copy of what it points to."
         )
+    accounted = frozenset(path.resolve() for path in exempt)
+    release = find_release(root, accounted)
+    if release is not None:
+        raise ResolveError(
+            f"{release}: this is a release, not source.\n\n"
+            f"  It holds {LOCK_NAME}, a file only Foundry writes, so it is a folder\n"
+            f"  an earlier build left behind rather than anything this plugin is\n"
+            f"  made of. Hashing it in means this checkout's fingerprint depends on\n"
+            f"  whether it has ever been built and on what happened to be sitting\n"
+            f"  there at the time, so the same source pins differently on two\n"
+            f"  machines. Copying it in puts a whole previous release inside the\n"
+            f"  folder people install.\n\n"
+            f"  It is recognised by what is inside it, never by its name: --out\n"
+            f"  takes any path, so 'dist' is only a convention.\n\n"
+            f"  Delete {release}, or point --out somewhere outside this plugin.\n"
+            f"  Adding it to 'exclude' is not a way out: that decides what ships\n"
+            f"  and never reaches this fingerprint."
+        )
     digest = hashlib.sha256()
     for path in sorted(p for p in root.rglob("*") if p.is_file()):
         relative = path.relative_to(root)
         if any(part in SKIP_DIRS for part in relative.parts):
             continue
         if path.suffix in SKIP_SUFFIXES or path.name in SKIP_NAMES:
+            continue
+        if any(directory in path.parents for directory in accounted):
             continue
         digest.update(relative.as_posix().encode())
         digest.update(b"\0")
@@ -611,14 +705,25 @@ def check_pins(manifests: list[dict], actual: dict[str, str]) -> None:
 
 
 # -------------------------------------------------------------------- resolve
-def resolve(plugin_dir: Path) -> dict:
+def resolve(plugin_dir: Path, exempt: tuple[Path, ...] = ()) -> dict:
+    """Settle the version, fingerprint every checkout, check every pin.
+
+    `exempt` is this build's own destination, and it reaches the plugin being
+    built and nothing else. `manifests[0]` is that plugin, which the code just
+    below already relies on. A dependency's checkout is exactly what its pin is
+    the fingerprint of, so a release left sitting in one is the case worth
+    refusing hardest, and there is no path through which `exempt` could reach
+    it.
+    """
     running = foundry_version()
     manifests = collect(plugin_dir)
 
     check_foundry_major(manifests, running)
     foundry = choose_foundry(manifests, running)
 
-    actual = {m["id"]: fingerprint(m["root"]) for m in manifests}
+    actual = {
+        m["id"]: fingerprint(m["root"], exempt if index == 0 else ()) for index, m in enumerate(manifests)
+    }
     check_pins(manifests, actual)
 
     root = manifests[0]

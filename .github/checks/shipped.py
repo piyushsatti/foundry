@@ -166,6 +166,19 @@ def check_lock(target: str, folder: Path, manifest: dict, report: Report) -> dic
     carried = [path for path in folder.rglob("*") if path.is_file() and path.name != LOCK_NAME]
     if not carried:
         report.wrong(f"{target}: the folder holds nothing but its lock file, so it is an empty wrapper.")
+
+    # A folder carries exactly one lock file, its own, at its own root. A
+    # second one below that is a previous release that got copied in as
+    # ordinary content, which is what happens when an earlier build's output
+    # is left in the source tree and the next build is pointed elsewhere. The
+    # build refuses that now, and this is the independent proof: it was the
+    # check whose absence let a folder holding seven lock files pass, exit 0.
+    nested = sorted(path for path in folder.rglob(LOCK_NAME) if path != lock)
+    if nested:
+        report.wrong(
+            f"{target}: holds {LOCK_NAME} at {nested[0].relative_to(folder)} as well as at its "
+            f"own root, so a previous release shipped inside this one."
+        )
     return recorded
 
 
