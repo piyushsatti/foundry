@@ -108,7 +108,7 @@ degrade:
 # actually exists in the output, so this cannot drift into a claim that is not
 # true. Names here match directory names under skills/, agents/, commands/.
 provides:
-  skills: []
+  skills: [feedback]
   agents: []
   commands: []
 
@@ -128,11 +128,11 @@ provides:
 # Names here match top-level entries in this repository. Nothing nested is
 # matched, so this list cannot reach inside a directory.
 #
-# The `.gitkeep` files holding skills/, agents/ and commands/ open do not need a
-# line here. The build sweeps a dot file out of the top of a content directory
-# and drops the directory if that leaves it empty, because the folder people
-# install is not a git repository and an empty agents/ claims a surface this
-# plugin does not have.
+# The `.gitkeep` files holding agents/ and commands/ open do not need a line
+# here. The build sweeps a dot file out of the top of a content directory and
+# drops the directory if that leaves it empty, because the folder people install
+# is not a git repository and an empty agents/ claims a surface this plugin does
+# not have. `skills/` holds a real skill and needs no placeholder.
 exclude:
   - tests
   - notes
