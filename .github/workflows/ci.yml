@@ -15,6 +15,7 @@
 # |---|---|
 # | tests | every test file on disk is one discovery found, and the suite passes |
 # | template | the template builds untouched, for every harness its manifest names, every folder is one that harness can install, and a manifest naming no harness still builds what it always built |
+# | repos | every fixture plugin ships exactly the files it shipped before, compared by a digest per file |
 # | conformance | the portable manifest validates against the schema agent-plugins.org serves today |
 # | version | VERSION is three numbers the tooling can read |
 # | lint | the Python still passes the rule set and the formatting ruff.toml pins |
@@ -39,10 +40,8 @@
 name: ci
 
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   tests:
@@ -157,6 +156,35 @@ jobs:
                   "  so a change to it is a change every repository has to be told about."
               )
           PY
+
+  repos:
+    name: every fixture plugin still ships exactly what it shipped
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pyyaml
+
+      - name: Build every fixture and compare it against its recorded baseline
+        # The template is the weakest possible proof of a build. Its four
+        # content directories hold nothing but a .gitkeep the build deletes,
+        # and its 'exclude' is five flat top-level names. Nothing in it is
+        # nested, globbed, negated or taken from a dependency, so all five of
+        # its fingerprints can sit exactly where they are while a change to
+        # 'exclude' breaks every plugin repository actually built with Foundry.
+        #
+        # The fixtures under tests/fixtures/ carry what the template does not,
+        # and this compares every shipped file against a digest of its bytes,
+        # so a change names the file that moved rather than shrugging.
+        #
+        # Only the fixtures run here. Whoever has plugin repositories checked
+        # out lists them in .github/checks/repos.local, which is gitignored so
+        # that Foundry publishes no list of the plugins built with it, and this
+        # runner has no such file. That half of the gate is local until those
+        # repositories have remotes a job can clone.
+        run: python3 .github/checks/repos.py
 
   conformance:
     name: the portable manifest matches the published schema

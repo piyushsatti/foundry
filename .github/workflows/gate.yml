@@ -1,0 +1,47 @@
+# A disposable tag proves a commit before that commit gets a version.
+#
+# Foundry's CI no longer wakes on a push or a pull request. GitHub Actions
+# minutes are a real budget, and a job on every commit spends them on work
+# nobody is about to ship. A job per release attempt spends them exactly when
+# the answer matters.
+#
+# So the shape is two tags on one commit:
+#
+# | Step | What happens |
+# |---|---|
+# | 1 | Push a disposable tag, named gate-<anything>, at the commit being considered |
+# | 2 | This workflow wakes and runs everything ci.yml proves |
+# | 3 | It passes, and the version tag goes on the SAME commit. That is the release |
+#
+# Two things this shape requires, and both are easy to get wrong.
+#
+# The version tag has to name the same commit the disposable tag named. If
+# anything lands in between, the release was never the thing that was proved
+# and this gate quietly becomes decoration.
+#
+# A disposable tag is never reused. Moving a tag that has already been pushed
+# is a force update on the remote, which is banned outright here, so each
+# attempt gets its own name. Delete the old ones or leave them as history.
+#
+# What this cannot check yet: building the plugin repositories people actually
+# have. Those are listed in a gitignored file so that Foundry publishes no list
+# of the plugins built with it, and none of them has a remote a job could clone
+# anyway. The fixtures under tests/fixtures/ stand in until then, and they
+# carry the nested paths, globs and negation the template does not.
+#
+# This calls ci.yml rather than repeating it. Two copies of a proof drift, and
+# the copy that drifts is the one nobody is watching.
+
+name: gate
+
+on:
+  push:
+    tags: ["gate-*"]
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    name: this commit proves what CI proves
+    uses: ./.github/workflows/ci.yml

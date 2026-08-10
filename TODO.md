@@ -14,29 +14,40 @@ they leave behind is what the documents describe.
 
 Not the code. Only the prose.
 
-## `exclude` cannot name a nested path, and it made five repos move their own files
+## Five repositories are still holding a layout they only adopted to fit the old `exclude`
 
-`build.py:135` walks the plugin root one level deep and `exclude` matches a name in that listing.
-A plugin cannot keep `skills/*/evals/` or `packages/<name>/tests/` out of the build.
+The tool half is done. `exclude` takes globs with negation, anchored to the top level unless the
+pattern carries a slash, so `**/evals` and `packages/*/tests` are now one line each. What has not
+happened is the five repositories undoing the moves they made when it could not.
 
-That broke Foundry's promise. Converting the plugins moved their files to fit the tool:
+| Order | Repo | Reverses | Writes |
+|---|---|---|---|
+| 1 | review-library | `evals/` back under `skills/hats/` and `skills/red-vs-blue/` | `**/evals` |
+| 2 | crucible | `evals/consult/` back to `skills/consult/evals/` | `**/evals`, and repins review-library |
+| 3 | plan-orchestrator | `bin/progress` back to `scripts/progress` | `scripts/*`, `!scripts/progress`, and repins review-library |
+| 4 | manifold | 28 files back to `packages/manifold/tests/`, `evals/` back under `skills/manifold/` | `packages/*/tests`, `**/evals` |
+| 5 | meditate | `tests/apply/` back to `skills/apply/tests/` | `**/tests` |
 
-| Repo | Moved |
-|---|---|
-| manifold | `packages/manifold/tests/` to `tests/`, 28 files. `skills/manifold/evals/` to `evals/` |
-| crucible | `skills/consult/evals/` to `evals/consult/` |
-| review-library | `skills/hats/evals/` and `skills/red-vs-blue/evals/` to `evals/` |
-| meditate | `skills/apply/tests/` to `tests/apply/` |
-| plan-orchestrator | `scripts/progress` to `bin/progress`, because `scripts` is excluded wholesale |
+**Order is not a preference.** `crucible` and `plan-orchestrator` both pin `review-library`, so
+moving its files moves its fingerprint and both refuse to build until they repin.
 
-A plugin brings what it has and Foundry builds it. Teach `exclude` to name a nested path, then put
-all five layouts back.
+**`scripts/*` rather than `scripts`**, because gitignore cannot re-include a path whose parent
+directory is excluded. Excluding the directory's children instead is expressible and does what
+plan-orchestrator wants.
 
-## Build Stencil
+Each of these moves that plugin's own fingerprint, on purpose, and each takes a version bump its own
+repository owns. None of it happens before Foundry is tagged, because a repository writing the new
+patterns and then building against the old Foundry ships the directories it just restored, silently.
+
+## Build Stencil, which is what 0.2.0 is for
+
+**Targeted at 0.2.0**, ruled by Pi on 2026-08-09. Nothing here ships before that release, and that
+release is named by it.
 
 The decision landed and is accepted: `D4-Stencil-binds-at-build-time-and-on-the-users-machine` in
 the wiki, and `Stencil` there carries the whole shape. The order of work is `docs/plans/stencil.md`.
-Nothing is blocked any more.
+Nothing is blocked any more, and six questions on that page are still open: a target names when it
+ships, not what it decides.
 
 - the language is **Stencil**
 - a plugin author writes **`SKILL.stencil.md`**, and **`SKILL.md`** is rendered beside it. Both live
@@ -68,7 +79,8 @@ differently from a clean one, and a consumer pinning it then refuses on a pin th
 written. Reproduced: review-library is `26ecf1ddadc0` clean, and both consumers pin that number.
 
 Commit `0e8cbe0` considered this and deliberately went the other way, `CLAUDE.md` says the skip
-lists are frozen, and `tests/scripts/test_resolve.py:61` asserts them by hand. So reversing it needs
+lists are frozen, and `FingerprintIsFrozen` in `tests/scripts/test_resolve.py` asserts them by hand,
+in `test_a_known_tree_still_hashes_to_the_digest_it_has_always_hashed_to`. So reversing it needs
 its own decision record and moves every pin that exists. The workaround holds meanwhile: never build
 into the tree.
 
