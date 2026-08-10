@@ -472,9 +472,12 @@ def rules_for(rules: list[dict], target: str) -> tuple[list[dict], list[dict]]:
 def remove(path: Path) -> None:
     """Take a file or a directory out of a target's folder, if it is there.
 
-    No harness folder may hold a file that harness does not read, so removing
-    a neutral file an emitter has just translated is the normal end of the
-    translation rather than tidying.
+    No folder may hold a neutral file whose translated twin it also holds, so
+    removing the neutral one an emitter has just translated is the normal end
+    of the translation rather than tidying. That rule is narrower than "no file
+    a harness does not read": everything else the repository ships, ships, and
+    every packaged folder carries loose files such as `README.md` that its own
+    harness never opens.
     """
     import shutil
 

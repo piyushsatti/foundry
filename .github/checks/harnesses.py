@@ -19,10 +19,19 @@ than from the emitter that satisfies it:
 | opencode | none of any kind | OpenCode has no package format, no install command and no version |
 | pi | none of any kind | Pi has no package format either, and the shape of a `pi` key inside `package.json` was never read from loader source |
 
-The `never` column is the rule that no harness folder may hold a file that
-harness does not read. An unread file sits inside the folder's `contents`
-fingerprint with nothing to explain why it is there, which is the same failure
-as the author's local settings reaching people who installed a plugin.
+The `never` column names kinds and neutral files a harness genuinely cannot
+represent, not every file it happens not to open. One of those sits inside the
+folder's `contents` fingerprint with nothing to explain why it is there, which
+is the same failure as the author's local settings reaching people who
+installed a plugin.
+
+**It is not the rule that a folder holds nothing its harness does not read.**
+That form is wider than the truth, and every packaged folder already breaks it
+by carrying `README.md`. The real rule is that no folder holds a neutral file
+whose translated twin it also holds, and everything else the repository ships,
+ships. Reading `never` the wide way is what put `package.json` in `MANIFESTS`
+below and made an ordinary plugin's own root `package.json` a failure in every
+other harness's folder.
 
 Two harnesses claiming the same path with different contents is why the outputs
 are separate folders at all, so every folder is also checked for the manifests

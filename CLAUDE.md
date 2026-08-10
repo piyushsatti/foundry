@@ -57,7 +57,7 @@ at it. Foundry has no opinion and no involvement.
 | `tests/` | Fixture plumbing in `repos.py` that writes throwaway plugin repos, plus the rule tests under `tests/scripts/`. Run with `python3 -m unittest discover -s tests` |
 | the wiki | Every decision, and the architecture they add up to. `Decisions` indexes them and says which are built. `D1-Foundry-holds-no-plugins` says what Foundry is, `D2-One-source-one-release-one-folder-per-harness` says what it emits, `D3-Six-hook-moments-and-a-waiver-on-the-rule` says why a per-harness override lives on a rule and not on a kind, and `D4-Stencil-binds-at-build-time-and-on-the-users-machine` narrows two invariants below. `docs/adr/` held these and is gone |
 | `docs/plans/` | The order of work for something not built yet, and its blast radius. A plan is deleted once its work has landed, unlike an ADR |
-| `.github/workflows/` | Foundry's own CI. Currently stale, see below |
+| `.github/workflows/` | Foundry's own CI. `ci.yml` is callable only, and two workflows call it: `gate.yml` on a tag named `gate-*`, and `release.yml` on `v*` after checking the tag against `VERSION` |
 
 ## Invariants, and what breaking each one costs
 
@@ -67,6 +67,8 @@ at it. Foundry has no opinion and no involvement.
 | Nothing on a user's machine fetches, and nothing assembles a folder | This is the narrowed form, accepted with the templating decision. The conflict-free property comes from a plugin arriving as one finished folder, and that survives: rendering text already inside a folder creates no conflict between two installed plugins, while fetching or assembling one does. So Stencil may render a plugin's own files in place, and nothing may reach outside the installed folder or pull anything down. The wider sentence this replaces read "nothing resolves on a user's machine" |
 | The build never picks a winner | Every ambiguity stops the build and names both sides. Choosing silently means nobody finds out a substitution happened |
 | There is no silent drop | A declared kind a harness cannot represent stops the build, naming the kind, the harness, the manifest line and both ways forward. Or the author wrote that loss down under `degrade.<harness>.drop`, and then it is printed at build time, recorded in that folder's `foundry.lock.json`, and recorded again in `foundry.release.json` when the build wrote more than one folder. `write_release` is called only when more than one harness is named, so a single-target build records the drop in the folder's own lock file and writes no release record at all. A single hook rule follows the same two outcomes at its own smaller grain: a rule naming a moment a harness has no event for stops the build, or the rule already names `only` and the harness it excludes is a recorded, printed drop, and a rule excluded from every harness that carries hooks in this build stops the build too, because a rule dropped everywhere is a guard that runs nowhere no matter how many of those drops are on the record. There is no third outcome, at either grain. This is the winner rule applied to harnesses: a diminished folder is always a line somebody wrote, never something the tool concluded |
+| A recorded drop actually happened | Refuse or record was never the whole rule: a record has to be true. `strip_allowed_tools` in `emitters/__init__.py` used to match a YAML key by reading lines while `declared_kinds` decided the same fact with a real parser, so quoting the key, which is ordinary valid YAML, made them disagree: the lock file recorded the drop and the field still shipped. That is worse than a silent drop, because the record actively lies and the folder lands where nobody ran the build. Both that function and the Pi `arguments` rename in `skills_tree.py` now share `frontmatter_key` in `contract.py` and cross-check against the parser afterward, refusing by name if it still sees the key. **Wherever a parser and a hand-rolled matcher both decide one fact, they compare and the build stops on disagreement** |
+| A symlink stops the build, and is never followed | Nothing here ever considered one: `fingerprint` walked with `rglob`, which steps over a symlinked directory, while `shutil.copytree` dereferenced it. So a dependency shipped files from outside its own repository and its pin stayed byte-identical even after those files changed, which breaks what a pin means. `find_symlink` in `resolve.py` refuses instead, from `fingerprint` and again from `copy_dependency_content`, honouring the same three skip lists so a link inside `.venv` is not a build error. **This is a named failure, not a resolution policy.** Deciding which links are safe to follow needs two functions to agree about resolution forever, which is the shape of the bug being fixed, and no repository has one |
 | A Claude Code folder moves only on purpose, with a before-and-after diff run first | Every `contents` fingerprint already sitting in a shipped lock file was measured on those bytes, and every pin written against one stops matching the moment they move, silently, on somebody else's machine. `emitters/claude_code.py` still writes the manifest exactly as the old `write_metadata` did: same `METADATA_KEYS` tuple, same order, same path. A manifest that names no `targets` still gets a lock file with no `target` and no `dropped` field, because a lock file is part of the folder that ships. The folder has moved twice, both before `v0.1.0` and both with the before-and-after listing read. Once when `mcp.json` and `hooks/hooks.yaml` started being translated rather than shipped unread, which moved it only for plugins declaring an MCP server or a hook. Once when a `.gitkeep` at the top of a content directory stopped shipping, which moved it only for plugins carrying one |
 | A capability answers for every kind | `carries` and `cannot` in one `Capability` together name all six kinds in `KINDS`, and the framework refuses to dispatch otherwise, calling it a Foundry defect. When a seventh kind is added, no harness can carry it silently on the grounds that nobody re-read that module |
 | No folder holds a neutral file whose translated twin it also holds | This is the narrowed form, and it is narrower than it used to read. Once `mcp.json` becomes `.mcp.json`, or `hooks/hooks.yaml` becomes `hooks/hooks.json`, the neutral one is removed: two files saying one thing, one of which the harness ignores, is a record that cannot explain itself. **Everything else the repository ships, ships.** The wider sentence this replaces read "no harness folder holds a file that harness does not read", which every packaged folder already breaks by carrying `README.md`, and enforcing it literally would strip loose files from five folders and move the `claude-code` fingerprint that six repositories are pinned against. `drop_placeholders` in `build.py` still sweeps a dot file out of the top of each content directory before any emitter runs, dropping the directory if that leaves it empty. See `Emitters` in the wiki |
@@ -118,8 +120,11 @@ A module in `scripts/emitters/` declares three names and nothing else.
 
 Adding a harness is that module, one line in `REGISTRY` in `emitters/__init__.py`, and one row in
 `HARNESS` in `.github/checks/harnesses.py`, whose `row` exits for a target with no entry. Nothing
-under `scripts/` changes. `claude_code.py` is under forty lines including its docstring, which is
-the evidence the seam is in the right place.
+under `scripts/` changes, and that is the evidence the seam is in the right place. **Not the size of
+a module**: this sentence used to offer `claude_code.py` as under forty lines, which was wrong by
+several times over on the day it was written and is wrong by more now. An emitter is as long as its
+harness's file shapes demand. What makes the seam right is that adding one touches nothing to the
+left of it.
 
 The checks row is deliberate duplication and its own docstring says so: a check that asked the
 emitters what they write would agree with every change including a wrong one. **The place that does
@@ -206,8 +211,13 @@ python3 scripts/build.py template --check
 python3 scripts/resolve.py template --print
 ```
 
-`--check` builds into a temporary directory and throws it away. All three exit 0 today, the suite at
-73 tests. Run them after any change to `scripts/` or `template/`.
+`--check` builds into a temporary directory and throws it away. All three exit 0 today. Run them
+after any change to `scripts/` or `template/`.
+
+**No count of the suite is written here on purpose.** A number in prose is right on the day it is
+typed and wrong on the next commit, and this file said 73 for long enough that it was out by nearly
+eighty. The command prints the real number, and `.github/checks/discovery.py` proves every test file
+on disk is one the run found, which is the thing a count was standing in for.
 
 Python style is `ruff`, over the same four paths for both commands, before committing:
 

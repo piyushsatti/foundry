@@ -16,7 +16,10 @@ Both were shipped untranslated until this change, and neither failed loudly.
 unread. That is a silent drop, which is the one outcome the loss policy says
 cannot exist, and it was worse than a refusal because nothing anywhere said it
 had happened. The neutral file is removed once it has been translated, because
-no harness folder may hold a file that harness does not read.
+no folder may hold a neutral file whose translated twin it also holds: two
+files saying one thing, one of which the harness ignores, is a record that
+cannot explain itself. Loose files the harness never opens are a different
+question and are not touched.
 
 Three differences between the two shapes, each verified against Claude Code's
 own documentation rather than inferred:

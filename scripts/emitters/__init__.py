@@ -578,11 +578,16 @@ def plan(
 def prune(target: str, tree: Path, answer: Capability) -> None:
     """Take out every kind this harness cannot represent, whether declared or not.
 
-    No harness folder may hold a file that harness does not read. An unread
-    file is outside whatever that harness validates and inside the folder's
-    `contents` fingerprint, so it ships and the record cannot explain why it is
-    there. This is the same failure as the author's local settings reaching
-    people who installed a plugin.
+    A kind the harness cannot represent is a different thing from a file it
+    simply never opens, and only the first is pruned here. A whole kind sitting
+    in a folder that cannot represent it is inside the folder's `contents`
+    fingerprint with nothing to explain why, the same failure as the author's
+    local settings reaching people who installed a plugin.
+
+    Loose files stay. The unread-file rule is narrower than it once read: no
+    folder may hold a neutral file whose translated twin it also holds, and
+    everything else the repository ships, ships. Every packaged folder already
+    carries `README.md`, which its own harness never opens.
 
     Pruning is here rather than in each emitter because it is identical for
     every harness: what differs is the list of kinds, which the emitter already

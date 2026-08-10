@@ -110,6 +110,21 @@ They were unreachable before this too, by crashing rather than by refusing. Eith
 give one of them a reason to exist that the earlier check does not already cover. Dead code in a
 refusal path reads as a guard that is running.
 
+## A symlink is refused, and supporting one properly is a later version's question
+
+`find_symlink` in `resolve.py` stops the build on any symlink in a plugin's content, from
+`fingerprint` and again from `copy_dependency_content`. That is the whole answer for this release: a
+named failure at bundle time rather than a rule about which links are safe to follow.
+
+It was chosen over following a link that stays inside the repository, which would need `fingerprint`
+and the copy to agree about resolution forever. Those two disagreeing is what caused the leak in the
+first place: the fingerprint stepped over a symlinked directory while the copy dereferenced it, so a
+dependency shipped files from outside its repository with its pin unmoved.
+
+Nothing has asked for symlink support. No repository contains one. Revisit only when something real
+needs it, and then the question is a design one: what a fingerprint means when the bytes it covers
+live somewhere else.
+
 ## The pinned action majors are running on borrowed time
 
 Every CI run now annotates itself:

@@ -422,17 +422,23 @@ def drop_placeholders(out: Path, placed: dict[str, str]) -> None:
 
     A file such as `.gitkeep` exists to make git keep an empty directory, and
     the folder that ships is not a git repository. Left in, it is a file no
-    harness reads sitting inside that folder's `contents` fingerprint, which is
-    the invariant that no harness folder holds a file that harness does not
-    read. It is also credited as an item this plugin placed, so a dependency
-    carrying the same placeholder is reported as a second source for a file
-    neither of them ships on purpose.
+    harness reads sitting inside that folder's `contents` fingerprint, and an
+    empty directory left behind claims a surface the plugin does not have. It
+    is also credited as an item this plugin placed, so a dependency carrying
+    the same placeholder is reported as a second source for a file neither of
+    them ships on purpose.
+
+    This is not the unread-file invariant, which is narrower than it sounds and
+    would not reach a placeholder anyway: that one says a folder must not hold
+    a neutral file whose translated twin it also holds, and everything else the
+    repository ships, ships, `README.md` included.
 
     This is the rule `emitters.declared_kinds` already states, that a dot file
     does not declare a kind, applied to the copy rather than to the census. The
-    Foundry template ships four content directories held open by placeholders
-    precisely so a fresh plugin repository has somewhere to put its first skill,
-    and none of the four should reach anyone who installs it.
+    template holds `agents/` and `commands/` open this way so a fresh plugin
+    repository has somewhere to put its first one, and neither placeholder
+    should reach anyone who installs it. `skills/` no longer needs one: it
+    carries the `feedback` skill every plugin inherits.
 
     Only the top level of each content directory is swept. Inside a skill
     directory a dot file is that skill's own business, and a directory that

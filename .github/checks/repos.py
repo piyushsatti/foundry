@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Real plugin repositories, built and proved to still emit what they emitted before.
 
-`template/` is the only build Foundry proves today, and every content directory
-it holds carries nothing but a `.gitkeep` the build deletes before anything
-ships. Its `exclude` is five flat top-level names. Nothing in it is nested,
-nothing in it is a glob, nothing in it depends on another plugin, and nothing
-in it is negated. So all five of the template's fingerprints can sit exactly
-where they are while a change to `exclude`, to a dependency `take`, or to a
-skill nested two directories too deep breaks every plugin repository actually
-built with Foundry, and the template job still prints green.
+`template/` proves very little on its own. It carries one skill, `feedback`,
+and holds `agents/` and `commands/` open with a `.gitkeep` the build deletes
+before anything ships. Its `exclude` is five flat top-level names. Nothing in
+it is nested, nothing in it is a glob, nothing in it depends on another plugin,
+and nothing in it is negated. So all five of the template's fingerprints can
+sit exactly where they are while a change to `exclude`, to a dependency `take`,
+or to a skill nested two directories too deep breaks every plugin repository
+actually built with Foundry, and the template job still prints green.
 
 This check closes that hole the direct way: it builds the plugin repositories
 that actually exist, rather than a shape standing in for them, and compares
