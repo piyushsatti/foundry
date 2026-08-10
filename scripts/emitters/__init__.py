@@ -47,6 +47,7 @@ from .contract import (  # noqa: E402
     EmitError,
     check_rules,
     frontmatter,
+    frontmatter_key,
     hook_rules,
     mcp_servers,
     metadata,
@@ -623,6 +624,15 @@ def strip_allowed_tools(tree: Path) -> None:
     the frontmatter, because a re-dump reformats a file the author wrote and
     every reformatted byte lands in a `contents` fingerprint looking like a
     content change.
+
+    The line edit and `frontmatter` decide the same fact two different ways,
+    and disagreeing about it used to be possible: `frontmatter_key` closes the
+    known gap, a quoted key, but there will always be a YAML form the matcher
+    does not know. So every skill is checked with the real parser after the
+    edit runs, whether or not the edit changed anything, and a key the parser
+    still sees stops the build rather than shipping a lock file that records
+    the drop while the file still carries it, which is worse than a silent
+    drop because the record would be actively lying.
     """
     for skill in skill_dirs(tree):
         path = skill / SKILL_NAME
@@ -637,7 +647,7 @@ def strip_allowed_tools(tree: Path) -> None:
             line = lines[index]
             if (
                 0 < index < closing
-                and line.split(":")[0].strip() == "allowed-tools"
+                and frontmatter_key(line) == "allowed-tools"
                 and not line.startswith((" ", "\t"))
             ):
                 index += 1
@@ -649,6 +659,17 @@ def strip_allowed_tools(tree: Path) -> None:
             index += 1
         if len(kept) != len(lines):
             path.write_text("".join(kept))
+        if "allowed-tools" in frontmatter(path):
+            raise EmitError(
+                f"DROPPED allowed-tools, AND {path} STILL HAS IT.\n\n"
+                f"  The lock file is about to record allowed-tools as dropped from this\n"
+                f"  folder, and the line edit meant to remove it left a form the parser\n"
+                f"  still reads as carrying the key. Shipping this would be worse than a\n"
+                f"  silent drop: the record would say the field is gone while the file\n"
+                f"  still has it.\n\n"
+                f"  This is a Foundry defect. Read the frontmatter block in {path} and\n"
+                f"  extend the matcher in strip_allowed_tools to cover its form."
+            )
 
 
 def run(target: str, manifest: dict, tree: Path) -> None:

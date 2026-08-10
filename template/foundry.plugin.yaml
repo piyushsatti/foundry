@@ -106,7 +106,10 @@ degrade:
 
 # What this plugin hands to whoever installs it. The build checks every entry
 # actually exists in the output, so this cannot drift into a claim that is not
-# true. Names here match directory names under skills/, agents/, commands/.
+# true. A skill is a directory, so it is named by that directory's name under
+# skills/. An agent or a command is a single markdown file, so it is named by
+# its filename, extension included, under agents/ or commands/: hello.md, not
+# hello.
 provides:
   skills: [feedback]
   agents: []

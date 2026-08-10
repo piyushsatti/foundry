@@ -77,7 +77,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .contract import SKILL_NAME, Cannot, Capability, EmitError, remove
+from .contract import SKILL_NAME, Cannot, Capability, EmitError, frontmatter, frontmatter_key, remove
 
 TARGETS = ("opencode", "pi")
 
@@ -261,6 +261,13 @@ def with_argument_hint(text: str) -> str:
     reformatted byte lands in the folder's `contents` fingerprint looking like
     a change to the content. A file with no `arguments` line comes back exactly
     as it went in.
+
+    The key is matched through `frontmatter_key`, which strips a quote pair
+    before comparing, and the replacement is built from `partition(":")`
+    rather than by slicing past a fixed number of characters: a quoted key is
+    a different length from the bare word, and slicing on the bare word's
+    length would leave a stray quote character behind for anything that
+    reached this branch quoted.
     """
     lines = text.splitlines(keepends=True)
     if not lines or lines[0].strip() != "---":
@@ -270,9 +277,10 @@ def with_argument_hint(text: str) -> str:
         return text
     for index in range(1, closing):
         line = lines[index]
-        if line.startswith((" ", "\t")) or line.split(":")[0].strip() != ARGUMENTS:
+        if line.startswith((" ", "\t")) or frontmatter_key(line) != ARGUMENTS:
             continue
-        lines[index] = ARGUMENT_HINT + line[len(ARGUMENTS) :]
+        _, separator, remainder = line.partition(":")
+        lines[index] = f"{ARGUMENT_HINT}{separator}{remainder}"
         break
     return "".join(lines)
 
@@ -284,6 +292,12 @@ def as_prompt_templates(tree: Path) -> None:
     the folder that Pi never reads, inside the folder's `contents` fingerprint
     with nothing to explain why it is there, which is the leak this whole design
     exists to stop happening again.
+
+    `with_argument_hint` and `frontmatter` decide the same fact two different
+    ways, and there will always be a YAML form the line edit does not know, so
+    a file whose source held `arguments` is checked with the real parser after
+    the rewrite: if the key is still there, this stops the build rather than
+    shipping a folder where Pi still cannot find `argument-hint`.
     """
     commands = tree / "commands"
     if not commands.is_dir():
@@ -296,7 +310,20 @@ def as_prompt_templates(tree: Path) -> None:
         prompts = tree / PROMPTS_DIR
         prompts.mkdir(exist_ok=True)
         for path in written:
-            (prompts / path.name).write_text(with_argument_hint(path.read_text()))
+            had_arguments = ARGUMENTS in frontmatter(path)
+            target = prompts / path.name
+            target.write_text(with_argument_hint(path.read_text()))
+            if had_arguments and ARGUMENTS in frontmatter(target):
+                raise EmitError(
+                    f"RENAMED arguments TO argument-hint IN {path.name}, AND arguments IS\n"
+                    f"  STILL THERE.\n\n"
+                    f"  {path} parses with an 'arguments' key both before and after the line\n"
+                    f"  edit meant to rename it to 'argument-hint', which Pi reads instead.\n"
+                    f"  Shipping this would leave Pi unable to find the hint while the\n"
+                    f"  build reported an ordinary rename.\n\n"
+                    f"  This is a Foundry defect. Read the frontmatter block in {path} and\n"
+                    f"  extend the matcher in with_argument_hint to cover its form."
+                )
     remove(commands)
 
 

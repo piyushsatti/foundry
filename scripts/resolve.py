@@ -154,6 +154,37 @@ def foundry_version() -> str:
 
 
 # ---------------------------------------------------------------- fingerprint
+def find_symlink(root: Path) -> Path | None:
+    """The first symlink under `root`, outside what fingerprinting already skips.
+
+    Walked by hand rather than through `rglob`, which gets this wrong two ways
+    at once: it never descends into a symlinked directory, so nothing beneath
+    one is ever visited, and `is_file()` on a symlinked file returns True, so a
+    symlinked file already reads as an ordinary one and its target's current
+    bytes get hashed under the link's own name. Presence is what has to be
+    caught here, not content, so this asks `is_symlink()` directly instead of
+    asking what kind of thing sits on the other end.
+
+    Pruned at the directory level rather than filtered afterward: a directory
+    named in `SKIP_DIRS` is never entered, the same exemption `fingerprint`
+    already gives it, so a symlink inside `.venv` or `node_modules` is
+    invisible here exactly as it is invisible to the hash below.
+    """
+    for entry in sorted(root.iterdir()):
+        relative = entry.relative_to(root)
+        if any(part in SKIP_DIRS for part in relative.parts):
+            continue
+        if entry.is_symlink():
+            if entry.suffix in SKIP_SUFFIXES or entry.name in SKIP_NAMES:
+                continue
+            return entry
+        if entry.is_dir():
+            found = find_symlink(entry)
+            if found is not None:
+                return found
+    return None
+
+
 def fingerprint(root: Path) -> str:
     """A short, stable name for the exact contents of a folder.
 
@@ -169,7 +200,29 @@ def fingerprint(root: Path) -> str:
     hashes different bytes, because the bytes really did change and no path
     encoding can paper over that. `.gitattributes` is the plugin author's fix
     for that, not this function's.
+
+    A symlink anywhere under `root`, outside `SKIP_DIRS`, `SKIP_SUFFIXES` and
+    `SKIP_NAMES`, stops this rather than being hashed either way. A symlinked
+    directory is invisible to the walk below and a symlinked file already
+    reads as an ordinary one, so a pin computed here can stay byte-identical
+    while what a copy of this same root actually copies changes underneath
+    it: `shutil.copytree` dereferences a symlink instead of copying it. This
+    is a refusal rather than a rule about which links are safe to follow, and
+    `find_symlink` is what finds one; see its own docstring for why the walk
+    below cannot be trusted to notice one on its own.
     """
+    link = find_symlink(root)
+    if link is not None:
+        raise ResolveError(
+            f"{link}: this is a symlink.\n\n"
+            f"  A pin is the fingerprint of a source checkout, and copying a plugin's\n"
+            f"  content copies through a symlink rather than copying it: a symlinked\n"
+            f"  directory is invisible to this walk and to the tool that reads a\n"
+            f"  finished pin the same way, while whatever ships dereferences the link\n"
+            f"  and copies what it currently points to. So the fingerprint can stay\n"
+            f"  put while what ships moves underneath it, with nothing to notice.\n\n"
+            f"  Remove the symlink, or replace it with a real copy of what it points to."
+        )
     digest = hashlib.sha256()
     for path in sorted(p for p in root.rglob("*") if p.is_file()):
         relative = path.relative_to(root)
@@ -296,6 +349,44 @@ def check_unknown_keys(raw: dict, path: Path) -> None:
     )
 
 
+def read_take(raw_take: object, where: str) -> dict:
+    """What one dependency hands over: a map of content kind to a list of names.
+
+    A value written as a plain string is the shape this exists to catch, and
+    it is worth catching here rather than downstream because of what happens
+    if it is not: Python treats a string exactly like any other sequence, so
+    `take: {skills: audit}`, meant as one skill, is read one character at a
+    time by anything that iterates it expecting a list of names. The build
+    then refuses the first of those one-letter names, sending the author to
+    fix a skill that was never the problem. Refusing the shape itself, before
+    a single item is looked up, means the refusal names the actual mistake.
+    """
+    if not raw_take:
+        return {}
+    if not isinstance(raw_take, dict):
+        raise ResolveError(
+            f"{where}: 'take' should be a map of content kind to a list of names.\n"
+            f"  take:\n    skills: [audit]"
+        )
+    for kind, items in raw_take.items():
+        if isinstance(items, str):
+            raise ResolveError(
+                f"{where}: 'take.{kind}' is '{items}', a single line of text where a list\n"
+                f"  belongs.\n\n"
+                f"  A string is read one character at a time, so this would be taken as\n"
+                f"  {len(items)} one-letter names rather than the one meant, and the build\n"
+                f"  would refuse the first of them and send you to fix a name that was\n"
+                f"  never the problem.\n\n"
+                f"  Wrap it in brackets, even for one entry:\n"
+                f"    take:\n      {kind}: [{items}]"
+            )
+        if not isinstance(items, list):
+            raise ResolveError(
+                f"{where}: 'take.{kind}' should be a list of names.\n  take:\n    {kind}: [audit]"
+            )
+    return raw_take
+
+
 def read_manifest(plugin_dir: Path) -> dict:
     path = plugin_dir / MANIFEST_NAME
     if not path.is_file():
@@ -356,7 +447,7 @@ def read_manifest(plugin_dir: Path) -> dict:
                 "id": str(entry["id"]),
                 "pin": pin,
                 "path": (plugin_dir / str(entry["path"])).resolve(),
-                "take": entry.get("take") or {},
+                "take": read_take(entry.get("take"), where),
             }
         )
 

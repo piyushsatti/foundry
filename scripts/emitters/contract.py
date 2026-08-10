@@ -214,6 +214,24 @@ def frontmatter(path: Path) -> dict:
     return {}
 
 
+def frontmatter_key(line: str) -> str:
+    """The key at the start of one frontmatter line, a matching quote pair stripped.
+
+    `"allowed-tools":` and `'arguments':` are both ordinary valid YAML, and
+    read identically to the bare form by anything that actually parses them.
+    A surgical line edit that keyed off the text before the first colon
+    without stripping quotes read the two differently: the quoted form looked
+    absent to the edit while `frontmatter` still saw it, so the edit and the
+    parser disagreed about whether the key was there. Every surgical rewrite
+    that keys off the start of a line reads it through here first, so a
+    quoted key is recognised the same way the parser recognises it.
+    """
+    key = line.partition(":")[0].strip()
+    if len(key) >= 2 and key[0] == key[-1] and key[0] in "'\"":
+        key = key[1:-1]
+    return key
+
+
 def skill_dirs(tree: Path) -> list[Path]:
     """Every skill directory, which is every directory holding a SKILL.md.
 
@@ -482,6 +500,7 @@ __all__ = [
     "check_rule",
     "check_rules",
     "frontmatter",
+    "frontmatter_key",
     "hook_rules",
     "refuse_plugin",
     "refuse_rule",

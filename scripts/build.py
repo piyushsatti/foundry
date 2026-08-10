@@ -53,6 +53,7 @@ from resolve import (  # noqa: E402
     CONTENT_KINDS,
     MANIFEST_NAME,
     ResolveError,
+    find_symlink,
     fingerprint,
     read_manifest,
     resolve,
@@ -510,6 +511,19 @@ def copy_dependency_content(manifest: dict, out: Path, placed: dict[str, str]) -
                         f"{manifest['manifest_path']}: {dependency['id']} has no {kind}/{item}.\n"
                         f"  looked in: {source}\n"
                         f"  Either the name is wrong, or the dependency stopped providing it."
+                    )
+                link = source if source.is_symlink() else (find_symlink(source) if source.is_dir() else None)
+                if link is not None:
+                    raise BuildError(
+                        f"{manifest['manifest_path']}: cannot take '{item}' from {dependency['id']}.\n"
+                        f"  Declared under take.{kind}.\n\n"
+                        f"  {link} is a symlink. This is the same refusal fingerprint()\n"
+                        f"  already raises on {dependency['id']}'s own checkout, checked again\n"
+                        f"  here because this is the point the copy actually happens: copying\n"
+                        f"  dereferences a symlink instead of copying it, so what ships could\n"
+                        f"  otherwise hold something that dependency's own pin never measured.\n\n"
+                        f"  Remove the symlink from {dependency['id']}, or replace it with a\n"
+                        f"  real copy of what it points to."
                     )
                 relative = f"{kind}/{item}"
                 if relative in placed:

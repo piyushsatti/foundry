@@ -37,11 +37,21 @@ from dataclasses import dataclass
 
 # Every manifest filename Foundry can write, and who reads it. A folder holds
 # the ones its own row names and none of the others.
+#
+# 'package.json' used to be listed here as Pi's, and it is not: no emitter
+# writes one. Pi's own row below already says why, and the unread-file rule
+# this table backs is narrower than 'no harness folder holds a file that
+# harness does not read' would suggest. A folder must not hold a neutral file
+# whose translated twin it also holds, and everything else the repository
+# ships, ships, the same way every packaged folder already carries
+# 'README.md'. An ordinary plugin repository's own root 'package.json' is
+# exactly that everything-else case, so it is never forbidden here. Listing a
+# name Foundry does not actually write would fail every other harness's
+# folder for holding a file that was never really anyone else's manifest.
 MANIFESTS = {
     "plugin.json": "Agent Plugins 1.0.0, at the package root",
     ".claude-plugin/plugin.json": "Claude Code",
     ".codex-plugin/plugin.json": "Codex from before it adopted the standard",
-    "package.json": "Pi",
 }
 
 
