@@ -81,12 +81,57 @@ Write the moment as `at` and never as `on`. YAML reads a bare `on` as the
 boolean true, so `on: before-tool` arrives naming no moment at all. The build
 refuses that by name rather than leaving you to find it.
 
+## Declaring an MCP server
+
+`mcp.json` is the neutral form, and like `hooks/hooks.yaml` it is translated
+rather than shipped as written: Claude Code reads `.mcp.json`, so the emitter
+writes that name and removes this one.
+
+```json
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "example": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["${PLUGIN_ROOT}/mcp/server.py"]
+    }
+  }
+}
+```
+
+**That `$schema` value is exact and the build checks it.** It names the
+specification the file was written against, which is a fact rather than
+boilerplate, and a version a client does not recognise makes that client
+disable MCP for the plugin and carry on, so the plugin installs and the server
+is not there.
+
+| Write | Never write | Because |
+|---|---|---|
+| `${PLUGIN_ROOT}`, `${PLUGIN_DATA}` | `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}` | The neutral pair is renamed for each harness that uses different names. Writing a harness's own pair here reaches every other harness as literal text inside a path |
+| `stdio`, `sse`, `streamable-http` | a transport not on this list | These three cross over untranslated. Claude Code takes `streamable-http` as an alias for its own `http` |
+
+The server's own files are ordinary content and ship like anything else, so
+`mcp/server.py` above needs no manifest line. Keep it out of `exclude`, and
+remember `scripts` is excluded, so a server does not belong there.
+
+Two harnesses cannot start a server at all: Pi has no MCP surface, and OpenCode
+reads servers from the user's own configuration, which no shipped folder can
+write. Both need a `degrade` line naming `mcp` before a plugin declaring one can
+be built for them.
+
 ## Build
 
 ```
 python3 scripts/foundry.py check
 python3 scripts/foundry.py build --out dist
 ```
+
+Both go through `scripts/foundry.py`, which fetches the Foundry the manifest's
+`foundry:` line names and hands over to it. Running a Foundry checkout's own
+`build.py` against this repository instead runs whatever is in that checkout and
+ignores that line, so a manifest can build that way and be refused here. Every
+build prints both numbers, `built with Foundry X, resolved to Y`, and CI runs Y.
 
 `check` builds into a temporary directory and throws it away, which is what CI
 runs on every push. `build` writes `dist/`: one self-contained folder per
@@ -176,11 +221,15 @@ The pin is the fingerprint of that plugin's **source checkout**. It is not the
 and is a different number. Write any placeholder and build once: the refusal
 reports the fingerprint actually on disk, and that is the number to keep.
 
-Read it from a checkout that has not been built into. The output directory sits
-inside the fingerprint, so a dependency that has been built fingerprints
-differently from the same source freshly cloned, and a pin taken beside a
-`dist/` is one no clean checkout or CI runner can reproduce. Build somewhere
-outside the tree, or delete the output before reading a pin.
+Read it from a checkout that has not been built into, which the build now
+insists on rather than only advising. A directory holding `foundry.lock.json`
+or `foundry.release.json` is a release Foundry wrote, not source, and finding
+one stops the build and names it: hashed in, a dependency that has been built
+fingerprints differently from the same source freshly cloned, so the pin is one
+no clean checkout or CI runner can reproduce. Delete the output, or point
+`--out` outside the tree. Adding it to `exclude` does not work and the refusal
+says so, because `exclude` decides what ships and never reaches the
+fingerprint.
 
 If two things you depend on hand over something with the same name, or expect
 different builds of the same third plugin, the build stops and names both

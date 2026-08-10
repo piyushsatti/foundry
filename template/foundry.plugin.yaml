@@ -19,11 +19,26 @@ description: One line about what this plugin does.
 # license: MIT
 # keywords: [review, testing]
 
-# The OLDEST Foundry this plugin works with.
+# The OLDEST Foundry this plugin works with, and, for a plugin with no
+# dependencies, exactly the one it gets.
 #
-# Not an exact pin. "0.1.0" means "0.1.0 or any later release that keeps the
-# same first number". The build picks the newest version anything in the tree
-# actually asked for, never newer than that, and writes down what it picked.
+# The build takes the newest version anything in the tree actually asked for and
+# never anything newer, so with nothing else in the tree the answer is this
+# line. Read it as a floor only when a dependency raises it. "Or any later
+# release" describes what this plugin is COMPATIBLE with, not what it is
+# handed, and reading it the other way is how a plugin ends up using a key that
+# arrived in a later release and being refused for it.
+#
+# Two ways that bites, both worth knowing before the refusal arrives:
+#
+#   - A feature added after this number does not exist for this plugin. Raise
+#     the line to the release that introduced it.
+#   - Building against a Foundry checkout instead of through
+#     scripts/foundry.py runs whatever is in that checkout and ignores this
+#     line entirely. So a manifest can build on your machine and be refused in
+#     CI, which fetches what this says. The build prints both numbers on every
+#     run: "built with Foundry X, resolved to Y". When they differ, CI is
+#     running Y.
 #
 # A plugin takes all of Foundry or none. There is no picking pieces.
 #
