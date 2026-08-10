@@ -52,7 +52,7 @@ at it. Foundry has no opinion and no involvement.
 | `scripts/emitters/<harness>.py` | One harness's folder, and nothing else. `claude_code.py`, `agent_plugins.py` which also serves Codex, `skills_tree.py` which serves OpenCode and Pi, `instructions.py` |
 | `template/` | The starting shape of a plugin repository: manifest, empty content directories, CI workflow, its own README and CLAUDE.md |
 | `template/scripts/foundry.py` | The bootstrap stub. The one file genuinely copied into a plugin repo rather than fetched |
-| `VERSION` | Foundry's own version, currently 0.1.1 |
+| `VERSION` | Foundry's own version. The release is a git tag `v<version>` and nothing else, and `release.yml` refuses a tag that disagrees with this file |
 | `ruff.toml` | The lint and format gate, pinned so it means the same thing on any machine. Development tooling only: nothing under `scripts/` imports it |
 | `tests/` | Fixture plumbing in `repos.py` that writes throwaway plugin repos, plus the rule tests under `tests/scripts/`. Run with `python3 -m unittest discover -s tests` |
 | the wiki | Every decision, and the architecture they add up to. `Decisions` indexes them and says which are built. `D1-Foundry-holds-no-plugins` says what Foundry is, `D2-One-source-one-release-one-folder-per-harness` says what it emits, `D3-Six-hook-moments-and-a-waiver-on-the-rule` says why a per-harness override lives on a rule and not on a kind, and `D4-Stencil-binds-at-build-time-and-on-the-users-machine` narrows two invariants below. `docs/adr/` held these and is gone |

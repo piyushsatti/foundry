@@ -44,7 +44,13 @@ description: One line about what this plugin does.
 #
 # If the first number changes, something that used to work no longer does. The
 # build stops rather than trying, and names the migration document to read.
-foundry: 0.1.0
+#
+# This line tracks the newest Foundry release rather than the oldest one a
+# fresh repository would technically run on, because a new plugin has no reason
+# to start on an older tool than exists and every reason not to inherit a fault
+# already fixed. Lower it deliberately if this plugin has to build against an
+# older Foundry.
+foundry: 0.1.2
 
 # Where scripts/foundry.py clones that version from. Optional, and the default
 # is Foundry's own repository, so most plugins never write this line.

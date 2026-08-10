@@ -4,7 +4,7 @@
       "contents": "7727aba43a6e",
       "files": {
         ".claude-plugin/plugin.json": "0060d1d72507",
-        "foundry.lock.json": "2a6d689d5584",
+        "foundry.lock.json": "3fe03433a3be",
         "packages/demo/main.md": "3ffbbd3f6ee0",
         "packages/demo/tests/data.md": "72b1bfd636c8"
       }
