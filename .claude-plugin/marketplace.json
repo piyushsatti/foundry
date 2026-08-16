@@ -58,8 +58,8 @@
     {
       "name": "smartcompact",
       "source": {
-        "source": "github",
-        "repo": "piyushsatti/smartcompact",
+        "source": "url",
+        "url": "https://github.com/piyushsatti/smartcompact.git",
         "ref": "release"
       },
       "description": "A deliberate, state-aware compaction boundary: warns as occupancy rises toward the measured trigger, and at every boundary writes a handoff per live thread plus a reference map the next session is pointed at."
